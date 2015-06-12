@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 5.6.2.final using JasperReports Library version 5.6.1  -->
+<!-- 2015-04-03T13:58:58 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="users" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="5aaacffa-c821-4938-b3e9-e4325b2d64a7">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="oracle_test"/>
+	<style name="Title" fontName="Times New Roman" fontSize="50" isBold="true" pdfFontName="Times-Bold"/>
+	<style name="SubTitle" forecolor="#736343" fontName="Arial" fontSize="18"/>
+	<style name="Column header" forecolor="#666666" fontName="Arial" fontSize="12" isBold="true"/>
+	<style name="Detail" fontName="Arial" fontSize="12"/>
+	<style name="Row" mode="Transparent">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+			<style backcolor="#E6DAC3"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="username" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT ID, USERNAME, FIRSTNAME, LASTNAME, 'ROLE' role FROM IUNI_DA_TEST_USER T WHERE USERNAME LIKE '%$P!{username}%']]>
+	</queryString>
+	<field name="id" class="java.lang.Long"/>
+	<field name="username" class="java.lang.String"/>
+	<field name="firstName" class="java.lang.String"/>
+	<field name="lastName" class="java.lang.String"/>
+	<field name="role" class="java.lang.String"/>
+	<group name="Group1">
+		<groupExpression><![CDATA[(int)($V{REPORT_COUNT}/15)]]></groupExpression>
+		<groupHeader>
+			<band height="37">
+				<frame>
+					<reportElement mode="Opaque" x="-21" y="7" width="843" height="24" forecolor="#B89F7D" backcolor="#F2EBDF" uuid="cfd517a4-98a0-442a-803f-252fa9eb8bc0"/>
+				</frame>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="6"/>
+		</groupFooter>
+	</group>
+	<group name="Group2">
+		<groupExpression><![CDATA[(int)($V{REPORT_COUNT}/5)]]></groupExpression>
+		<groupHeader>
+			<band height="30"/>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="136" splitType="Stretch">
+			<image>
+				<reportElement x="0" y="0" width="164" height="126" uuid="055189ed-7ce1-4c1f-9d1b-1a8ebf18c882"/>
+				<imageExpression><![CDATA["coffee.jpg"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement style="Title" x="172" y="0" width="461" height="62" uuid="3b4504ab-615b-4233-90c5-ed293f4eaf22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" isItalic="true" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[User Records]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="SubTitle" x="303" y="62" width="196" height="22" uuid="65d83b02-663b-4adf-ab2f-ceea46079295"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[A Summary]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="172" y="94" width="461" height="42" uuid="c1087904-fae9-4152-a649-d69d15470ff0"/>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<text><![CDATA[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce auctor purus gravida arcu aliquam mattis. Donec et nulla libero, ut varius massa. Nulla sed turpis elit. Etiam aliquet mauris a ligula hendrerit in auctor leo lobortis.]]></text>
+			</staticText>
+			<image>
+				<reportElement x="633" y="-73" width="219" height="209" uuid="97993cec-02c1-4d25-b21f-45f9e07dbfb3"/>
+				<imageExpression><![CDATA["coffee_stain.png"]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="22" splitType="Stretch">
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="1" y="0" width="802" height="1" uuid="de1deb56-da07-4cb0-932e-e94f5ea23895"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement x="1" y="1" width="100" height="20" uuid="98c4b3ae-02be-40b1-8e83-04424c7439ab"/>
+				<text><![CDATA[ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="130" y="2" width="100" height="20" uuid="453a46db-3be6-4f7d-9c5e-c220e6dde0f0"/>
+				<textElement>
+					<font fontName="simfang"/>
+				</textElement>
+				<text><![CDATA[用户名]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="286" y="2" width="100" height="20" uuid="2db7f504-e065-415a-b6e8-640c86e1de57"/>
+				<textElement>
+					<font fontName="simfang"/>
+				</textElement>
+				<text><![CDATA[名]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="439" y="0" width="100" height="20" uuid="a18eb2f8-a38f-419c-849b-88a575c447fd"/>
+				<textElement>
+					<font fontName="simfang"/>
+				</textElement>
+				<text><![CDATA[姓]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="588" y="0" width="100" height="20" uuid="81152268-c171-4948-b1e8-7f70eb5bd9ed"/>
+				<textElement>
+					<font fontName="simfang"/>
+				</textElement>
+				<text><![CDATA[角色]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="30" splitType="Stretch">
+			<frame>
+				<reportElement style="Row" mode="Opaque" x="0" y="0" width="802" height="30" uuid="7e10ad10-8ec8-4c31-ab48-08df1c04a3c5"/>
+				<textField>
+					<reportElement x="0" y="0" width="100" height="20" uuid="ee5fe935-2bc7-4f35-bfe9-6751823f58a1"/>
+					<textFieldExpression><![CDATA[$F{id}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="130" y="0" width="100" height="20" uuid="f1bd7615-f2b2-4425-84a5-96eaae1a21b3"/>
+					<textElement>
+						<font fontName="simfang"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{username}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="286" y="0" width="100" height="20" uuid="2d51e4c5-a619-40fc-b13a-53270ab85416"/>
+					<textElement>
+						<font fontName="simfang"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{firstName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="439" y="0" width="100" height="20" uuid="be8e8bf7-edb3-46c0-bd98-7644333b02d0"/>
+					<textElement>
+						<font fontName="simfang"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{lastName}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="588" y="0" width="100" height="20" uuid="1b39bcaf-ed59-4aa6-8e70-569b184326d6"/>
+					<textFieldExpression><![CDATA[$F{role}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="6" splitType="Stretch">
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="3" width="802" height="1" uuid="dba4ab45-8c51-496a-bc52-fc71d7bb9ddf"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="25" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

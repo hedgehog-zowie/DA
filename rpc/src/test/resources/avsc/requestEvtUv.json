@@ -1,0 +1,11 @@
+{
+    "namespace": "com.iuni.data.analyze",
+    "name": "RequestEvtUv",
+    "type": "record",
+    "fields": [
+        {
+            "name": "evt",
+            "type": "com.iuni.data.analyze.RequestEvt"
+        }
+    ]
+}

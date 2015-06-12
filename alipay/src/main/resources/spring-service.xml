@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location">
+            <value>file:${user.dir}/topapi.properties</value>
+        </property>
+    </bean>
+
+    <context:component-scan base-package="com.iuni.data.alipay"/>
+
+    <bean name="topService" class="com.iuni.data.alipay.TopService"
+          p:url="${top.url}"
+          p:appKey="${top.appKey}"
+          p:appSecret="${top.appSecret}"
+          p:sessionKey="${top.sessionKey}"
+          p:secret="${top.secret}"
+          p:resultUrl="${top.resultUrl}"
+          p:resultUrlConnectionTimeOut="${top.resultUrl.connectionTimeOut}"
+          p:resultUrlReadTimeOut="${top.resultUrl.readTimeOut}"/>
+
+</beans>

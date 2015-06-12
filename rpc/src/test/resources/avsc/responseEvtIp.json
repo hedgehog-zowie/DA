@@ -1,0 +1,18 @@
+{
+    "namespace": "com.iuni.data.analyze",
+    "name": "ResponseEvtIp",
+    "type": "record",
+    "fields": [
+        {
+            "name": "evt",
+            "type": "com.iuni.data.analyze.ResponseEvt"
+        },
+        {
+            "name": "data",
+            "type": {
+                "type": "array",
+                "items": "com.iuni.data.analyze.IpKpi"
+            }
+        }
+    ]
+}

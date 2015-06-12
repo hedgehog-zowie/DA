@@ -1,0 +1,40 @@
+#!/bin/sh
+
+DEBUG=false
+cmd=""
+confDir="."
+
+_printUsage(){
+        echo "作用：启动、停止、重启flume agent"
+        echo "eg:/etc/init.d/logAgent restart"
+}
+
+_execCmd(){
+        if [ "$DEBUG" = "true" ]
+        then
+                echo -e $cmd
+        fi
+        exec $cmd
+}
+
+if [ $# -ne 1 ] 
+then
+        _printUsage
+        exit -1
+fi
+
+if [ $1 = "start" ]
+then
+        cmd="flume-ng agent -c conf -f $confDir/logNode.conf -n a1 >> $confDir/logNode.log 2>&1"
+        _execCmd
+elif [ $1 = "stop" ]
+then
+        kill -9 `ps -ef | grep flume-ng | grep logNode.conf | grep -v grep | awk '{print $2}'`
+elif [ $1 = "restart" ]
+then
+        /etc/init.d/logNode stop
+        /etc/init.d/logNode start
+else
+        printUsage
+        exit -1
+fi

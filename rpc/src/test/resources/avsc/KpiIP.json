@@ -1,0 +1,19 @@
+{
+    "namespace": "com.iuni.data.analyze",
+    "name": "IpKpi",
+    "type": "record",
+    "fields": [
+        {
+            "name": "time",
+            "type": "string"
+        },
+        {
+            "name": "timeType",
+            "type": "string"
+        },
+        {
+            "name": "num",
+            "type": "long"
+        }
+    ]
+}

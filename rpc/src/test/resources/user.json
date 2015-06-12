@@ -1,0 +1,23 @@
+{
+    "namespace": "org.jackalope.study.avro",
+    "name": "User",
+    "type": "record",
+    "fields": [
+        {
+            "name": "name",
+            "type": ["string", "null"]
+        },
+        {
+            "name": "num_likes",
+            "type": ["int", "null"]
+        },
+        {
+            "name": "num_photos",
+            "type": ["int", "null"]
+        },
+        {
+            "name": "num_groups",
+            "type": "int"
+        }
+    ]
+}
