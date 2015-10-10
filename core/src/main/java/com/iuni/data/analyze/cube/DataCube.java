@@ -44,7 +44,7 @@ public class DataCube {
         newChannel.setCreateBy(DataCube.class.getSimpleName());
         newChannel.setCreateDate(date);
         newChannel.setName(code.substring(0, codeLength));
-        newChannel.setStatus(1);
+        newChannel.setStatus(0);
         newChannel.setUpdateBy(DataCube.class.getSimpleName());
         newChannel.setUpdateDate(date);
         return newChannel;
@@ -90,7 +90,7 @@ public class DataCube {
     public static FlowSource findSourceByUrl(String url) {
         for (Map.Entry<String, FlowSource> entry : flowSourceMap.entrySet()) {
             FlowSource flowSource = entry.getValue();
-            if (url.contains(flowSource.getUrl()))
+            if (url != null && url.contains(flowSource.getUrl()))
                 return flowSource;
         }
         return defaultSource;

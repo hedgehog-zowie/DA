@@ -3,7 +3,7 @@ package com.iuni.data.common.common;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import com.iuni.data.common.FileUtils;
+import com.iuni.data.utils.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

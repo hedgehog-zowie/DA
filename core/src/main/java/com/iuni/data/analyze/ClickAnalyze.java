@@ -4,19 +4,26 @@ import com.google.common.base.Preconditions;
 import com.iuni.data.Context;
 import com.iuni.data.analyze.cube.DataCube;
 import com.iuni.data.analyze.cube.Result;
-import com.iuni.data.common.*;
-import com.iuni.data.common.field.ClickField;
+import com.iuni.data.common.Constants;
+import com.iuni.data.common.DataType;
+import com.iuni.data.common.TType;
 import com.iuni.data.hbase.HBaseOperator;
+import com.iuni.data.hbase.field.ClickField;
 import com.iuni.data.persist.domain.config.Channel;
 import com.iuni.data.persist.domain.config.RTag;
 import com.iuni.data.persist.domain.webkpi.ClickWebKpi;
+import com.iuni.data.utils.DateUtils;
+import com.iuni.data.utils.UrlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * analyze click kpi

@@ -1,7 +1,7 @@
 package com.iuni.data.alipay;
 
-import com.iuni.data.common.CryptUtils;
-import com.iuni.data.common.DateUtils;
+import com.iuni.data.utils.CryptUtils;
+import com.iuni.data.utils.DateUtils;
 import com.iuni.data.common.TType;
 import com.taobao.api.ApiException;
 import com.taobao.api.DefaultTaobaoClient;
@@ -124,7 +124,7 @@ public class TopService {
      * @param startDate
      * @param endDate
      */
-    public void getAliData(Date startDate, Date endDate) {
+    public void getPayData(Date startDate, Date endDate) {
         TaobaoClient client = new DefaultTaobaoClient(getUrl(), getAppKey(), getAppSecret());
         Map<Date, Date> timeRange = DateUtils.parseTimeRange(startDate, endDate, TType.DAY);
         for (Map.Entry<Date, Date> entry : timeRange.entrySet()) {
@@ -240,7 +240,7 @@ public class TopService {
 
         Date date = new Date();
         params.put("code", CryptUtils.encrypt3DES(String.valueOf(date.getTime()), getSecret()));
-        params.put("sign", CryptUtils.generateSign(data, String.valueOf(date.getTime()), getSecret()));
+        params.put("sign", CryptUtils.generateAlipaySign(data, String.valueOf(date.getTime()), getSecret()));
 
         logger.info("post: {}", WebUtils.doPost(url, params, getResultUrlConnectionTimeOut(), getResultUrlReadTimeOut()));
     }

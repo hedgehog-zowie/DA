@@ -37,7 +37,7 @@ public class PageWebKpi implements Serializable {
 
     private int vv;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "CHANNEL_ID")
     private Channel channel;
 

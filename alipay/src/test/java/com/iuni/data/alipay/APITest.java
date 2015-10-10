@@ -1,6 +1,6 @@
 package com.iuni.data.alipay;
 
-import com.iuni.data.common.CryptUtils;
+import com.iuni.data.utils.CryptUtils;
 import com.taobao.api.DefaultTaobaoClient;
 import com.taobao.api.TaobaoClient;
 import com.taobao.api.domain.AlipayRecord;
@@ -108,7 +108,7 @@ public class APITest {
 
         Date date = new Date();
         params.put("code", CryptUtils.encrypt3DES(String.valueOf(date.getTime()), secret));
-        params.put("sign", CryptUtils.generateSign(data, String.valueOf(date.getTime()), secret));
+        params.put("sign", CryptUtils.generateAlipaySign(data, String.valueOf(date.getTime()), secret));
 
 //        logger.info("get: {}", WebUtils.doGet(url, params));
         logger.info("post: {}", WebUtils.doPost(url, params, 3000, 10000));

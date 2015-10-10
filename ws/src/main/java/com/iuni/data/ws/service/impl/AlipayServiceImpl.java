@@ -1,6 +1,6 @@
 package com.iuni.data.ws.service.impl;
 
-import com.iuni.data.common.CryptUtils;
+import com.iuni.data.utils.CryptUtils;
 import com.iuni.data.persist.domain.taobao.AlipayRecord;
 import com.iuni.data.persist.domain.taobao.TradeRecord;
 import com.iuni.data.persist.repository.taobao.AlipayRecordRepository;
@@ -52,7 +52,7 @@ public class AlipayServiceImpl implements AlipayService {
             return false;
         }
         logger.info("request param data: {}", data);
-        AlipayUserTradeSearchResponse alipayUserTradeSearchResponse = null;
+        AlipayUserTradeSearchResponse alipayUserTradeSearchResponse;
         try {
             alipayUserTradeSearchResponse = jsonConverter.toResponse(data, AlipayUserTradeSearchResponse.class);
         } catch (ApiException e) {
@@ -60,12 +60,13 @@ public class AlipayServiceImpl implements AlipayService {
         }
         List<com.taobao.api.domain.TradeRecord> tradeRecordList = alipayUserTradeSearchResponse.getTradeRecords();
         List<TradeRecord> resultList = new ArrayList<>();
-        for (com.taobao.api.domain.TradeRecord tradeRecord : tradeRecordList) {
-            TradeRecord nTradeRecord = new TradeRecord();
-            resultList.add(nTradeRecord.copy(tradeRecord));
+        if (tradeRecordList != null)
+            for (com.taobao.api.domain.TradeRecord tradeRecord : tradeRecordList) {
+                TradeRecord nTradeRecord = new TradeRecord();
+                resultList.add(nTradeRecord.copy(tradeRecord));
 //            tradeRecordRepository.deleteByAlipayOrderNo(nTradeRecord.getAlipayOrderNo(), nTradeRecord.getCreateTime());
-            logger.debug("trade record: {}", nTradeRecord.toString());
-        }
+                logger.debug("trade record: {}", nTradeRecord.toString());
+            }
 
         tradeRecordRepository.save(resultList);
         return true;
@@ -80,7 +81,7 @@ public class AlipayServiceImpl implements AlipayService {
             return false;
         }
         logger.info("request param data: {}", data);
-        AlipayUserAccountreportGetResponse alipayUserAccountreportGetResponse = null;
+        AlipayUserAccountreportGetResponse alipayUserAccountreportGetResponse;
         try {
             alipayUserAccountreportGetResponse = jsonConverter.toResponse(data, AlipayUserAccountreportGetResponse.class);
         } catch (ApiException e) {
@@ -89,12 +90,13 @@ public class AlipayServiceImpl implements AlipayService {
         }
         List<com.taobao.api.domain.AlipayRecord> alipayRecordList = alipayUserAccountreportGetResponse.getAlipayRecords();
         List<AlipayRecord> resultList = new ArrayList<>();
-        for (com.taobao.api.domain.AlipayRecord alipayRecord : alipayRecordList) {
-            AlipayRecord nAlipayRecord = new AlipayRecord();
-            resultList.add(nAlipayRecord.copy(alipayRecord));
+        if (alipayRecordList != null)
+            for (com.taobao.api.domain.AlipayRecord alipayRecord : alipayRecordList) {
+                AlipayRecord nAlipayRecord = new AlipayRecord();
+                resultList.add(nAlipayRecord.copy(alipayRecord));
 //            alipayRecordRepository.deleteByAlipayOrderNo(nAlipayRecord.getAlipayOrderNo(), nAlipayRecord.getCreateTime());
-            logger.debug("alipay record: {}", nAlipayRecord.toString());
-        }
+                logger.debug("alipay record: {}", nAlipayRecord.toString());
+            }
 
         alipayRecordRepository.save(resultList);
         return true;

@@ -1,12 +1,10 @@
 package com.iuni.data.webapp.service.activity;
 
-import com.iuni.data.persist.domain.config.RTag;
-import com.iuni.data.webapp.common.PageVO;
-import com.iuni.data.webapp.dto.ActivityKpi;
+import com.iuni.data.persist.model.activity.ChannelTableDto;
+import com.iuni.data.persist.model.activity.ChannelQueryDto;
+import com.iuni.data.persist.model.activity.ChannelChartDto;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Nicholas
@@ -14,6 +12,16 @@ import java.util.Set;
  */
 public interface ActivityService {
 
-    List<ActivityKpi> findActivityKpi(String url, String channelCode, Date startDate, Date endDate, String tType, PageVO page);
+    List<ChannelTableDto> selectActivityChannel(ChannelQueryDto queryDto);
+
+    List<ChannelChartDto> selectOrderByActivityChannel(ChannelQueryDto queryDto);
+
+    List<ChannelChartDto> selectPaidOrderByActivityChannel(ChannelQueryDto queryDto);
+
+    List<ChannelChartDto> selectPVByActivityChannel(ChannelQueryDto queryDto);
+
+    List<ChannelChartDto> selectUVByActivityChannel(ChannelQueryDto queryDto);
+
+    List<ChannelChartDto> selectVVByActivityChannel(ChannelQueryDto queryDto);
 
 }

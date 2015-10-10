@@ -1,6 +1,6 @@
 package com.iuni.data.alipay;
 
-import com.iuni.data.common.DateUtils;
+import com.iuni.data.utils.DateUtils;
 import com.taobao.api.ApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class ScheduledTasks {
         Date date = new Date();
         Date startDate = DateUtils.computeStartDate(date, -1);
         Date endDate = DateUtils.computeStartDate(date, 0);
-        topService.getAliData(startDate, endDate);
+        topService.getPayData(startDate, endDate);
     }
 
 }

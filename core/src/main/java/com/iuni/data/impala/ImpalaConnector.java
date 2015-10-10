@@ -1,14 +1,16 @@
 package com.iuni.data.impala;
 
+import com.iuni.data.exceptions.IuniDAImpalaException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.iuni.data.exceptions.IuniDAImpalaException;
-
+/**
+ * impala连接器
+ */
 public class ImpalaConnector {
     private static Logger logger = LoggerFactory.getLogger(ImpalaConnector.class);
 
@@ -16,7 +18,6 @@ public class ImpalaConnector {
 
     private String url;
     private String driver;
-    private Connection conn;
 
     private ImpalaConnector() {
     }
@@ -24,13 +25,11 @@ public class ImpalaConnector {
     public ImpalaConnector(String url) throws IuniDAImpalaException {
         this.url = url;
         this.driver = JDBC_DRIVER_NAME;
-        this.connect();
     }
 
     public ImpalaConnector(String url, String driver) throws IuniDAImpalaException {
         this.url = url;
         this.driver = driver;
-        this.connect();
     }
 
     public String getUrl() {
@@ -41,18 +40,10 @@ public class ImpalaConnector {
         this.url = url;
     }
 
-    public Connection getConn() {
-        return conn;
-    }
-
-    private boolean connect() throws IuniDAImpalaException {
-        if (this.isConnected()) {
-            logger.info("impala connection pool has inited.");
-            return true;
-        }
+    public Connection connect() throws IuniDAImpalaException {
         try {
             Class.forName(driver);
-            conn = DriverManager.getConnection(url.trim());
+            return DriverManager.getConnection(url.trim());
         } catch (ClassNotFoundException e) {
             String errorStr = "HiveDriver not found, driver class is: " + driver + ". error msg : " + e.getMessage();
             logger.error(errorStr);
@@ -62,36 +53,6 @@ public class ImpalaConnector {
             logger.error(errorStr);
             throw new IuniDAImpalaException(errorStr);
         }
-        return true;
     }
 
-    public boolean isConnected() throws IuniDAImpalaException {
-        if (conn == null)
-            return false;
-        try {
-            return !conn.isClosed();
-        } catch (SQLException e) {
-            String errorStr = "check impala connect status error, conn is: " + conn.toString() + ". error msg : " + e.getMessage();
-            logger.error(errorStr);
-            throw new IuniDAImpalaException(errorStr);
-        }
-    }
-
-    public boolean reconnect() throws IuniDAImpalaException {
-        this.close();
-        return connect();
-    }
-
-    public boolean close() throws IuniDAImpalaException {
-        if (conn == null || !this.isConnected())
-            return true;
-        try {
-            conn.close();
-            return conn.isClosed();
-        } catch (SQLException e) {
-            String errorStr = "close impala connection error, conn is: " + conn.toString() + ". error msg : " + e.getMessage();
-            logger.error(errorStr);
-            throw new IuniDAImpalaException(errorStr);
-        }
-    }
 }

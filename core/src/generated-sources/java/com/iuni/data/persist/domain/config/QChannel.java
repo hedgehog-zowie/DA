@@ -43,7 +43,13 @@ public class QChannel extends EntityPathBase<Channel> {
 
     public final StringPath name = createString("name");
 
+    public final StringPath originalUrl = createString("originalUrl");
+
     public final SetPath<com.iuni.data.persist.domain.webkpi.PageWebKpi, com.iuni.data.persist.domain.webkpi.QPageWebKpi> pageWebKpis = this.<com.iuni.data.persist.domain.webkpi.PageWebKpi, com.iuni.data.persist.domain.webkpi.QPageWebKpi>createSet("pageWebKpis", com.iuni.data.persist.domain.webkpi.PageWebKpi.class, com.iuni.data.persist.domain.webkpi.QPageWebKpi.class, PathInits.DIRECT2);
+
+    public final StringPath promotionUrl = createString("promotionUrl");
+
+    public final StringPath shortUrl = createString("shortUrl");
 
     //inherited
     public final NumberPath<Integer> status = _super.status;

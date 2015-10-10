@@ -1,16 +1,16 @@
 package comliuni.data.flume;
 
+import com.iuni.data.utils.StringUtils;
+
+import java.util.Map;
+
 /**
  * @author Nicholas
  *         Email:   nicholas.chen@iuni.com
  */
 public class Test {
     public static void main(String args[]){
-        String str = "a b  c";
-        String[] strs = str.split("\\s+");
-        System.out.println("strs.length" + strs.length);
-        System.out.println(strs[0]);
-        System.out.println(strs[1]);
-        System.out.println(strs[2]);
+        Map<String, String> map = StringUtils.parseCookieStr("vk=WCXO2_7fk8iRF85; sid=355c8a82f43019; ad_id=00023");
+        return;
     }
 }

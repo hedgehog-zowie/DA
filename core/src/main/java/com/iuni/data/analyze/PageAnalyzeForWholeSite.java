@@ -3,7 +3,7 @@ package com.iuni.data.analyze;
 import com.iuni.data.analyze.cube.DataCube;
 import com.iuni.data.analyze.cube.Result;
 import com.iuni.data.common.Constants;
-import com.iuni.data.common.DateUtils;
+import com.iuni.data.utils.DateUtils;
 import com.iuni.data.common.TType;
 import com.iuni.data.persist.domain.config.*;
 import com.iuni.data.persist.domain.webkpi.WebKpi;
@@ -65,7 +65,7 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
     }
 
     /**
-     * use impala or hive to analyze page pv and uv
+     * use impala or hive to analyze whole site pv and uv
      *
      * @param time           the time of partition
      * @param startTimeStamp the start time of analyze
@@ -93,7 +93,7 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
      * @param pageWebKpiForWholeSiteMap result of analyze
      */
     public void analyzePv(TType tType, Date time, long startTimeStamp, long endTimeStamp, Map<String, WebKpi> pageWebKpiForWholeSiteMap) {
-        logger.info("analyze page pv/requestTime/bodyBytes of {}:{} started", tType, time);
+        logger.info("analyze whole site pv/requestTime/bodyBytes of {}:{} started", tType, time);
         // concatenate the sql to query pv
         String sqlStr = "select country, area, region, city, couty, isp, realReferer, adId, count(*), sum(request_time), sum(body_bytes_sent) from" +
                 " (" + selectRealReferer(time, startTimeStamp, endTimeStamp) + ")t" +
@@ -102,16 +102,16 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
         List<List<String>> resultList = impalaOperator.query(sqlStr);
         for (List<String> result : resultList) {
             String country = StringUtils.isBlank(result.get(0)) ? Constants.default_country : result.get(0);
-            String area = result.get(1);
-            String province = result.get(2);
-            String city = result.get(3);
-            String county = result.get(4);
-            String isp = result.get(5);
+            String area = result.get(1) == null ? "" : result.get(1);
+            String province = result.get(2) == null ? "" : result.get(2);
+            String city = result.get(3) == null ? "" : result.get(3);
+            String county = result.get(4) == null ? "" : result.get(4);
+            String isp = result.get(5) == null ? "" : result.get(5);
 
-            String source = result.get(6);
+            String source = result.get(6) == null ? "" : result.get(6);
             FlowSource flowSource = DataCube.findSourceByUrl(source);
 
-            String adId = result.get(7);
+            String adId = result.get(7) == null ? "" : result.get(7);
             Channel channel = DataCube.findChannelByCode(adId);
 
             String key = country + area + province + city + county + isp + flowSource.getId() + channel.getId();
@@ -120,15 +120,15 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
                 webKpi = new WebKpi(area, city, country, county, new Date(), isp, province, time, tType.getPattern(), flowSource, channel);
                 pageWebKpiForWholeSiteMap.put(key, webKpi);
             }
-            int pv = Integer.parseInt(result.get(8));
+            int pv = Integer.parseInt(result.get(8) == null ? "0" : result.get(8));
             webKpi.setPv(webKpi.getPv() + pv);
             // transfer totalTime's unit to second
-            long totalTime = (long) (Float.parseFloat(result.get(9)) * 1000);
+            long totalTime = (long) (Float.parseFloat(result.get(9) == null ? "0" : result.get(9)) * 1000);
             webKpi.setTotalTime(webKpi.getTotalTime() + totalTime);
-            long totalSize = Long.parseLong(result.get(10));
+            long totalSize = Long.parseLong(result.get(10) == null ? "0" : result.get(10));
             webKpi.setTotalSize(webKpi.getTotalSize() + totalSize);
         }
-        logger.info("analyze page pv/requestTime/bodyBytes of {}:{} finished.", tType, time);
+        logger.info("analyze whole site pv/requestTime/bodyBytes of {}:{} finished.", tType, time);
     }
 
     /**
@@ -141,25 +141,25 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
      * @param pageWebKpiForWholeSiteMap result of analyze
      */
     public void analyzeUv(TType tType, Date time, long startTimeStamp, long endTimeStamp, Map<String, WebKpi> pageWebKpiForWholeSiteMap) {
-        logger.info("analyze page uv of {}:{} started", tType, time);
+        logger.info("analyze whole site uv of {}:{} started", tType, time);
         // concatenate the sql to query uv
-        String sqlStr = "select country, area, region, city, couty, isp, realReferer, adId, count(distinct cookie_vk) from" +
+        String sqlStr = "select country, area, region, city, couty, isp, realReferer, adId, count(distinct vk) from" +
                 " (" + selectRealReferer(time, startTimeStamp, endTimeStamp) + ")t" +
                 " group by country, area, region, city, couty, isp, realReferer, adId";
 
         List<List<String>> resultList = impalaOperator.query(sqlStr);
         for (List<String> result : resultList) {
             String country = StringUtils.isBlank(result.get(0)) ? Constants.default_country : result.get(0);
-            String area = result.get(1);
-            String province = result.get(2);
-            String city = result.get(3);
-            String county = result.get(4);
-            String isp = result.get(5);
+            String area = result.get(1) == null ? "" : result.get(1);
+            String province = result.get(2) == null ? "" : result.get(2);
+            String city = result.get(3) == null ? "" : result.get(3);
+            String county = result.get(4) == null ? "" : result.get(4);
+            String isp = result.get(5) == null ? "" : result.get(5);
 
-            String source = result.get(6);
+            String source = result.get(6) == null ? "" : result.get(6);
             FlowSource flowSource = DataCube.findSourceByUrl(source);
 
-            String adId = result.get(7);
+            String adId = result.get(7) == null ? "" : result.get(7);
             Channel channel = DataCube.findChannelByCode(adId);
 
             String key = country + area + province + city + county + isp + flowSource.getId() + channel.getId();
@@ -169,10 +169,10 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
                 pageWebKpiForWholeSiteMap.put(key, webKpi);
             }
             // the 8th column is uv
-            int uv = Integer.parseInt(result.get(8));
+            int uv = Integer.parseInt(result.get(8) == null ? "0" : result.get(8));
             webKpi.setUv(webKpi.getUv() + uv);
         }
-        logger.info("analyze page uv of {}:{} finished.", tType, time);
+        logger.info("analyze whole site uv of {}:{} finished.", tType, time);
     }
 
     /**
@@ -185,7 +185,7 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
      * @param pageWebKpiForWholeSiteMap result of analyze
      */
     public void analyzeIp(TType tType, Date time, long startTimeStamp, long endTimeStamp, Map<String, WebKpi> pageWebKpiForWholeSiteMap) {
-        logger.info("analyze page ip of {}:{} started", tType, time);
+        logger.info("analyze whole site ip of {}:{} started", tType, time);
         // concatenate the sql to query unique ip
         String sqlStr = "select country, area, region, city, couty, isp, realReferer, adId, count(distinct remote_addr) from " +
                 " (" + selectRealReferer(time, startTimeStamp, endTimeStamp) + ")t " +
@@ -194,16 +194,16 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
         List<List<String>> resultList = impalaOperator.query(sqlStr);
         for (List<String> result : resultList) {
             String country = StringUtils.isBlank(result.get(0)) ? Constants.default_country : result.get(0);
-            String area = result.get(1);
-            String province = result.get(2);
-            String city = result.get(3);
-            String county = result.get(4);
-            String isp = result.get(5);
+            String area = result.get(1) == null ? "" : result.get(1);
+            String province = result.get(2) == null ? "" : result.get(2);
+            String city = result.get(3) == null ? "" : result.get(3);
+            String county = result.get(4) == null ? "" : result.get(4);
+            String isp = result.get(5) == null ? "" : result.get(5);
 
-            String source = result.get(6);
+            String source = result.get(6) == null ? "" : result.get(6);
             FlowSource flowSource = DataCube.findSourceByUrl(source);
 
-            String adId = result.get(7);
+            String adId = result.get(7) == null ? "" : result.get(7);
             Channel channel = DataCube.findChannelByCode(adId);
 
             String key = country + area + province + city + county + isp + flowSource.getId() + channel.getId();
@@ -212,10 +212,10 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
                 webKpi = new WebKpi(area, city, country, county, new Date(), isp, province, time, tType.getPattern(), flowSource, channel);
                 pageWebKpiForWholeSiteMap.put(key, webKpi);
             }
-            int ip = Integer.parseInt(result.get(8));
+            int ip = Integer.parseInt(result.get(8) == null ? "0" : result.get(8));
             webKpi.setIp(webKpi.getIp() + ip);
         }
-        logger.info("analyze page ip of {}:{} finished.", tType, time);
+        logger.info("analyze whole site ip of {}:{} finished.", tType, time);
     }
 
     /**
@@ -228,28 +228,28 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
      * @param pageWebKpiForWholeSiteMap result of analyze
      */
     public void analyzeNewUv(TType tType, Date time, long startTimeStamp, long endTimeStamp, Map<String, WebKpi> pageWebKpiForWholeSiteMap) {
-        logger.info("analyze page newUv of {}:{} started", tType, time);
+        logger.info("analyze whole site newUv of {}:{} started", tType, time);
         // concatenate the sql to query old uv
-        String sqlStr = "select country, area, region, city, couty, isp, realReferer, adId, count(distinct cookie_vk) from" +
-                " (select country, area, region, city, couty, isp, realReferer, adId, TT2.cookie_vk from" +
+        String sqlStr = "select country, area, region, city, couty, isp, realReferer, adId, count(distinct vk) from" +
+                " (select country, area, region, city, couty, isp, realReferer, adId, TT2.vk from" +
                 " (" + selectRealReferer(time, startTimeStamp, endTimeStamp) + ") TT1," +
-                " (select distinct(cookie_vk) from " + logTableName + " where `timestamp` < " + startTimeStamp + ") TT2" +
-                " where TT1.cookie_vk = TT2.cookie_vk) NEWUV" +
+                " (select distinct(vk) from " + logTableName + " where `timestamp` < " + startTimeStamp + ") TT2" +
+                " where TT1.vk = TT2.vk) NEWUV" +
                 " group by country, area, region, city, couty, isp, realReferer, adId";
 
         List<List<String>> resultList = impalaOperator.query(sqlStr);
         for (List<String> result : resultList) {
             String country = StringUtils.isBlank(result.get(0)) ? Constants.default_country : result.get(0);
-            String area = result.get(1);
-            String province = result.get(2);
-            String city = result.get(3);
-            String county = result.get(4);
-            String isp = result.get(5);
+            String area = result.get(1) == null ? "" : result.get(1);
+            String province = result.get(2) == null ? "" : result.get(2);
+            String city = result.get(3) == null ? "" : result.get(3);
+            String county = result.get(4) == null ? "" : result.get(4);
+            String isp = result.get(5) == null ? "" : result.get(5);
 
-            String source = result.get(6);
+            String source = result.get(6) == null ? "" : result.get(6);
             FlowSource flowSource = DataCube.findSourceByUrl(source);
 
-            String adId = result.get(7);
+            String adId = result.get(7) == null ? "" : result.get(7);
             Channel channel = DataCube.findChannelByCode(adId);
 
             String key = country + area + province + city + county + isp + flowSource.getId() + channel.getId();
@@ -258,10 +258,10 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
                 webKpi = new WebKpi(area, city, country, county, new Date(), isp, province, time, tType.getPattern(), flowSource, channel);
                 pageWebKpiForWholeSiteMap.put(key, webKpi);
             }
-            int newUv = Integer.parseInt(result.get(8));
+            int newUv = Integer.parseInt(result.get(8) == null ? "0" : result.get(8));
             webKpi.setNewUv(webKpi.getNewUv() + newUv);
         }
-        logger.info("analyze page newUv of {}:{} finished.", tType, time);
+        logger.info("analyze whole site newUv of {}:{} finished.", tType, time);
     }
 
     /**
@@ -274,25 +274,25 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
      * @param pageWebKpiForWholeSiteMap result of analyze
      */
     public void analyzeVv(TType tType, Date time, long startTimeStamp, long endTimeStamp, Map<String, WebKpi> pageWebKpiForWholeSiteMap) {
-        logger.info("analyze page vv/jumpTimes/stayTime of {}:{} started", tType, time);
+        logger.info("analyze whole site vv/jumpTimes/stayTime of {}:{} started", tType, time);
         // concatenate the sql to query visit views
         String sqlStr = "select country, area, region, city, couty, isp, realReferer, adId, count(*), max(`timestamp`) - min(`timestamp`) from " +
                 "(" + selectRealReferer(time, startTimeStamp, endTimeStamp) + ") t " +
-                "group by country, area, region, city, couty, isp, cookie_sessionid, realReferer, adId";
+                "group by country, area, region, city, couty, isp, sid, realReferer, adId";
 
         List<List<String>> resultList = impalaOperator.query(sqlStr);
         for (List<String> result : resultList) {
             String country = StringUtils.isBlank(result.get(0)) ? Constants.default_country : result.get(0);
-            String area = result.get(1);
-            String province = result.get(2);
-            String city = result.get(3);
-            String county = result.get(4);
-            String isp = result.get(5);
+            String area = result.get(1) == null ? "" : result.get(1);
+            String province = result.get(2) == null ? "" : result.get(2);
+            String city = result.get(3) == null ? "" : result.get(3);
+            String county = result.get(4) == null ? "" : result.get(4);
+            String isp = result.get(5) == null ? "" : result.get(5);
 
-            String source = result.get(6);
+            String source = result.get(6) == null ? "" : result.get(6);
             FlowSource flowSource = DataCube.findSourceByUrl(source);
 
-            String adId = result.get(7);
+            String adId = result.get(7) == null ? "" : result.get(7);
             Channel channel = DataCube.findChannelByCode(adId);
 
             String key = country + area + province + city + county + isp + flowSource.getId() + channel.getId();
@@ -302,17 +302,17 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
                 pageWebKpiForWholeSiteMap.put(key, webKpi);
             }
             // 7th is every sid's visit views
-            int vTimes = Integer.parseInt(result.get(8));
+            int vTimes = Integer.parseInt(result.get(8) == null ? "0" : result.get(8));
             // if the session just have one visit, the number of jump add one
             if (vTimes == 1)
                 webKpi.setTotalJump(webKpi.getTotalJump() + 1);
             // VV + 1
             webKpi.setVv(webKpi.getVv() + 1);
             // 8th is this session's stay time.
-            int sTime = (int) (Long.parseLong(result.get(9)) / 1000);
+            long sTime = Long.parseLong(result.get(9) == null ? "0" : result.get(9));
             webKpi.setStayTime(webKpi.getStayTime() + sTime);
         }
-        logger.info("analyze page vv/jumpTimes/stayTime of {}:{} finished.", tType, time);
+        logger.info("analyze whole site vv/jumpTimes/stayTime of {}:{} finished.", tType, time);
     }
 
     /**
@@ -325,9 +325,9 @@ public class PageAnalyzeForWholeSite extends PageAnalyze {
      * @return realReferer sql
      */
     private String selectRealReferer(Date time, long startTimeStamp, long endTimeStamp) {
-        return "select t1.realReferer , t2.* from " + "(select cookie_sessionid, max(referer) as realReferer from " +
+        return "select t1.realReferer, t2.* from iunilog t2 left join (select sid, max(referer) as realReferer from " +
                 logTableName + " where connection_requests = 1 " + super.transTimeCondition(time, startTimeStamp, endTimeStamp) +
-                " group by cookie_sessionid) t1, " + logTableName + " t2 where t1.cookie_sessionid = t2.cookie_sessionid" +
+                " group by sid) t1 on t1.sid = t2.sid where 1 = 1 " +
                 super.transTimeCondition(time, startTimeStamp, endTimeStamp);
     }
 

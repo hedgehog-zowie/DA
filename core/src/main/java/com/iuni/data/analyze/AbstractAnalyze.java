@@ -5,7 +5,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.iuni.data.Analyze;
 import com.iuni.data.Context;
 import com.iuni.data.common.Constants;
-import com.iuni.data.common.DateUtils;
+import com.iuni.data.utils.DateUtils;
 import com.iuni.data.common.TType;
 import com.iuni.data.conf.Configurable;
 import com.iuni.data.lifecycle.LifecycleAware;
@@ -66,15 +66,19 @@ public abstract class AbstractAnalyze implements Analyze, LifecycleAware, Config
                     endDate = DateUtils.transDateByTType(sequenceGenerator.next(new Date()), tType);
                     switch (tType) {
                         case DAY:
+                            endDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
                             startDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
                             break;
                         case HOUR:
+                            endDate = new Date(endDate.getTime() - 60 * 60 * 1000);
                             startDate = new Date(endDate.getTime() - 60 * 60 * 1000);
                             break;
                         case MINUTE:
+                            endDate = new Date(endDate.getTime() - 60 * 1000);
                             startDate = new Date(endDate.getTime() - 60 * 1000);
                             break;
                         default:
+                            endDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
                             startDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
                             break;
                     }

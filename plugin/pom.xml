@@ -12,7 +12,7 @@
     <artifactId>da-plugin</artifactId>
 
     <build>
-        <finalName>lib/da-flume-plugin</finalName>
+        <finalName>lib/da-flume-plugin-${parent.version}</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>

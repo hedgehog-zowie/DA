@@ -25,3 +25,7 @@ deleteall 'iunilog', '9a3b7773-a7d2-46c7-a9cb-849c884cfce4'
 
 create 'prd', 'f', SPLITS => ['pv', 'cgi', 'click']
 
+get_counter 'prd', 'totalRow', 'f:iCol', 0
+
+describe 'prd'
+

@@ -19,6 +19,7 @@ public enum HbaseColumns {
     COLUMN_COUNTY("county"),
     COLUMN_ISP("isp"),
     COLUMN_USER("user"),
+    COLUMN_VK("vk"),
     COLUMN_SID("sid"),
     ;
 

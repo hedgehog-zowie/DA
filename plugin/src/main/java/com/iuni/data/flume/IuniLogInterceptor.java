@@ -6,13 +6,13 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.iuni.data.common.DateUtils;
-import com.iuni.data.common.IuniStringUtils;
-import com.iuni.data.common.UrlUtils;
+import com.iuni.data.IpLib;
+import com.iuni.data.utils.DateUtils;
+import com.iuni.data.utils.StringUtils;
+import com.iuni.data.utils.UrlUtils;
 import com.iuni.data.exceptions.IuniDADateFormatException;
 import com.iuni.data.hbase.sindex.HbaseColumns;
 import com.iuni.data.iplib.IpInfo;
-import com.iuni.data.IpLib;
 import com.iuni.data.iplib.MaterializedConfiguration;
 import com.iuni.data.iplib.PollingPropertiesFileConfigurationProvider;
 import com.iuni.data.lifecycle.LifecycleState;
@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
@@ -44,6 +45,8 @@ public class IuniLogInterceptor implements Interceptor {
     private final int requestTimeIndex;
     private final int ipIndex;
     private final int refererIndex;
+    private final int cookieIndex;
+    private final int vkIndex;
     private final int userIndex;
     private final int sidIndex;
     private final String adIdFlag;
@@ -62,7 +65,7 @@ public class IuniLogInterceptor implements Interceptor {
     private final LifecycleSupervisor supervisor;
 
     private IuniLogInterceptor(int statusIndex, int requestIndex, int domainIndex, int requestTimeIndex,
-                               int ipIndex, int refererIndex, int userIndex, int sidIndex,
+                               int ipIndex, int refererIndex, int cookieIndex, int vkIndex, int userIndex, int sidIndex,
                                String adIdFlag, List<StaticResSerializer> staticResList,
                                String host, Date startDate, String ipLibName, String ipLibConf) {
         this.statusIndex = statusIndex;
@@ -71,6 +74,8 @@ public class IuniLogInterceptor implements Interceptor {
         this.requestTimeIndex = requestTimeIndex;
         this.ipIndex = ipIndex;
         this.refererIndex = refererIndex;
+        this.cookieIndex = cookieIndex;
+        this.vkIndex = vkIndex;
         this.userIndex = userIndex;
         this.sidIndex = sidIndex;
 
@@ -123,13 +128,18 @@ public class IuniLogInterceptor implements Interceptor {
      */
     public Event intercept(Event event) {
         String bodyStr = new String(event.getBody(), Charsets.UTF_8);
+//        try {
+//            bodyStr = URLDecoder.decode(bodyStr, "UTF-8");
+//        } catch (Exception e) {
+//            logger.error("decode log error. logstring: {}", bodyStr);
+//        }
         if (org.apache.commons.lang.StringUtils.isBlank(bodyStr)) {
             logger.error("log is empty.");
             return null;
         }
         String[] bodys = bodyStr.split(spliter);
         if (!(bodys.length > this.statusIndex && bodys.length > this.requestIndex && bodys.length > this.refererIndex)) {
-            logger.error("log bodys max lager than statusIndex, requestIndex and refererIndex, " +
+            logger.error("log bodys must lager than statusIndex, requestIndex and refererIndex, " +
                             "log is: {}, statusIndex is: {}, requestIndex is: {}, refererIndex is: {}",
                     bodyStr, statusIndex, requestIndex, refererIndex);
             return null;
@@ -168,11 +178,19 @@ public class IuniLogInterceptor implements Interceptor {
             String requestUrl = "";
             String protocol = "";
             String adIdStr = "";
-            String requestField = IuniStringUtils.trimQuotes(bodys[this.requestIndex]);
+            String requestField = StringUtils.trimQuotes(bodys[this.requestIndex]);
 
             String[] requestFields = requestField.split("\\s+");
             if (requestFields.length == 3) {
                 String request = requestFields[1].trim();
+
+                // decode url
+                try {
+                    request = URLDecoder.decode(request, "UTF-8").replace("\r\n", "").replace("\n", "");
+                } catch (Exception e) {
+                    logger.error("decode request error. request is: {}", request);
+                }
+
                 String[] arrayOfReqUrl = request.split("\\?");
                 requestUrl = arrayOfReqUrl[0].trim();
 
@@ -195,7 +213,7 @@ public class IuniLogInterceptor implements Interceptor {
                     for (int i = 0; i < params.length; i++) {
                         String param = params[i];
                         String[] arrayOfParam = param.split("=");
-                        if ((this.adIdFlag.equals(arrayOfParam[0])) && (arrayOfParam.length == 2)) {
+                        if ((this.adIdFlag.toLowerCase().equals(arrayOfParam[0].toLowerCase())) && (arrayOfParam.length == 2)) {
                             adIdStr = arrayOfParam[1];
                             break;
                         }
@@ -229,10 +247,28 @@ public class IuniLogInterceptor implements Interceptor {
         if (bodys.length > this.refererIndex) {
             String referer;
             String refererField = bodys[this.refererIndex].trim();
+
+            // decode url
+            try {
+                refererField = URLDecoder.decode(refererField, "UTF-8").replace("\r\n", "").replace("\n", "");
+            } catch (Exception e) {
+                logger.error("decode referer url error. referer url is: {}", refererField);
+            }
+
             String[] refererFields = refererField.split("\\?");
-            referer = IuniStringUtils.trimQuotes(refererFields[0]);
-            if (!IuniStringUtils.isNullStr(referer)) {
+            referer = StringUtils.trimQuotes(refererFields[0]);
+
+            if (!StringUtils.isNullStr(referer)) {
                 headers.put(HbaseColumns.COLUMN_HTTP_REFERER.getName(), referer);
+            }
+        }
+
+        // 分析cookie,检查是否存在adId
+        if (bodys.length > this.cookieIndex) {
+            Map<String, String> cookieMap = StringUtils.parseCookieStr(bodys[this.cookieIndex].trim());
+            for (Map.Entry<String, String> cookie : cookieMap.entrySet()) {
+                if ("ad_id".equals(cookie.getKey().toLowerCase()))
+                    headers.put(HbaseColumns.COLUMN_ADID.getName(), cookie.getValue());
             }
         }
 
@@ -241,10 +277,12 @@ public class IuniLogInterceptor implements Interceptor {
             headers.put(HbaseColumns.COLUMN_HOST.getName(), this.host);
         }
 
+        String ipStr = "";
         if (bodys.length > this.ipIndex) {
             IpInfo ipinfo = null;
             try {
-                ipinfo = ipLib.getIpInfo(bodys[this.ipIndex]);
+                ipStr = bodys[this.ipIndex];
+                ipinfo = ipLib.getIpInfo(ipStr);
             } catch (Exception e) {
                 logger.error("get ipinfo failed, ip string is: {}, {}", bodys[this.ipIndex], e);
             }
@@ -271,17 +309,36 @@ public class IuniLogInterceptor implements Interceptor {
         }
 
         StringBuilder sbd = new StringBuilder();
+
         for (int i = 0; i < bodys.length; i++) {
-            String value = IuniStringUtils.trimQuotes(bodys[i]);
+            String value = StringUtils.trimQuotes(bodys[i]);
             if ((i == this.requestTimeIndex) && (!checkRequestTimeField(value)))
                 value = "0.001";
             // 若检查到userIndex，且user非空，则将user添加到headers
-            if (this.userIndex == i && !IuniStringUtils.isNullStr(value)) {
+            if (this.userIndex == i && !StringUtils.isNullStr(value)) {
                 headers.put(HbaseColumns.COLUMN_USER.getName(), value);
             }
+            // 若检查到vkIndex, 则将vk添加到headers
+            if (this.vkIndex == i) {
+                // 若vk非空
+                if (!StringUtils.isNullStr(value)) {
+                    headers.put(HbaseColumns.COLUMN_VK.getName(), value);
+                }
+                // 若vk为空，写入ip
+                else {
+                    headers.put(HbaseColumns.COLUMN_VK.getName(), ipStr);
+                }
+            }
             // 若检查到sidIndex, 且sid非空，则将sid添加到headers
-            if (this.sidIndex == i && !IuniStringUtils.isNullStr(value)) {
-                headers.put(HbaseColumns.COLUMN_SID.getName(), value);
+            if (this.sidIndex == i) {
+                // 若sid非空
+                if (!StringUtils.isNullStr(value)) {
+                    headers.put(HbaseColumns.COLUMN_SID.getName(), value);
+                }
+                // 若sid为空，则写入vk
+                else {
+                    headers.put(HbaseColumns.COLUMN_SID.getName(), headers.get(HbaseColumns.COLUMN_VK.getName()));
+                }
             }
             sbd.append(value);
             if (i != bodys.length - 1)
@@ -361,6 +418,8 @@ public class IuniLogInterceptor implements Interceptor {
         private int requestTimeIndex = 3;
         private int ipIndex = 4;
         private int refererIndex = 12;
+        private int cookieIndex = 15;
+        private int vkIndex = 17;
         private int userIndex = 18;
         private int sidIndex = 19;
         private List<IuniLogInterceptor.StaticResSerializer> staticResList;
@@ -387,6 +446,10 @@ public class IuniLogInterceptor implements Interceptor {
             Preconditions.checkArgument(this.ipIndex >= 0, "ipIndex must greater than 0 and less than fieldSize");
             this.refererIndex = context.getInteger(Constants.REFERER_INDEX, Integer.valueOf(Constants.REFERER_INDEX_DFLT)).intValue();
             Preconditions.checkArgument(this.refererIndex >= 0, "refererIndex must greater than 0 and less than fieldSize");
+            this.cookieIndex = context.getInteger(Constants.COOKIE_INDEX, Integer.valueOf(Constants.COOKIE_INDEX_DFLT)).intValue();
+            Preconditions.checkArgument(this.cookieIndex >= 0, "cookieIndex must greater than 0 and less than fieldSize");
+            this.vkIndex = context.getInteger(Constants.COOKIE_VK_INDEX, Integer.valueOf(Constants.COOKIE_VK_INDEX_DEFAULT)).intValue();
+            Preconditions.checkArgument(this.vkIndex >= 0, "cookieVKIndex must greater than 0 and less than fieldSize");
             this.userIndex = context.getInteger(Constants.USER_INDEX, Integer.valueOf(Constants.USER_INDEX_DFLT)).intValue();
             Preconditions.checkArgument(this.userIndex >= 0, "userIndex must greater than 0 and less than fieldSize");
             this.sidIndex = context.getInteger(Constants.SID_INDEX, Integer.valueOf(Constants.SID_INDEX_DFLT)).intValue();
@@ -402,7 +465,7 @@ public class IuniLogInterceptor implements Interceptor {
                     this.host = addr.getCanonicalHostName();
                 }
             } catch (UnknownHostException e) {
-                IuniLogInterceptor.logger.warn("Could not get local host address. Exception follows.", e);
+                logger.warn("Could not get local host address. Exception follows.", e);
             }
             this.adIdFlag = context.getString("adId", "AD_ID");
             Preconditions.checkArgument(this.adIdFlag != null, "adidFlag can not be null.");
@@ -413,7 +476,7 @@ public class IuniLogInterceptor implements Interceptor {
                     logger.info("startDate: {}", startDateStr);
                     this.startDate = DateUtils.simpleDateStrToDate(startDateStr);
                 } catch (IuniDADateFormatException e) {
-                    logger.info("start format error: {}", e.getLocalizedMessage());
+                    logger.info("start date format error: {}", e.getLocalizedMessage());
                     this.startDate = new Date();
                 }
             }
@@ -452,7 +515,7 @@ public class IuniLogInterceptor implements Interceptor {
         private void configStaticList(Context context) {
             String staticResStr = context.getString("staticRes", "").trim();
             IuniLogInterceptor.logger.info("staticResStr: {}", staticResStr);
-            if (!IuniStringUtils.isEmpty(staticResStr)) {
+            if (!StringUtils.isEmpty(staticResStr)) {
                 String[] staticResNames = staticResStr.split("\\s+");
                 if (staticResNames.length == 0) {
                     return;
@@ -478,7 +541,7 @@ public class IuniLogInterceptor implements Interceptor {
             IuniLogInterceptor iuniLogInterceptor = null;
             try {
                 iuniLogInterceptor = new IuniLogInterceptor(this.statusIndex, this.requestIndex, this.domainIndex,
-                        this.requestTimeIndex, this.ipIndex, this.refererIndex, this.userIndex, this.sidIndex,
+                        this.requestTimeIndex, this.ipIndex, this.refererIndex, this.cookieIndex, this.vkIndex, this.userIndex, this.sidIndex,
                         this.adIdFlag, this.staticResList, this.host, this.startDate,
                         this.ipLibName, this.ipLibConf);
                 iuniLogInterceptor.initialize();
@@ -499,7 +562,7 @@ public class IuniLogInterceptor implements Interceptor {
         }
     }
 
-    public static class Constants {
+    class Constants {
         public static final String USE_IP = "useIP";
         public static final String HOST = "host";
         public static final boolean USE_IP_DFLT = true;
@@ -515,6 +578,10 @@ public class IuniLogInterceptor implements Interceptor {
         public static final int STATUS_INDEX_DFLT = 8;
         public static final String REFERER_INDEX = "refererIndex";
         public static final int REFERER_INDEX_DFLT = 12;
+        public static final String COOKIE_INDEX = "cookieIndex";
+        public static final int COOKIE_INDEX_DFLT = 15;
+        public static final String COOKIE_VK_INDEX = "cookieVKIndex";
+        public static final int COOKIE_VK_INDEX_DEFAULT = 17;
         public static final String USER_INDEX = "userIndex";
         public static final int USER_INDEX_DFLT = 18;
         public static final String SID_INDEX = "sidIndex";

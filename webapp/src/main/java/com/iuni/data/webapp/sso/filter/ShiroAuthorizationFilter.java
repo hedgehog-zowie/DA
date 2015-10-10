@@ -6,6 +6,7 @@ import com.iuni.data.webapp.sso.constants.SsoConstant;
 import com.iuni.data.webapp.sso.dto.ShiroUser;
 import com.iuni.data.webapp.sso.dto.SsoLoginCheckResult;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.UserFilter;
 import org.slf4j.Logger;
@@ -88,6 +89,7 @@ public class ShiroAuthorizationFilter extends UserFilter {
                     user.setPermission(result.getPermission());
                     if (session != null) {
                         session.setAttribute("user", user);
+                        session.setAttribute("menuList", user.getMenuList());
                     }
                 } catch (Exception e) {
                     logger.error("sso check login error: ", e);

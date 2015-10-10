@@ -4,10 +4,12 @@ import com.google.common.base.Preconditions;
 import com.iuni.data.Context;
 import com.iuni.data.analyze.cube.DataCube;
 import com.iuni.data.analyze.cube.Result;
-import com.iuni.data.common.*;
-import com.iuni.data.common.field.ClickField;
+import com.iuni.data.common.Constants;
+import com.iuni.data.common.DataType;
+import com.iuni.data.common.TType;
 import com.iuni.data.exceptions.IuniDADateFormatException;
 import com.iuni.data.hbase.HBaseOperator;
+import com.iuni.data.hbase.field.ClickField;
 import com.iuni.data.hive.HiveConnector;
 import com.iuni.data.hive.HiveOperator;
 import com.iuni.data.impala.ImpalaConnector;
@@ -17,6 +19,8 @@ import com.iuni.data.persist.domain.config.RTag;
 import com.iuni.data.persist.domain.config.RTagType;
 import com.iuni.data.persist.domain.webkpi.ClickWebKpi;
 import com.iuni.data.persist.domain.webkpi.PageWebKpi;
+import com.iuni.data.utils.DateUtils;
+import com.iuni.data.utils.UrlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -40,15 +44,11 @@ public class ActivityAnalyze extends AbstractAnalyze {
 
     private static final Logger logger = LoggerFactory.getLogger(ActivityAnalyze.class);
 
-    private String hiveDriver;
-    private String hiveUrl;
-    private String hiveUser;
-    private String hivePassword;
-    private String impalaDriver;
-    private String impalaUrl;
-    private String hbaseQuorum;
-
+    private HiveOperator hiveOperator;
+    private ImpalaOperator impalaOperator;
+    private HBaseOperator hBaseOperator;
     private String logTableName;
+
     private String pageReportTableName;
     private String pageReportTableName_cf;
     @Deprecated
@@ -72,26 +72,41 @@ public class ActivityAnalyze extends AbstractAnalyze {
      */
     @Override
     public void configure(Context context) {
+        // setBasicInfoForCreate partition flag
+        createPartition = context.getBoolean(Constants.createPartition, Constants.CREATE_PARTITION_DEFAULT);
+
         // hive config
-        hiveDriver = context.getString(Constants.hiveDriver);
+        String hiveDriver = context.getString(Constants.hiveDriver);
         Preconditions.checkState(hiveDriver != null, "The parameter " + Constants.hiveDriver + " must be specified");
-        hiveUrl = context.getString(Constants.hiveUrl);
+        String hiveUrl = context.getString(Constants.hiveUrl);
         Preconditions.checkState(hiveUrl != null, "The parameter " + Constants.hiveUrl + " must be specified");
-        hiveUser = context.getString(Constants.hiveUser, Constants.HIVE_USER_DEFAULT);
+        String hiveUser = context.getString(Constants.hiveUser, Constants.HIVE_USER_DEFAULT);
         Preconditions.checkState(hiveUser != null, "The parameter " + Constants.hiveUser + " must be specified");
-        hivePassword = context.getString(Constants.hivePassword, "");
+        String hivePassword = context.getString(Constants.hivePassword, "");
         Preconditions.checkState(hivePassword != null, "The parameter " + Constants.hivePassword + " must be specified");
-        logTableName = context.getString(Constants.hiveTableName, Constants.HIVE_TABLE_NAME);
+
+        HiveConnector hiveConnector = new HiveConnector(hiveUrl, hiveDriver, hiveUser, hivePassword);
+        hiveOperator = new HiveOperator(hiveConnector);
 
         // impala config
-        impalaDriver = context.getString(Constants.impalaDriver);
+        String impalaDriver = context.getString(Constants.impalaDriver);
         Preconditions.checkState(impalaDriver != null, "The parameter " + Constants.impalaDriver + " must be specified");
-        impalaUrl = context.getString(Constants.impalaUrl);
+        String impalaUrl = context.getString(Constants.impalaUrl);
         Preconditions.checkState(impalaUrl != null, "The parameter " + Constants.impalaUrl + " must be specified");
 
+        ImpalaConnector impalaConnector = new ImpalaConnector(impalaUrl, impalaDriver);
+        impalaOperator = new ImpalaOperator(impalaConnector);
+
+        // hive log table config
+        logTableName = context.getString(Constants.hiveCurrentTableName, Constants.HIVE_TABLE_NAME_CURRENT);
+
         // hbase config
-        hbaseQuorum = context.getString(Constants.hbaseQuorum);
+        String hbaseQuorum = context.getString(Constants.hbaseQuorum);
         Preconditions.checkState(hbaseQuorum != null, "The parameter " + Constants.hbaseQuorum + " must be specified");
+
+        hBaseOperator = new HBaseOperator(hbaseQuorum);
+
+        // hbase log table config
         pageReportTableName = context.getString(Constants.pageReportDataTable, Constants.pageReportDataTableDefault);
         pageReportTableName_cf = context.getString(Constants.pageReportDataTableCf, Constants.pageReportDataTableCfDefault);
         pageReportTableName_columnName = context.getString(Constants.pageReportDataTableColumn, Constants.pageReportDataTableColumnDefault);
@@ -122,24 +137,18 @@ public class ActivityAnalyze extends AbstractAnalyze {
         result.settType(tType);
         // if createPartition is true, then parse and add partitions
         if (createPartition) {
-            HiveConnector hiveConnector = new HiveConnector(hiveUrl, hiveDriver, hiveUser, hivePassword);
-            HiveOperator hiveOperator = new HiveOperator(hiveConnector);
             hiveOperator.parseAndAddPartitions(logTableName, startTime, endTime);
         }
         // invalidate metadata
-        ImpalaConnector impalaConnector = new ImpalaConnector(impalaUrl, impalaDriver);
-        ImpalaOperator impalaOperator = new ImpalaOperator(impalaConnector);
         impalaOperator.invalidateMetadata();
 
         Map<Date, Date> timeRangeMap = DateUtils.parseTimeRange(startTime, endTime, tType);
-//        result.setTimeRangeMap(timeRangeMap);
         for (Map.Entry<Date, Date> entry : timeRangeMap.entrySet()) {
             // analyze page pv and uv
             result.addPageWebKpi(analyzePage(entry.getKey(), entry.getKey().getTime(), entry.getValue().getTime(), tType));
             // analyze click pv
             result.addClickPageWebKpi(analyzeClickPv(entry.getKey().getTime(), entry.getValue().getTime(), tType));
         }
-//        return result;
     }
 
     /**
@@ -185,10 +194,7 @@ public class ActivityAnalyze extends AbstractAnalyze {
         logger.info("analyze page pv of {}:{} started", tType, time);
         // pv
         String pvSqlStr = "select adId, url, count(*) from " + logTableName + " where 1 = 1 " + transTimeCondition(time, startTimeStamp, endTimeStamp) + " group by adId, url";
-        ImpalaConnector impalaConnector = new ImpalaConnector(impalaUrl, impalaDriver);
-        ImpalaOperator impalaOperator = new ImpalaOperator(impalaConnector);
         List<List<String>> pvResultList = impalaOperator.query(pvSqlStr);
-        impalaConnector.close();
         for (List<String> pvResult : pvResultList) {
             String adId = pvResult.get(0);
             String url = pvResult.get(1);
@@ -226,10 +232,7 @@ public class ActivityAnalyze extends AbstractAnalyze {
     private void analyzePageUv(TType tType, Date time, long startTimeStamp, long endTimeStamp, Map<String, PageWebKpi> pageWebKpiMap) {
         logger.info("analyze page uv of {}:{} started", tType, time);
         String uvSqlStr = "select adId, url, count(distinct cookie_vk) from " + logTableName + " where 1 = 1 " + transTimeCondition(time, startTimeStamp, endTimeStamp) + " group by adId, url";
-        ImpalaConnector impalaConnector = new ImpalaConnector(impalaUrl, impalaDriver);
-        ImpalaOperator impalaOperator = new ImpalaOperator(impalaConnector);
         List<List<String>> uvResultList = impalaOperator.query(uvSqlStr);
-        impalaConnector.close();
         for (List<String> uvResult : uvResultList) {
             String adId = uvResult.get(0);
             String url = uvResult.get(1);
@@ -274,7 +277,6 @@ public class ActivityAnalyze extends AbstractAnalyze {
         scan.setBatch(Constants.default_batch_size);
         scan.setCaching(Constants.default_catch_size);
         scan.setCacheBlocks(Constants.default_catch_blocks);
-        HBaseOperator hBaseOperator = new HBaseOperator(hbaseQuorum);
         List<org.apache.hadoop.hbase.client.Result> resultList = hBaseOperator.query(pageReportTableName, scan);
         for (org.apache.hadoop.hbase.client.Result result : resultList) {
             String url = Bytes.toString(result.getValue(Bytes.toBytes(pageReportTableName_cf), Bytes.toBytes(ClickField.url.getRealFiled())));

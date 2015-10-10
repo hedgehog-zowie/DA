@@ -40,3 +40,7 @@ drop table IUNI_DA_CHAIN cascade constraints;
 alter table IUNI_DA_RTAG drop constraint FK_RTAT_TYPE_ID;
 drop table IUNI_DA_RTAG cascade constraints;
 drop table IUNI_DA_RTAG_TYPE cascade constraints;
+
+-- user defin
+drop table IUNI_DA_USER_DEFINED_REPORT cascade constraints;
+drop table IUNI_DA_USER_CHAIN cascade constraints;

@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.activity.ActivityChannelMapper">
+
+    <!-- 活动渠道统计 -->
+    <select id="selectActivityChannel" resultType="com.iuni.data.persist.model.activity.ChannelTableDto"
+            parameterType="com.iuni.data.persist.model.activity.ChannelQueryDto">
+        SELECT T1."time",
+        IDC.NAME "channelName",
+        IDC.CODE "channelCode",
+        IDC.PROMOTION_URL "channelUrl",
+        T1."pv",
+        T1."uv",
+        T1."vv",
+        CASE
+        WHEN T1."vv" = 0 THEN
+        0
+        ELSE
+        T1."totalJump" / T1."vv"
+        END "jumpRate",
+        CASE
+        WHEN T1."uv" = 0 THEN
+        0
+        ELSE
+        T1."pv" / T1."uv"
+        END "avrPages",
+        CASE
+        WHEN T1."vv" = 0 THEN
+        0
+        ELSE
+        T1."pv" / T1."vv"
+        END "avrDeeps",
+        CASE
+        WHEN T1."vv" = 0 THEN
+        0
+        ELSE
+        T1."stayTime" / T1."vv"
+        END "avrTimes",
+        T2."ruv",
+        T3."rsNum",
+        T2."ruv" / T1."uv" "rRate",
+        T3."rsNum" / T2."ruv" "rsRate",
+        T4."orderNum" "orderNum",
+        T4."orderAmount" "orderAmount",
+        T4."orderNum" / T1."uv" "orderTrans",
+        T5."orderNum" "paidOrderNum",
+        T5."orderNum" / T4."orderNum" "payRate",
+        T5."orderAmount" "paidOrderAmount"，
+        T4."orderAmount" / T4."orderNum" "avgAmount"
+        FROM (SELECT IDW.TIME "time",
+        IDW.CHANNEL_ID "channelId",
+        SUM(IDW.PV) "pv",
+        SUM(IDW.UV) "uv",
+        SUM(IDW.VV) "vv",
+        SUM(IDW.STAY_TIME) / 1000 "stayTime",
+        SUM(IDW.TOTAL_JUMP) "totalJump"
+        FROM IUNI_DA_WEBKPI IDW
+        WHERE IDW.TTYPE = 'dd'
+        <if test="startDateStr != null">
+            <![CDATA[ AND IDW.TIME >= TO_DATE(#{startDateStr}, 'YYYY/MM/DD') ]]>
+        </if>
+        <if test="endDateStr != null">
+            <![CDATA[ AND IDW.TIME < TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1 ]]>
+        </if>
+        GROUP BY IDW.TIME, IDW.CHANNEL_ID) T1
+        LEFT JOIN (SELECT IDWP.TIME "time",
+        IDWP.CHANNEL_ID "channelId",
+        SUM(IDWP.UV) "ruv"
+        FROM IUNI_DA_WEBKPI_PAGE IDWP
+        WHERE IDWP.PAGE LIKE '%register%'
+        AND IDWP.TTYPE = 'dd'
+        <if test="startDateStr != null">
+            <![CDATA[ AND IDWP.TIME >= TO_DATE(#{startDateStr}, 'YYYY/MM/DD') ]]>
+        </if>
+        <if test="endDateStr != null">
+            <![CDATA[ AND IDWP.TIME < TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1 ]]>
+        </if>
+        GROUP BY IDWP.TIME, IDWP.CHANNEL_ID) T2
+        ON T1."time" = T2."time"
+        AND T1."channelId" = T2."channelId"
+        LEFT JOIN IUNI_DA_CHANNEL IDC
+        ON T1."channelId" = IDC.ID
+        LEFT JOIN (SELECT TO_DATE(TO_CHAR(IU.REGISTER_TIME, 'YYYY/MM/DD'),
+        'YYYY/MM/DD') "time",
+        IU.IUNI_AD_ID "adId",
+        COUNT(1) "rsNum"
+        FROM IUNI_USER IU
+        WHERE 1 = 1
+        <if test="startDateStr != null">
+            <![CDATA[ AND IU.REGISTER_TIME >= TO_DATE(#{startDateStr}, 'YYYY/MM/DD') ]]>
+        </if>
+        <if test="endDateStr != null">
+            <![CDATA[ AND IU.REGISTER_TIME < TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1 ]]>
+        </if>
+        GROUP BY TO_CHAR(IU.REGISTER_TIME, 'YYYY/MM/DD'),
+        IU.IUNI_AD_ID) T3
+        ON T3."time" = T1."time"
+        AND T3."adId" = IDC.CODE
+        LEFT JOIN (SELECT TO_DATE(TO_CHAR(UNIX_TO_ORACLE(IOI.ADD_TIME), 'YYYY/MM/DD'),
+        'YYYY/MM/DD') "time",
+        TO_CHAR(IOI.FROM_AD) "adId",
+        COUNT(1) "orderNum",
+        SUM(IOI.ORDER_AMOUNT) "orderAmount"
+        FROM IUNI_ORDER_INFO IOI
+        WHERE 1 = 1
+        <if test="startDateStr != null">
+            <![CDATA[ AND UNIX_TO_ORACLE(IOI.ADD_TIME) >= TO_DATE(#{startDateStr}, 'YYYY/MM/DD') ]]>
+        </if>
+        <if test="endDateStr != null">
+            <![CDATA[ AND UNIX_TO_ORACLE(IOI.ADD_TIME) < TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1 ]]>
+        </if>
+        GROUP BY TO_CHAR(UNIX_TO_ORACLE(IOI.ADD_TIME), 'YYYY/MM/DD'),
+        IOI.FROM_AD) T4
+        ON T4."time" = T1."time" AND T4."adId" = IDC.CODE
+        LEFT JOIN (SELECT TO_DATE(TO_CHAR(UNIX_TO_ORACLE(IOI.ADD_TIME), 'YYYY/MM/DD'),
+        'YYYY/MM/DD') "time",
+        TO_CHAR(IOI.FROM_AD) "adId",
+        COUNT(1) "orderNum",
+        SUM(IOI.ORDER_AMOUNT) "orderAmount"
+        FROM IUNI_ORDER_INFO IOI
+        WHERE IOI.PAY_STATUS = 'paid'
+        <if test="startDateStr != null">
+            <![CDATA[ AND UNIX_TO_ORACLE(IOI.ADD_TIME) >= TO_DATE(#{startDateStr}, 'YYYY/MM/DD') ]]>
+        </if>
+        <if test="endDateStr != null">
+            <![CDATA[ AND UNIX_TO_ORACLE(IOI.ADD_TIME) < TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1 ]]>
+        </if>
+        GROUP BY TO_CHAR(UNIX_TO_ORACLE(IOI.ADD_TIME), 'YYYY/MM/DD'), IOI.FROM_AD) T5
+        ON T5."time" = T1."time" AND T5."adId" = IDC.CODE
+        WHERE 1 = 1
+        AND IDC.STATUS = 1
+        AND IDC.CANCEL_FLAG = 0
+        <if test="channel != null and channel.code != null">
+            AND IDC.CODE LIKE '%' || #{channel.code} || '%'
+        </if>
+        <if test="channel != null and channel.channelType != null">
+            AND IDC.CODE LIKE #{channel.channelType} || '%'
+        </if>
+        ORDER BY T1."time", T1."channelId"
+    </select>
+
+    <select id="selectOrderByActivityChannel" resultType="com.iuni.data.persist.model.activity.ChannelChartDto"
+            parameterType="com.iuni.data.persist.model.activity.ChannelQueryDto">
+        SELECT IDC.NAME "name", COUNT(1) "value"
+        FROM IUNI_ORDER_INFO IOI
+        LEFT JOIN IUNI_DA_CHANNEL IDC
+        ON TO_CHAR(IOI.FROM_AD) = IDC.CODE
+        WHERE 1 = 1
+        AND IDC.STATUS = 1
+        AND IDC.CANCEL_FLAG = 0
+        <if test="channel != null and channel.code != null">
+            AND IDC.CODE LIKE '%' || #{channel.code} || '%'
+        </if>
+        <if test="channel != null and channel.channelType != null">
+            AND IDC.CODE LIKE #{channel.channelType} || '%'
+        </if>
+        <if test="startDateStr != null">
+            <![CDATA[ AND UNIX_TO_ORACLE(IOI.ADD_TIME) >= TO_DATE(#{startDateStr}, 'YYYY/MM/DD') ]]>
+        </if>
+        <if test="endDateStr != null">
+            <![CDATA[ AND UNIX_TO_ORACLE(IOI.ADD_TIME) < TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1 ]]>
+        </if>
+        GROUP BY IDC.NAME
+    </select>
+
+    <select id="selectPaidOrderByActivityChannel" resultType="com.iuni.data.persist.model.activity.ChannelChartDto"
+            parameterType="com.iuni.data.persist.model.activity.ChannelQueryDto">
+        SELECT IDC.NAME "name", COUNT(1) "value"
+        FROM IUNI_ORDER_INFO IOI
+        LEFT JOIN IUNI_DA_CHANNEL IDC
+        ON TO_CHAR(IOI.FROM_AD) = IDC.CODE
+        WHERE 1 = 1
+        AND IDC.STATUS = 1
+        AND IDC.CANCEL_FLAG = 0
+        <if test="channel != null and channel.code != null">
+            AND IDC.CODE LIKE '%' || #{channel.code} || '%'
+        </if>
+        <if test="channel != null and channel.channelType != null">
+            AND IDC.CODE LIKE #{channel.channelType} || '%'
+        </if>
+        <if test="startDateStr != null">
+            <![CDATA[ AND UNIX_TO_ORACLE(IOI.PAY_TIME) >= TO_DATE(#{startDateStr}, 'YYYY/MM/DD') ]]>
+        </if>
+        <if test="endDateStr != null">
+            <![CDATA[ AND UNIX_TO_ORACLE(IOI.PAY_TIME) < TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1 ]]>
+        </if>
+        GROUP BY IDC.NAME
+    </select>
+
+    <select id="selectPVByActivityChannel" resultType="com.iuni.data.persist.model.activity.ChannelChartDto"
+            parameterType="com.iuni.data.persist.model.activity.ChannelQueryDto">
+        SELECT IDC.NAME "name", SUM(IDW.PV) "value"
+        FROM IUNI_DA_WEBKPI IDW
+        LEFT JOIN IUNI_DA_CHANNEL IDC
+        ON IDW.CHANNEL_ID = IDC.ID
+        WHERE 1 = 1
+        AND IDC.STATUS = 1
+        AND IDC.CANCEL_FLAG = 0
+        <if test="channel != null and channel.code != null">
+            AND IDC.CODE LIKE '%' || #{channel.code} || '%'
+        </if>
+        <if test="channel != null and channel.channelType != null">
+            AND IDC.CODE LIKE #{channel.channelType} || '%'
+        </if>
+        <if test="startDateStr != null">
+            <![CDATA[ AND IDW.TIME >= TO_DATE(#{startDateStr}, 'YYYY/MM/DD') ]]>
+        </if>
+        <if test="endDateStr != null">
+            <![CDATA[ AND IDW.TIME < TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1 ]]>
+        </if>
+        GROUP BY IDC.NAME
+    </select>
+
+    <select id="selectUVByActivityChannel" resultType="com.iuni.data.persist.model.activity.ChannelChartDto"
+            parameterType="com.iuni.data.persist.model.activity.ChannelQueryDto">
+        SELECT IDC.NAME "name", SUM(IDW.UV) "value"
+        FROM IUNI_DA_WEBKPI IDW
+        LEFT JOIN IUNI_DA_CHANNEL IDC
+        ON IDW.CHANNEL_ID = IDC.ID
+        WHERE 1 = 1
+        AND IDC.STATUS = 1
+        AND IDC.CANCEL_FLAG = 0
+        <if test="channel != null and channel.code != null">
+            AND IDC.CODE LIKE '%' || #{channel.code} || '%'
+        </if>
+        <if test="channel != null and channel.channelType != null">
+            AND IDC.CODE LIKE #{channel.channelType} || '%'
+        </if>
+        <if test="startDateStr != null">
+            <![CDATA[ AND IDW.TIME >= TO_DATE(#{startDateStr}, 'YYYY/MM/DD') ]]>
+        </if>
+        <if test="endDateStr != null">
+            <![CDATA[ AND IDW.TIME < TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1 ]]>
+        </if>
+        GROUP BY IDC.NAME
+    </select>
+
+    <select id="selectVVByActivityChannel" resultType="com.iuni.data.persist.model.activity.ChannelChartDto"
+            parameterType="com.iuni.data.persist.model.activity.ChannelQueryDto">
+        SELECT IDC.NAME "name", SUM(IDW.VV) "value"
+        FROM IUNI_DA_WEBKPI IDW
+        LEFT JOIN IUNI_DA_CHANNEL IDC
+        ON IDW.CHANNEL_ID = IDC.ID
+        WHERE 1 = 1
+        AND IDC.STATUS = 1
+        AND IDC.CANCEL_FLAG = 0
+        <if test="channel != null and channel.code != null">
+            AND IDC.CODE LIKE '%' || #{channel.code} || '%'
+        </if>
+        <if test="channel != null and channel.channelType != null">
+            AND IDC.CODE LIKE #{channel.channelType} || '%'
+        </if>
+        <if test="startDateStr != null">
+            <![CDATA[ AND IDW.TIME >= TO_DATE(#{startDateStr}, 'YYYY/MM/DD') ]]>
+        </if>
+        <if test="endDateStr != null">
+            <![CDATA[ AND IDW.TIME < TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1 ]]>
+        </if>
+        GROUP BY IDC.NAME
+    </select>
+
+</mapper>

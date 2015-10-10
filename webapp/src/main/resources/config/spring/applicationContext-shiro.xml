@@ -28,7 +28,7 @@
 				<!-- 访问授权 -->
 				<entry key="authz" value-ref="authorizationFilter"/>
 				<!-- 退出 
-				<entry key="logout" value-ref="logoutFilter"/>-->
+				<entry name="logout" value-ref="logoutFilter"/>-->
 			</map>
 		</property>
 		<property name="filterChainDefinitions">

@@ -1,6 +1,6 @@
 package com.iuni.data.common.hbase;
 
-import com.iuni.data.common.HexStringSplit;
+import com.iuni.data.hbase.HexStringSplit;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.*;

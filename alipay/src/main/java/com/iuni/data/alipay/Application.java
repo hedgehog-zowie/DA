@@ -2,7 +2,7 @@ package com.iuni.data.alipay;
 
 import com.google.common.base.Preconditions;
 import com.iuni.data.common.Constants;
-import com.iuni.data.common.DateUtils;
+import com.iuni.data.utils.DateUtils;
 import com.taobao.api.ApiException;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ public class Application {
 
             ApplicationContext ctx = new ClassPathXmlApplicationContext("spring-service.xml");
             TopService topService = (TopService) ctx.getBean("topService");
-            topService.getAliData(startDate, endDate);
+            topService.getPayData(startDate, endDate);
         } else
             SpringApplication.run(ScheduledTasks.class);
     }

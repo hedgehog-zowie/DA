@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="iuniWeixinPay">
+
+    <select id="selectIuniWeixinPay">
+        SELECT T.TRADE_DATE "tradeDate",
+        T.WX_ORDER_NO "wxOrderSn",
+        T.MCH_ORDER_SN "mchOrderSn",
+        T.MERCHANDISE "merchandise",
+        T.USER_SIGN "userSign",
+        CASE T.TRADE_STATUS
+        WHEN 'SUCCESS' THEN
+        '买家已支付'
+        WHEN 'REFUND' THEN
+        '转入退款'
+        ELSE
+        T.TRADE_STATUS
+        END "status",
+        CASE T.WX_REFUND_SN
+        WHEN '0' THEN
+        T.AMOUNT
+        ELSE
+        T.REFUND
+        END "amount",
+        CASE T.CURRENCY
+        WHEN 'CNY' THEN '人民币'
+        ELSE T.CURRENCY END "currency",
+        CASE T.WX_REFUND_SN
+        WHEN '0' THEN
+        T.DISCOUNT
+        ELSE
+        REFUND_DISCOUNT
+        END "discount"
+        FROM IUNI_DA_WEIXIN_PAY_BILL_DETAIL T
+        where 1 = 1
+        <if test="orderCode != null">
+            AND T.MERCHANDISE LIKE '%' || #orderCode# || '%'
+        </if>
+        <if test="beginDate != null">
+            AND TO_DATE(T.TRADE_DATE, 'YYYY-MM-DD HH24:MI:SS') <![CDATA[ >= ]]> TO_DATE(#beginDate#, 'YYYY-MM-DD')
+        </if>
+        <if test="endDate != null">
+            AND TO_DATE(T.TRADE_DATE, 'YYYY-MM-DD HH24:MI:SS') <![CDATA[ < ]]> TO_DATE(#endDate#, 'YYYY-MM-DD') + 1
+        </if>
+        ORDER BY T.TRADE_DATE
+    </select>
+
+</mapper>

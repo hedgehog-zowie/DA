@@ -1,6 +1,6 @@
 package com.iuni.data.ws.service.impl;
 
-import com.iuni.data.common.CryptUtils;
+import com.iuni.data.utils.CryptUtils;
 import com.iuni.data.ws.service.SignatureService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +32,9 @@ public class SignatureServiceImpl implements SignatureService {
         try {
             timestamp = CryptUtils.decrypt3DES(request.getParameter("code"), secret);
             data = CryptUtils.decrypt3DES(request.getParameter("data"), secret);
-            nSign = CryptUtils.generateSign(data, timestamp, secret);
+            nSign = CryptUtils.generateAlipaySign(data, timestamp, secret);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("check sign error, ", e);
         }
         if (!sign.equals(nSign))
             return false;

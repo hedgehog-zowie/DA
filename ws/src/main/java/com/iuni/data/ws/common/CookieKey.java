@@ -7,7 +7,9 @@ package com.iuni.data.ws.common;
 public enum CookieKey {
     VK("vk"),
     SID("sid"),
-    UID("uid");
+    UID("uid"),
+    ADID("ad_id");
+
     private String key;
     private String value;
 

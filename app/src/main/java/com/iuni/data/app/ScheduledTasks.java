@@ -1,7 +1,7 @@
 package com.iuni.data.app;
 
 import com.iuni.data.Analyze;
-import com.iuni.data.common.DateUtils;
+import com.iuni.data.utils.DateUtils;
 import com.iuni.data.common.TType;
 import com.iuni.data.persist.domain.config.Channel;
 import com.iuni.data.persist.domain.config.RTag;

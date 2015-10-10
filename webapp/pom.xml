@@ -15,41 +15,6 @@
 
     <dependencies>
 
-        <dependency>
-            <groupId>com.iuni.data</groupId>
-            <artifactId>da-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-common</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.hive</groupId>
-                    <artifactId>hive-jdbc</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.hive</groupId>
-                    <artifactId>hive-metastore</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.hive</groupId>
-                    <artifactId>hive-service</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.hbase</groupId>
-                    <artifactId>hbase-common</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.hbase</groupId>
-                    <artifactId>hbase-server</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.hbase</groupId>
-                    <artifactId>hbase-client</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
         <!--spring begin-->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -153,36 +118,56 @@
         <!--servlet-api end-->
 
         <!--jasperreports begin-->
-        <dependency>
-            <groupId>net.sf.jasperreports</groupId>
-            <artifactId>jasperreports</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.olap4j</groupId>
-                    <artifactId>olap4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>commons-collections</artifactId>
-                    <groupId>commons-collections</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>commons-beanutils</artifactId>
-                    <groupId>commons-beanutils</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>commons-digester</artifactId>
-                    <groupId>commons-digester</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>commons-logging</artifactId>
-                    <groupId>commons-logging</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.iuni.data</groupId>
-            <artifactId>font-simfang</artifactId>
-        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>net.sf.jasperreports</groupId>-->
+        <!--<artifactId>jasperreports</artifactId>-->
+        <!--<exclusions>-->
+        <!--<exclusion>-->
+        <!--<groupId>org.olap4j</groupId>-->
+        <!--<artifactId>olap4j</artifactId>-->
+        <!--</exclusion>-->
+        <!--<exclusion>-->
+        <!--<artifactId>commons-collections</artifactId>-->
+        <!--<groupId>commons-collections</groupId>-->
+        <!--</exclusion>-->
+        <!--<exclusion>-->
+        <!--<artifactId>commons-beanutils</artifactId>-->
+        <!--<groupId>commons-beanutils</groupId>-->
+        <!--</exclusion>-->
+        <!--<exclusion>-->
+        <!--<artifactId>commons-digester</artifactId>-->
+        <!--<groupId>commons-digester</groupId>-->
+        <!--</exclusion>-->
+        <!--<exclusion>-->
+        <!--<artifactId>commons-logging</artifactId>-->
+        <!--<groupId>commons-logging</groupId>-->
+        <!--</exclusion>-->
+        <!--</exclusions>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>com.iuni.data</groupId>-->
+        <!--<artifactId>font-simfang</artifactId>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>com.jaspersoft.studio.professional-edition</groupId>-->
+        <!--<artifactId>com.jaspersoft.studio.highcharts</artifactId>-->
+        <!--<version>6.0.1.final</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>com.jaspersoft.studio.professional-edition</groupId>-->
+        <!--<artifactId>com.jaspersoft.studio.pro.common</artifactId>-->
+        <!--<version>6.0.1.final</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>com.jaspersoft.studio.professional-edition</groupId>-->
+        <!--<artifactId>com.jaspersoft.studio.pro.fusion</artifactId>-->
+        <!--<version>6.0.1.final</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>com.jaspersoft.studio.professional-edition</groupId>-->
+        <!--<artifactId>com.jaspersoft.studio.pro.rcp</artifactId>-->
+        <!--<version>6.0.1.final</version>-->
+        <!--</dependency>-->
         <!--jasperreports end-->
 
         <!--groovy begin-->
@@ -314,10 +299,10 @@
             <groupId>javax.servlet</groupId>
             <artifactId>jstl</artifactId>
         </dependency>
-        <dependency>
-            <groupId>taglibs</groupId>
-            <artifactId>standard</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>taglibs</groupId>-->
+            <!--<artifactId>standard</artifactId>-->
+        <!--</dependency>-->
 
         <!-- quartz scheduler -->
         <!--<dependency>-->
@@ -330,31 +315,45 @@
         <!--</dependency>-->
         <!-- quartz end -->
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>4.1.1.RELEASE</version>
-        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.springframework</groupId>-->
+        <!--<artifactId>spring-test</artifactId>-->
+        <!--<version>4.1.1.RELEASE</version>-->
+        <!--</dependency>-->
 
         <dependency>
-            <groupId>com.jaspersoft.studio.professional-edition</groupId>
-            <artifactId>com.jaspersoft.studio.highcharts</artifactId>
-            <version>6.0.1.final</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jaspersoft.studio.professional-edition</groupId>
-            <artifactId>com.jaspersoft.studio.pro.common</artifactId>
-            <version>6.0.1.final</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jaspersoft.studio.professional-edition</groupId>
-            <artifactId>com.jaspersoft.studio.pro.fusion</artifactId>
-            <version>6.0.1.final</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jaspersoft.studio.professional-edition</groupId>
-            <artifactId>com.jaspersoft.studio.pro.rcp</artifactId>
-            <version>6.0.1.final</version>
+            <groupId>com.iuni.data</groupId>
+            <artifactId>da-core</artifactId>
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.apache.hadoop</groupId>-->
+                    <!--<artifactId>hadoop-common</artifactId>-->
+                <!--</exclusion>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.apache.hive</groupId>-->
+                    <!--<artifactId>hive-jdbc</artifactId>-->
+                <!--</exclusion>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.apache.hive</groupId>-->
+                    <!--<artifactId>hive-metastore</artifactId>-->
+                <!--</exclusion>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.apache.hive</groupId>-->
+                    <!--<artifactId>hive-service</artifactId>-->
+                <!--</exclusion>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.apache.hbase</groupId>-->
+                    <!--<artifactId>hbase-common</artifactId>-->
+                <!--</exclusion>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.apache.hbase</groupId>-->
+                    <!--<artifactId>hbase-server</artifactId>-->
+                <!--</exclusion>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.apache.hbase</groupId>-->
+                    <!--<artifactId>hbase-client</artifactId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
         </dependency>
 
     </dependencies>

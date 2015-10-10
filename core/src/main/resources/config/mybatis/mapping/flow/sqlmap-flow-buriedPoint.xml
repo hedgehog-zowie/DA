@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.flow.FlowOfBuriedPointMapper">
+
+    <!-- 埋点流量日实时统计 -->
+    <select id="selectFlowOfBuriedPoints"
+            resultType="com.iuni.data.persist.model.flow.FlowOfBuriedPointForTableDto"
+            parameterType="com.iuni.data.persist.model.flow.FlowOfBuriedPointForQueryDto">
+        SELECT TT."day",
+        IDBP.WEBSITE       "webSite",
+        IDBP.PAGE_NAME     "pageName",
+        IDBP.PAGE_POSITION "pagePosition",
+        IDBP.POINT_FLAG    "pointFlag",
+        TT."pv",
+        TT."uv",
+        TT."vv",
+        TT."ip"
+        FROM (SELECT TO_CHAR(T.CREATE_TIME, 'yyyy/MM/dd') "day",
+        T.REPORT_CONTENT,
+        COUNT(1) "pv",
+        COUNT(DISTINCT T.SESSION_ID) "uv",
+        COUNT(DISTINCT T.COOKIE_INFO) "vv",
+        COUNT(DISTINCT T.SOURCE_IP) "ip"
+        FROM (SELECT RD.CREATE_TIME,
+        RD.REPORT_CONTENT,
+        RD.COOKIE_INFO,
+        CASE
+        WHEN RD.SESSION_ID IS NULL THEN
+        RD.COOKIE_INFO
+        ELSE
+        RD.SESSION_ID
+        END SESSION_ID,
+        RD.SOURCE_IP
+        FROM (SELECT * FROM T_REPORT_DATA_9 UNION ALL SELECT * FROM T_REPORT_DATA_10) RD
+        WHERE RD.URL_DOMAIN = 'rd.iuni.com'
+        AND RD.REPORT_TYPE = 'rtag'
+        AND RD.REPORT_CONTENT IN
+        (SELECT POINT_FLAG FROM IUNI_DA_BURIED_POINT WHERE STATUS = 1 AND CANCEL_FLAG = 0)
+        <if test="startDateStr != null">
+            <![CDATA[ AND RD.CREATE_TIME >= TO_DATE(#{startDateStr}, 'yyyy/MM/dd') ]]>
+        </if>
+        <if test="endDateStr != null">
+            <![CDATA[ AND RD.CREATE_TIME < TO_DATE(#{endDateStr}, 'yyyy/MM/dd') + 1 ]]>
+        </if>
+        ) T
+        GROUP BY TO_CHAR(T.CREATE_TIME, 'yyyy/MM/dd'), T.REPORT_CONTENT) TT
+        LEFT JOIN IUNI_DA_BURIED_POINT IDBP
+        ON IDBP.POINT_FLAG = TT.REPORT_CONTENT
+    </select>
+
+</mapper>

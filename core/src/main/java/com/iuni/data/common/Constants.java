@@ -17,8 +17,10 @@ public interface Constants {
     public static final String hiveUser = "hive.user";
     public static final String HIVE_USER_DEFAULT = "hive";
     public static final String hivePassword = "hive.password";
-    public static final String hiveTableName = "hive.dataTable.name";
-    public static final String HIVE_TABLE_NAME = "iunilog";
+    public static final String hiveCurrentTableName = "hive.dataTable.name.current";
+    public static final String hiveHistoryTableName = "hive.dataTable.name.history";
+    public static final String HIVE_TABLE_NAME_CURRENT = "iunilog";
+    public static final String HIVE_TABLE_NAME_HISTORY = "iuniloghistory";
     // hive config end
 
     // impala config begin
@@ -34,12 +36,26 @@ public interface Constants {
     // hbase config end
 
     // hbase table config begin
+    // 页面上报表名配置
     public static final String pageReportDataTable = "page.dataTable.name";
     public static final String pageReportDataTableDefault = "prd";
+    // 页面上报列族配置
     public static final String pageReportDataTableCf = "page.dataTable.cf.name";
     public static final String pageReportDataTableCfDefault = "f";
+    // 页面上报列配置
     public static final String pageReportDataTableColumn = "page.dataTable.column.name";
     public static final String pageReportDataTableColumnDefault = "s";
+    // UV表
+    public static final String hbaseTable_UV = "uv.dataTable.name";
+    public static final String hbaseTable_UV_DEFAULT = "uv";
+    // VV表
+    public static final String hbaseTable_VV = "vv.dataTable.name";
+    public static final String hbaseTable_VV_DEFAULT = "vv";
+    // IP表
+    public static final String hbaseTable_IP = "ip.dataTable.name";
+    public static final String hbaseTable_IP_DEFAULT = "ip";
+    // 计数器-总-列名
+    public static final String hbaseTable_qualifierTotal = "total";
     // hbase table config end
 
     public static final String DEFAULT_CHANNEL_CODE = "000000";
@@ -63,4 +79,5 @@ public interface Constants {
 
     public static final String default_flow_source_name = "其它";
     public static final String default_country = "中国";
+
 }

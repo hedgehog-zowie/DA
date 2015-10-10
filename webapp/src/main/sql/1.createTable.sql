@@ -405,3 +405,55 @@ comment on column IUNI_DA_WEBKPI_PAGE.CHANNEL_ID is '渠道';
 
 alter table IUNI_DA_WEBKPI_PAGE add constraint FK_PAGE_WEBKPI_CHANNEL_ID foreign key (CHANNEL_ID) references IUNI_DA_CHANNEL (ID);
 
+/*==============================================================*/
+/* Table: IUNI_DA_USER_DEFINED_REPORT                           */
+/*==============================================================*/
+create table IUNI_DA_USER_DEFINED_REPORT
+(
+   ID                   INT,
+   NAME                 VARCHAR2(64),
+   PATH                 VARCHAR2(1024),
+   "USER"               VARCHAR2(128),
+   "DESC"               VARCHAR2(1024),
+   STATUS               INT,
+   CANCEL_FLAG          INT,
+   CREATE_BY            VARCHAR2(128),
+   CREATE_DATE          DATE,
+   UPDATE_BY            VARCHAR2(128),
+   UPDATE_DATE          DATE
+);
+
+comment on table IUNI_DA_USER_DEFINED_REPORT is '用户自定义报表定义表';
+comment on column IUNI_DA_USER_DEFINED_REPORT.NAME is '报表名称';
+comment on column IUNI_DA_USER_DEFINED_REPORT.PATH is '报表文件全路径';
+comment on column IUNI_DA_USER_DEFINED_REPORT."USER" is '报表所属用户';
+comment on column IUNI_DA_USER_DEFINED_REPORT."DESC" is '描述';
+comment on column IUNI_DA_USER_DEFINED_REPORT.STATUS is '是否有效';
+comment on column IUNI_DA_USER_DEFINED_REPORT.CANCEL_FLAG is '删除标识';
+comment on column IUNI_DA_USER_DEFINED_REPORT.CREATE_BY is '创建人';
+comment on column IUNI_DA_USER_DEFINED_REPORT.CREATE_DATE is '创建时间';
+comment on column IUNI_DA_USER_DEFINED_REPORT.UPDATE_BY is '修改人';
+comment on column IUNI_DA_USER_DEFINED_REPORT.UPDATE_DATE is '修改时间';
+
+/*==============================================================*/
+/* Table: IUNI_DA_USER_CHAIN                                    */
+/*==============================================================*/
+create table IUNI_DA_USER_CHAIN
+(
+   ID                   INT,
+   SID                  VARCHAR2(64),
+   USERID               VARCHAR2(64),
+   PATH                 VARCHAR2(1024),
+   CREATE_DATE          DATE,
+   RETAIN1              VARCHAR2(1024),
+   RETAIN2              VARCHAR2(1024)
+);
+
+comment on table IUNI_DA_USER_CHAIN is '用户完整访问路径';
+comment on column IUNI_DA_USER_CHAIN.SID is '一次完整的页面浏览唯一标识。';
+comment on column IUNI_DA_USER_CHAIN.USERID is '用户ID';
+comment on column IUNI_DA_USER_CHAIN.PATH is '一次完整访问路径，以“-”分隔，如：1-2-3，数字为各页面ID；';
+comment on column IUNI_DA_USER_CHAIN.RETAIN1 is '保留字段';
+comment on column IUNI_DA_USER_CHAIN.RETAIN2 is '保留字段';
+
+

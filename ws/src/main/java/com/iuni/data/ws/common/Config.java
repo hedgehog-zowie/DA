@@ -22,6 +22,9 @@ public class Config {
     private static final byte[] tableName = Bytes.toBytes(PropertiesUtil.get(Constants.pageReportDataTable, Constants.pageReportDataTableDefault));
     private static final byte[] cfName = Bytes.toBytes(PropertiesUtil.get(Constants.pageReportDataTableCf, Constants.pageReportDataTableCfDefault));
     private static final String column = PropertiesUtil.get(Constants.pageReportDataTableColumn, Constants.pageReportDataTableColumnDefault);
+    private static final byte[] uvTableName = Bytes.toBytes(PropertiesUtil.get(Constants.hbaseTable_UV, Constants.hbaseTable_UV_DEFAULT));
+    private static final byte[] vvTableName = Bytes.toBytes(PropertiesUtil.get(Constants.hbaseTable_VV, Constants.hbaseTable_VV_DEFAULT));
+    private static final byte[] ipTableName = Bytes.toBytes(PropertiesUtil.get(Constants.hbaseTable_IP, Constants.hbaseTable_IP_DEFAULT));
 
     static {
         String hbaseQuorum = PropertiesUtil.get(Constants.hbaseQuorum);
@@ -45,5 +48,17 @@ public class Config {
 
     public static String getColumn() {
         return column;
+    }
+
+    public static byte[] getUvTableName() {
+        return uvTableName;
+    }
+
+    public static byte[] getVvTableName() {
+        return vvTableName;
+    }
+
+    public static byte[] getIpTableName() {
+        return ipTableName;
     }
 }

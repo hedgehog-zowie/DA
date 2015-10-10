@@ -35,20 +35,20 @@ public class DefaultAnalyzeFactory implements AnalyzeFactory {
 
     @Override
     public Class<? extends Analyze> getClass(String type) throws IuniDAException {
-        String ipLibClassName = type;
+        String className = type;
         AnalyzeType analyzeType = AnalyzeType.OTHER;
         try {
             analyzeType = AnalyzeType.valueOf(type.toUpperCase());
         } catch (IllegalArgumentException ex) {
             logger.debug("analyze type {} is a custom type", type);
         }
-        if (!analyzeType.equals(IpLibType.OTHER)) {
-            ipLibClassName = analyzeType.getClassName();
+        if (!analyzeType.equals(AnalyzeType.OTHER)) {
+            className = analyzeType.getClassName();
         }
         try {
-            return (Class<? extends Analyze>) Class.forName(ipLibClassName);
+            return (Class<? extends Analyze>) Class.forName(className);
         } catch (Exception ex) {
-            throw new IuniDAException("Unable to load analyze type: " + type + ", class: " + ipLibClassName, ex);
+            throw new IuniDAException("Unable to load analyze type: " + type + ", class: " + className, ex);
         }
     }
 

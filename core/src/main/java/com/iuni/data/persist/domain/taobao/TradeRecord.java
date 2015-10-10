@@ -1,9 +1,8 @@
 package com.iuni.data.persist.domain.taobao;
 
-import com.iuni.data.common.DateUtils;
+import com.iuni.data.utils.DateUtils;
 
 import javax.persistence.*;
-import java.util.Date;
 
 /**
  * @author Nicholas

@@ -1,6 +1,6 @@
 package com.iuni.data.common.common;
 
-import com.iuni.data.common.DateUtils;
+import com.iuni.data.utils.DateUtils;
 import com.iuni.data.common.TType;
 import com.iuni.data.exceptions.IuniDADateFormatException;
 import org.databene.contiperf.junit.ContiPerfRule;

@@ -48,6 +48,9 @@ public class IuniLogTextSerializer implements EventSerializer {
 		this.out.write(getValueFromHeader(e.getHeaders(), HbaseColumns.COLUMN_CITY.getName()));
 		this.out.write(getValueFromHeader(e.getHeaders(), HbaseColumns.COLUMN_COUNTY.getName()));
 		this.out.write(getValueFromHeader(e.getHeaders(), HbaseColumns.COLUMN_ISP.getName()));
+		this.out.write(getValueFromHeader(e.getHeaders(), HbaseColumns.COLUMN_USER.getName()));
+		this.out.write(getValueFromHeader(e.getHeaders(), HbaseColumns.COLUMN_VK.getName()));
+		this.out.write(getValueFromHeader(e.getHeaders(), HbaseColumns.COLUMN_SID.getName()));
 		this.out.write(e.getBody());
 		out.write('\n');
 	}

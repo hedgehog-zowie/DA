@@ -1,32 +1,26 @@
 package com.iuni.data.impala;
 
+import com.iuni.data.exceptions.IuniDAImpalaException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.iuni.data.exceptions.IuniDAImpalaException;
 
 public class ImpalaOperator {
     private static Logger logger = LoggerFactory.getLogger(ImpalaOperator.class);
 
     private ImpalaConnector connector;
 
-//    private Lock opeLock = new ReentrantLock();
-
     private ImpalaOperator() {
     }
 
-    public ImpalaOperator(ImpalaConnector connector) throws IuniDAImpalaException {
+    public ImpalaOperator(ImpalaConnector connector){
         this.connector = connector;
-        if (!this.connector.isConnected())
-            this.connector.reconnect();
     }
 
     /**
@@ -35,30 +29,25 @@ public class ImpalaOperator {
      * @return
      * @throws IuniDAImpalaException
      */
-    public synchronized boolean invalidateMetadata() throws IuniDAImpalaException {
-        boolean result;
+    public synchronized void invalidateMetadata(){
         if (connector == null) {
             String errorStr = "Connector is null.";
             logger.error(errorStr);
             throw new IuniDAImpalaException(errorStr);
         }
-        if (!connector.isConnected()) {
-            String errorStr = "impala can not connected, please check impala status.";
-            logger.error(errorStr);
-            throw new IuniDAImpalaException(errorStr);
-        }
+
+        String sqlStr = "invalidate metadata";
+        Connection connection = null;
         Statement stmt = null;
-//        opeLock.lock();
         try {
-            String sqlStr = "invalidate metadata";
-            stmt = this.connector.getConn().createStatement();
-            result = stmt.execute(sqlStr);
+            connection = this.connector.connect();
+            logger.info("create new impala connection");
+            stmt = connection.createStatement();
+            stmt.execute(sqlStr);
             stmt.close();
-            logger.info("invalidate metadata");
+            logger.info("invalidated metadata");
         } catch (SQLException e) {
-            String errorStr = "invalidate metadata error. error msg : " + e.getMessage();
-            logger.error(errorStr);
-            throw new IuniDAImpalaException(errorStr);
+            logger.error("invalidate metadata error.", e);
         } finally {
             if (stmt != null)
                 try {
@@ -66,30 +55,31 @@ public class ImpalaOperator {
                 } catch (SQLException e) {
                     logger.info("close impala stmt error,", e);
                 }
-//            opeLock.unlock();
+            if (connection != null)
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    logger.error("close impala connection error,", e);
+                }
+            logger.info("closed impala connection");
         }
-        return result;
     }
 
-    public List<List<String>> query(String queryStr) throws IuniDAImpalaException {
+    public List<List<String>> query(String queryStr) {
         if (connector == null) {
             String errorStr = "Connector is null.";
             logger.error(errorStr);
             throw new IuniDAImpalaException(errorStr);
         }
-        if (!connector.isConnected()) {
-//            String errorStr = "impala can not connected, please check impala status.";
-//            logger.error(errorStr);
-//            throw new IuniDAImpalaException(errorStr);
-            connector.reconnect();
-            logger.info("impala not connected, re-connect.");
-        }
+
         List<List<String>> resultList = new ArrayList<>();
-        ResultSet rs = null;
+        Connection connection = null;
         Statement stmt = null;
-//        opeLock.lock();
+        ResultSet rs = null;
         try {
-            stmt = this.connector.getConn().createStatement();
+            connection = this.connector.connect();
+            logger.info("create new impala connection");
+            stmt = connection.createStatement();
             rs = stmt.executeQuery(queryStr);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
@@ -98,10 +88,10 @@ public class ImpalaOperator {
                     row.add(rs.getString(i + 1));
                 resultList.add(row);
             }
+            logger.info("executed query: {}", queryStr);
         } catch (SQLException e) {
             String errorStr = "impala execute error, please check sql : " + queryStr + ". error msg : " + e.getMessage();
-            logger.error(errorStr);
-            throw new IuniDAImpalaException(errorStr);
+            logger.error(errorStr, e);
         } finally {
             if (rs != null)
                 try {
@@ -115,7 +105,14 @@ public class ImpalaOperator {
                 } catch (SQLException e) {
                     logger.info("close impala stmt error,", e);
                 }
-//            opeLock.unlock();
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    logger.error("close impala connection error,", e);
+                }
+                logger.info("closed impala connection");
+            }
         }
         return resultList;
     }

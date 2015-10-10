@@ -5,9 +5,9 @@ import com.iuni.data.Context;
 import com.iuni.data.analyze.cube.DataCube;
 import com.iuni.data.analyze.cube.Result;
 import com.iuni.data.common.Constants;
-import com.iuni.data.common.DateUtils;
+import com.iuni.data.utils.DateUtils;
 import com.iuni.data.common.TType;
-import com.iuni.data.common.UrlUtils;
+import com.iuni.data.utils.UrlUtils;
 import com.iuni.data.hive.HiveConnector;
 import com.iuni.data.hive.HiveOperator;
 import com.iuni.data.impala.ImpalaConnector;
@@ -28,13 +28,6 @@ import java.util.*;
 public class PageAnalyze extends AbstractAnalyze {
 
     private static final Logger logger = LoggerFactory.getLogger(PageAnalyze.class);
-
-//    protected String hiveDriver;
-//    protected String hiveUrl;
-//    protected String hiveUser;
-//    protected String hivePassword;
-//    protected String impalaDriver;
-//    protected String impalaUrl;
 
     protected HiveOperator hiveOperator;
     protected ImpalaOperator impalaOperator;
@@ -76,7 +69,8 @@ public class PageAnalyze extends AbstractAnalyze {
         ImpalaConnector impalaConnector = new ImpalaConnector(impalaUrl, impalaDriver);
         impalaOperator = new ImpalaOperator(impalaConnector);
 
-        logTableName = context.getString(Constants.hiveTableName, Constants.HIVE_TABLE_NAME);
+        // hive log table config
+        logTableName = context.getString(Constants.hiveCurrentTableName, Constants.HIVE_TABLE_NAME_CURRENT);
     }
 
     @Override
@@ -93,6 +87,8 @@ public class PageAnalyze extends AbstractAnalyze {
 
     /**
      * init hive operator, connection and impala operator connection
+     * move data of every day to history, trans to rc_file table,
+     * then drop the partition of last day, delete the file except current day.
      *
      * @param startTime       the start time of analyze
      * @param endTime         the end time of analyze
@@ -103,8 +99,21 @@ public class PageAnalyze extends AbstractAnalyze {
 //        if (createPartition) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(startTime);
-        if (createPartition || (calendar.get(Calendar.HOUR) == 0 && calendar.get(Calendar.MINUTE) == 0 && calendar.get(Calendar.SECOND) == 0))
-            hiveOperator.parseAndAddPartitions(logTableName, startTime, endTime);
+        if (createPartition || (calendar.get(Calendar.HOUR) == 0 && calendar.get(Calendar.MINUTE) == 0 && calendar.get(Calendar.SECOND) == 0)) {
+//            hiveOperator.parseAndAddPartitions(logTableName, startTime, endTime);
+            // insert data to new table
+            long cur = DateUtils.computeStartDate(startTime, 0).getTime();
+            while (cur < endTime.getTime()) {
+                // partition date
+                Date parDate = new Date(cur);
+                String parDateStr = DateUtils.dateToSimpleDateStrOfDay(parDate);
+                // add partition
+                hiveOperator.parseAndAddPartition(logTableName, parDateStr);
+                // add cur
+                cur += 1 * 24 * 60 * 60 * 1000;
+            }
+        }
+
         // invalidate metadata
         impalaOperator.invalidateMetadata();
     }
@@ -161,6 +170,8 @@ public class PageAnalyze extends AbstractAnalyze {
         Map<String, PageWebKpi> pageWebKpiMap = new HashMap<>();
         analyzePagePv(tType, time, startTimeStamp, endTimeStamp, pageWebKpiMap);
         analyzePageUv(tType, time, startTimeStamp, endTimeStamp, pageWebKpiMap);
+        analyzePageVv(tType, time, startTimeStamp, endTimeStamp, pageWebKpiMap);
+        analyzePageIp(tType, time, startTimeStamp, endTimeStamp, pageWebKpiMap);
         return pageWebKpiMap;
     }
 
@@ -177,10 +188,10 @@ public class PageAnalyze extends AbstractAnalyze {
         logger.info("analyze page pv of {}:{} started", tType, time);
         // pv
         String pvSqlStr = "select adId, url, count(*) from " + logTableName + " where 1 = 1 " + transTimeCondition(time, startTimeStamp, endTimeStamp) + " group by adId, url";
-        List<List<String>> pvResultList = impalaOperator.query(pvSqlStr);
-        for (List<String> pvResult : pvResultList) {
-            String adId = pvResult.get(0);
-            String url = pvResult.get(1);
+        List<List<String>> resultList = impalaOperator.query(pvSqlStr);
+        for (List<String> result : resultList) {
+            String adId = result.get(0) == null ? "" : result.get(0);
+            String url = result.get(1) == null ? "" : result.get(1);
             url = UrlUtils.completeUrl(url);
             Channel channel = DataCube.findChannelByCode(adId);
             String key = url + channel.getId();
@@ -193,7 +204,7 @@ public class PageAnalyze extends AbstractAnalyze {
                 webKpi.setChannel(channel);
                 pageWebKpiMap.put(key, webKpi);
             }
-            int pv = Integer.parseInt(pvResult.get(2));
+            int pv = Integer.parseInt(result.get(2) == null ? "0" : result.get(2));
             webKpi.setPv(webKpi.getPv() + pv);
         }
         logger.info("analyze page pv of {}:{} finished.", tType, time);
@@ -210,11 +221,11 @@ public class PageAnalyze extends AbstractAnalyze {
      */
     private void analyzePageUv(TType tType, Date time, long startTimeStamp, long endTimeStamp, Map<String, PageWebKpi> pageWebKpiMap) {
         logger.info("analyze page uv of {}:{} started", tType, time);
-        String uvSqlStr = "select adId, url, count(distinct cookie_vk) from " + logTableName + " where 1 = 1 " + transTimeCondition(time, startTimeStamp, endTimeStamp) + " group by adId, url";
-        List<List<String>> uvResultList = impalaOperator.query(uvSqlStr);
-        for (List<String> uvResult : uvResultList) {
-            String adId = uvResult.get(0);
-            String url = uvResult.get(1);
+        String uvSqlStr = "select adId, url, count(distinct vk) from " + logTableName + " where 1 = 1 " + transTimeCondition(time, startTimeStamp, endTimeStamp) + " group by adId, url";
+        List<List<String>> resultList = impalaOperator.query(uvSqlStr);
+        for (List<String> result : resultList) {
+            String adId = result.get(0) == null ? "" : result.get(0);
+            String url = result.get(1) == null ? "" : result.get(1);
             url = UrlUtils.completeUrl(url);
             Channel channel = DataCube.findChannelByCode(adId);
             String key = url + channel.getId();
@@ -227,10 +238,78 @@ public class PageAnalyze extends AbstractAnalyze {
                 webKpi.setChannel(channel);
                 pageWebKpiMap.put(key, webKpi);
             }
-            int uv = Integer.parseInt(uvResult.get(2));
+            int uv = Integer.parseInt(result.get(2) == null ? "0" : result.get(2));
             webKpi.setUv(webKpi.getUv() + uv);
         }
         logger.info("analyze page uv of {}:{} finished", tType, time);
+    }
+
+    /**
+     * use impala or hive to analyze uv
+     *
+     * @param tType          the time type of analyze
+     * @param time           the time of partition
+     * @param startTimeStamp the start time of analyze
+     * @param endTimeStamp   the end time of analyze
+     * @param pageWebKpiMap  result of analyze
+     */
+    private void analyzePageVv(TType tType, Date time, long startTimeStamp, long endTimeStamp, Map<String, PageWebKpi> pageWebKpiMap) {
+        logger.info("analyze page vv of {}:{} started", tType, time);
+        String vvSqlStr = "select adId, url, count(distinct sid) from " + logTableName + " where 1 = 1 " + transTimeCondition(time, startTimeStamp, endTimeStamp) + " group by adId, url";
+        List<List<String>> resultList = impalaOperator.query(vvSqlStr);
+        for (List<String> result : resultList) {
+            String adId = result.get(0) == null ? "" : result.get(0);
+            String url = result.get(1) == null ? "" : result.get(1);
+            url = UrlUtils.completeUrl(url);
+            Channel channel = DataCube.findChannelByCode(adId);
+            String key = url + channel.getId();
+            PageWebKpi webKpi = pageWebKpiMap.get(key);
+            if (webKpi == null) {
+                webKpi = new PageWebKpi();
+                webKpi.setTime(time);
+                webKpi.setTtype(tType.getPattern());
+                webKpi.setPage(url);
+                webKpi.setChannel(channel);
+                pageWebKpiMap.put(key, webKpi);
+            }
+            int vv = Integer.parseInt(result.get(2) == null ? "0" : result.get(2));
+            webKpi.setVv(webKpi.getVv() + vv);
+        }
+        logger.info("analyze page vv of {}:{} finished", tType, time);
+    }
+
+    /**
+     * use impala or hive to analyze ip
+     *
+     * @param tType          the time type of analyze
+     * @param time           the time of partition
+     * @param startTimeStamp the start time of analyze
+     * @param endTimeStamp   the end time of analyze
+     * @param pageWebKpiMap  result of analyze
+     */
+    private void analyzePageIp(TType tType, Date time, long startTimeStamp, long endTimeStamp, Map<String, PageWebKpi> pageWebKpiMap) {
+        logger.info("analyze page ip of {}:{} started", tType, time);
+        String ipSqlStr = "select adId, url, count(distinct remote_addr) from " + logTableName + " where 1 = 1 " + transTimeCondition(time, startTimeStamp, endTimeStamp) + " group by adId, url";
+        List<List<String>> resultList = impalaOperator.query(ipSqlStr);
+        for (List<String> result : resultList) {
+            String adId = result.get(0) == null ? "" : result.get(0);
+            String url = result.get(1) == null ? "" : result.get(1);
+            url = UrlUtils.completeUrl(url);
+            Channel channel = DataCube.findChannelByCode(adId);
+            String key = url + channel.getId();
+            PageWebKpi webKpi = pageWebKpiMap.get(key);
+            if (webKpi == null) {
+                webKpi = new PageWebKpi();
+                webKpi.setTime(time);
+                webKpi.setTtype(tType.getPattern());
+                webKpi.setPage(url);
+                webKpi.setChannel(channel);
+                pageWebKpiMap.put(key, webKpi);
+            }
+            int ip = Integer.parseInt(result.get(2) == null ? "0" : result.get(2));
+            webKpi.setIp(webKpi.getIp() + ip);
+        }
+        logger.info("analyze page ip of {}:{} finished", tType, time);
     }
 
     /**

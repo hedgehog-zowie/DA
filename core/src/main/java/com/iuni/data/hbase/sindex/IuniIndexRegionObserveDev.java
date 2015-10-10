@@ -69,7 +69,7 @@ public class IuniIndexRegionObserveDev extends BaseRegionObserver {
 
     public void prePut(ObserverContext<RegionCoprocessorEnvironment> e, Put put, WALEdit edit, Durability durability)
             throws IOException {
-        HRegion region = ((RegionCoprocessorEnvironment) e.getEnvironment()).getRegion();
+        HRegion region = e.getEnvironment().getRegion();
         String startKey = Bytes.toString(region.getStartKey());
         if (startKey.isEmpty()) {
             startKey = "00000000";
@@ -82,7 +82,7 @@ public class IuniIndexRegionObserveDev extends BaseRegionObserver {
                 StringBuilder sbr = new StringBuilder().append(startKey).append(columnName);
                 boolean putFlag = true;
                 while (kvItor.hasNext()) {
-                    Cell tmp = (Cell) kvItor.next();
+                    Cell tmp = kvItor.next();
                     String valueStr = Bytes.toString(tmp.getValue());
                     if (valueStr.isEmpty()) {
                         putFlag = false;

@@ -1,8 +1,7 @@
 package com.iuni.data.impala;
 
 import com.iuni.data.common.Constants;
-import com.iuni.data.common.ImpalaConfig;
-import com.iuni.data.common.DateUtils;
+import com.iuni.data.utils.DateUtils;
 import com.iuni.data.common.TType;
 import com.iuni.data.exceptions.IuniDADateFormatException;
 import com.iuni.data.exceptions.IuniDAImpalaException;
@@ -98,10 +97,10 @@ public class WebkpiAnalyze {
     private String selectRealReferer(String timeStr, TType tType) {
         return new StringBuilder("select t1.realReferer , t2.* from ")
                 .append("(select cookie_sessionid, max(referer) as realReferer from ")
-                .append(Constants.hiveTableName).append(" where connection_requests = 1 ")
+                .append(Constants.hiveCurrentTableName).append(" where connection_requests = 1 ")
                 .append(transWhereCondition(timeStr, tType))
                 .append(" group by cookie_sessionid) t1, ")
-                .append(Constants.hiveTableName).append(" t2 where t1.cookie_sessionid = t2.cookie_sessionid")
+                .append(Constants.hiveCurrentTableName).append(" t2 where t1.cookie_sessionid = t2.cookie_sessionid")
                 .append(transWhereCondition(timeStr, tType))
                 .toString();
     }
@@ -391,7 +390,7 @@ public class WebkpiAnalyze {
                 .append(tmpSql)
                 .append(") TT1, ")
                 .append("(select distinct(cookie_vk) from ")
-                .append(Constants.hiveTableName).append(" where time < ")
+                .append(Constants.hiveCurrentTableName).append(" where time < ")
                 .append(timeStr.substring(0, 12))
                 .append(") TT2 ")
                 .append("where TT1.cookie_vk = TT2.cookie_vk) NEWUV")
@@ -532,7 +531,7 @@ public class WebkpiAnalyze {
             Date parDate = new Date(parCur);
             // 创建分区
             try {
-                hiveOperator.parseAndAddPartition(Constants.hiveTableName, parDate);
+                hiveOperator.parseAndAddPartition(Constants.hiveCurrentTableName, parDate);
             } catch (IuniDADateFormatException e) {
                 logger.error(e.getLocalizedMessage());
             }

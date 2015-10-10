@@ -35,7 +35,7 @@ public class ClickWebKpi implements Serializable {
 
     private int count;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "CHANNEL_ID")
     private Channel channel;
 
