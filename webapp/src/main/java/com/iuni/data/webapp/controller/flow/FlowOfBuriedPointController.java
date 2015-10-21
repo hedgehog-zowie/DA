@@ -19,7 +19,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 埋点流量统计
@@ -53,7 +54,7 @@ public class FlowOfBuriedPointController {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.flow_buried_point.getPath());
         StringUtils.parseDateRangeString(queryParam);
-//        List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPoints(queryParam);
+//        List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPointsFromOracle(queryParam);
         List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPointsFromHbase(queryParam);
         modelAndView.addObject("resultList", resultList);
         modelAndView.addObject("queryParam", queryParam);
@@ -76,9 +77,9 @@ public class FlowOfBuriedPointController {
             response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
 
             StringUtils.parseDateRangeString(queryParam);
-            List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPoints(queryParam);
+            List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPointsFromHbase(queryParam);
 
-            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(generateTableHeaders(), generateTableDatas(resultList));
+            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(FlowOfBuriedPointForTableDto.generateTableHeader(), FlowOfBuriedPointForTableDto.generateTableData(resultList));
             wb.write(response.getOutputStream());
 
             response.getOutputStream().flush();
@@ -105,7 +106,7 @@ public class FlowOfBuriedPointController {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.flow_buried_point_today.getPath());
 
-//        List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPoints(generateTodayParams());
+//        List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPointsFromOracle(generateTodayParams());
         List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPointsFromHbase(generateTodayParams());
         modelAndView.addObject("resultList", resultList);
         return modelAndView;
@@ -125,9 +126,9 @@ public class FlowOfBuriedPointController {
             String fileName = new String(("埋点流量日实时统计(" + DateUtils.dateToSimpleDateStr(date, "yyyyMMdd") + ")").getBytes(), "ISO8859-1");
             response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
 
-            List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPoints(generateTodayParams());
+            List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPointsFromHbase(generateTodayParams());
 
-            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(generateTableHeaders(), generateTableDatas(resultList));
+            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(FlowOfBuriedPointForTableDto.generateTableHeader(), FlowOfBuriedPointForTableDto.generateTableData(resultList));
             wb.write(response.getOutputStream());
 
             response.getOutputStream().flush();
@@ -148,51 +149,8 @@ public class FlowOfBuriedPointController {
         FlowOfBuriedPointForQueryDto queryParam = new FlowOfBuriedPointForQueryDto();
         Date date = new Date();
         queryParam.setStartDateStr(DateUtils.dateToSimpleDateStr(date, "yyyy/MM/dd"));
-        queryParam.setEndDateStr(DateUtils.dateToSimpleDateStr(DateUtils.computeStartDate(date, 1), "yyyy/MM/dd"));
+        queryParam.setEndDateStr(DateUtils.dateToSimpleDateStr(date, "yyyy/MM/dd"));
         return queryParam;
-    }
-
-    /**
-     * 表头
-     *
-     * @return
-     */
-    private Map<String, String> generateTableHeaders() {
-        Map<String, String> tableHeader = new LinkedHashMap<>();
-        tableHeader.put("日期", "day");
-        tableHeader.put("站点名称", "website");
-        tableHeader.put("页面名称", "pageName");
-        tableHeader.put("页面位置", "pagePosition");
-        tableHeader.put("埋点编码", "pointFlag");
-        tableHeader.put("PV", "pv");
-        tableHeader.put("UV", "uv");
-        tableHeader.put("VV", "vv");
-        tableHeader.put("IP", "ip");
-        return tableHeader;
-    }
-
-    /**
-     * 表数据
-     *
-     * @param flowOfBuriedPointTableDtoList
-     * @return
-     */
-    private List<Map<String, String>> generateTableDatas(List<FlowOfBuriedPointForTableDto> flowOfBuriedPointTableDtoList) {
-        List<Map<String, String>> tableDatas = new ArrayList<>();
-        for (FlowOfBuriedPointForTableDto flowOfBuriedPointTableDto : flowOfBuriedPointTableDtoList) {
-            Map<String, String> rowData = new HashMap<>();
-            rowData.put("day", flowOfBuriedPointTableDto.getDay());
-            rowData.put("website", flowOfBuriedPointTableDto.getWebsite());
-            rowData.put("pageName", flowOfBuriedPointTableDto.getPageName());
-            rowData.put("pagePosition", flowOfBuriedPointTableDto.getPagePosition());
-            rowData.put("pointFlag", flowOfBuriedPointTableDto.getPointFlag());
-            rowData.put("pv", String.valueOf(flowOfBuriedPointTableDto.getPv()));
-            rowData.put("uv", String.valueOf(flowOfBuriedPointTableDto.getUv()));
-            rowData.put("vv", String.valueOf(flowOfBuriedPointTableDto.getVv()));
-            rowData.put("ip", String.valueOf(flowOfBuriedPointTableDto.getIp()));
-            tableDatas.add(rowData);
-        }
-        return tableDatas;
     }
 
 }

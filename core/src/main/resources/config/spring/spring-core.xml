@@ -11,7 +11,8 @@
     <context:property-placeholder location="classpath:hbase.properties" ignore-unresolvable="true"/>
 
     <bean id="hbaseOperator" class="com.iuni.data.hbase.HBaseOperator"
-          p:hbaseQuorum="${hbase.zookeeper.quorum}">
+          p:hbaseQuorum="${hbase.zookeeper.quorum}"
+          p:tableName="${page.dataTable.name}">
     </bean>
 
 </beans>

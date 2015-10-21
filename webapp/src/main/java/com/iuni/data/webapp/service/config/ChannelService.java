@@ -1,6 +1,7 @@
 package com.iuni.data.webapp.service.config;
 
 import com.iuni.data.persist.domain.config.Channel;
+import com.iuni.data.persist.domain.config.ChannelType;
 
 import java.util.List;
 
@@ -21,4 +22,9 @@ public interface ChannelService {
     boolean updateChannel(Channel channel);
 
     boolean deleteChannel(String ids);
+
+    boolean enableChannel(String ids);
+
+    boolean disableChannel(String ids);
+
 }

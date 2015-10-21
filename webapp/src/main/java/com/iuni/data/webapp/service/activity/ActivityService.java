@@ -1,8 +1,8 @@
 package com.iuni.data.webapp.service.activity;
 
-import com.iuni.data.persist.model.activity.ChannelTableDto;
-import com.iuni.data.persist.model.activity.ChannelQueryDto;
-import com.iuni.data.persist.model.activity.ChannelChartDto;
+import com.iuni.data.persist.model.activity.ActivityChannelTableDto;
+import com.iuni.data.persist.model.activity.ActivityChannelQueryDto;
+import com.iuni.data.persist.model.activity.ActivityChannelChartDto;
 
 import java.util.List;
 
@@ -12,16 +12,16 @@ import java.util.List;
  */
 public interface ActivityService {
 
-    List<ChannelTableDto> selectActivityChannel(ChannelQueryDto queryDto);
+    List<ActivityChannelTableDto> selectActivityChannel(ActivityChannelQueryDto queryDto);
 
-    List<ChannelChartDto> selectOrderByActivityChannel(ChannelQueryDto queryDto);
+    List<ActivityChannelChartDto> selectOrderByActivityChannel(ActivityChannelQueryDto queryDto);
 
-    List<ChannelChartDto> selectPaidOrderByActivityChannel(ChannelQueryDto queryDto);
+    List<ActivityChannelChartDto> selectPaidOrderByActivityChannel(ActivityChannelQueryDto queryDto);
 
-    List<ChannelChartDto> selectPVByActivityChannel(ChannelQueryDto queryDto);
+    List<ActivityChannelChartDto> selectPVByActivityChannel(ActivityChannelQueryDto queryDto);
 
-    List<ChannelChartDto> selectUVByActivityChannel(ChannelQueryDto queryDto);
+    List<ActivityChannelChartDto> selectUVByActivityChannel(ActivityChannelQueryDto queryDto);
 
-    List<ChannelChartDto> selectVVByActivityChannel(ChannelQueryDto queryDto);
+    List<ActivityChannelChartDto> selectVVByActivityChannel(ActivityChannelQueryDto queryDto);
 
 }

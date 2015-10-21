@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="afterSales">
+
+    <!-- 订单售后次数统计报表 -->
+    <select id="selectAfterSalesNumOfOrder">
+        SELECT *
+        FROM (SELECT IEI.ORDER_SN "orderSn",
+        UNIX_TO_ORACLE(IOI.ADD_TIME) "addTime",
+        IEI.CONSIGNEE "userName",
+        IEI.MOBILE "mobile",
+        '换货' "type",
+        IEI.EXCHANGE_SN "sn",
+        IEI.CREATE_TIME "createTime",
+        CASE IEI.SSTATUS
+        WHEN 'cancle' THEN
+        '已取消'
+        WHEN 'cancleWaitDelivery' THEN
+        '取消待发货'
+        WHEN 'waitReceivePackage' THEN
+        '待收包'
+        WHEN 'receivePackageUnusual' THEN
+        '换货收包异常'
+        WHEN 'waitInitialCheck' THEN
+        '待售后初检'
+        WHEN 'waitGassAudit' THEN
+        '待售后审核'
+        WHEN 'shipped' THEN
+        '已发货'
+        WHEN 'signed' THEN
+        '已签收'
+        WHEN 'completed' THEN
+        '已完成'
+        WHEN 'waitCustomerAudit' THEN
+        '待客服审核'
+        WHEN 'waitDelivery' THEN
+        '待发货'
+        WHEN 'cancleToRepairs' THEN
+        '转报修'
+        WHEN 'cancleToReturn' THEN
+        '转退货'
+        WHEN 'cancleToOther' THEN
+        '作废'
+        ELSE
+        IEI.SSTATUS
+        END "status",
+        IEI.CAUSE_INFO "causeInfo",
+        TO_CHAR(IEL.REMARK) "remark"
+        FROM IUNI_EXCHANGEGOODS_INFO IEI
+        LEFT JOIN IUNI_ORDER_INFO IOI
+        ON IEI.ORDER_SN = IOI.ORDER_SN
+        LEFT JOIN IUNI_EXCHANGEGOODS_LOG IEL
+        ON IEI.EXCHANGE_SN = IEL.EXCHANGE_SN
+        AND OPERATE = 'shAudit'
+        <where>
+            IEI.SSTATUS NOT IN ('cancle', 'cancleToOther')
+            AND IEI.ORDER_TYPE = 'order'
+            <if test="beginDate != null">
+                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ >= ]]> to_date(#beginDate#, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null">
+                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ < ]]> to_date(#endDate#, 'YYYY-MM-DD')+1
+            </if>
+        </where>
+        UNION ALL
+        SELECT IRI.ORDER_SN "orderSn",
+        UNIX_TO_ORACLE(IOI.ADD_TIME) "addTime",
+        IRI.CONSIGNEE "userName",
+        IRI.MOBILE "mobile",
+        '维修' "type",
+        IRI.REPAIRS_SN "sn",
+        IRI.CREATE_TIME "createTime",
+        CASE IRI.SSTATUS
+        WHEN '0' THEN
+        '已取消'
+        WHEN '1' THEN
+        '待收包'
+        WHEN '4' THEN
+        '报修收包异常'
+        WHEN '3' THEN
+        '待售后初检'
+        WHEN '14' THEN
+        '待客服审核'
+        WHEN '5' THEN
+        '待售后维修'
+        WHEN '15' THEN
+        '待付款'
+        WHEN '2' THEN
+        '待发货'
+        WHEN '6' THEN
+        '已发货'
+        WHEN '8' THEN
+        '已签收'
+        WHEN '10' THEN
+        '已完成'
+        WHEN '16' THEN
+        '转退货'
+        WHEN '17' THEN
+        '转换货'
+        WHEN '18' THEN
+        '作废'
+        WHEN '19' THEN
+        '取消待发货'
+        ELSE
+        IRI.SSTATUS
+        END "status",
+        IRI.CAUSE_INFO "causeInfo",
+        TO_CHAR(IRL.REMARK) "remark"
+        FROM IUNI_REPAIRSGOODS_INFO IRI
+        LEFT JOIN IUNI_ORDER_INFO IOI
+        ON IRI.ORDER_SN = IOI.ORDER_SN
+        LEFT JOIN IUNI_REPAIRSGOODS_LOG IRL
+        ON IRI.REPAIRS_SN = IRL.REPAIRS_SN
+        AND IRL.OPERATE = 'shAudit'
+        <where>
+            IRI.SSTATUS NOT IN ('0', '18')
+            AND IRI.ORDER_TYPE = 'order'
+            <if test="beginDate != null">
+                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ >= ]]> to_date(#beginDate#, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null">
+                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ < ]]> to_date(#endDate#, 'YYYY-MM-DD')+1
+            </if>
+        </where>
+        UNION ALL
+        SELECT IRI.ORDER_SN "orderSn",
+        UNIX_TO_ORACLE(IOI.ADD_TIME) "addTime",
+        IOI.CONSIGNEE "userName",
+        IOI.MOBILE "mobile",
+        '退货' "type",
+        IRI.DELIVERY_SN "sn",
+        IRI.ADD_TIME "createTime",
+        CASE IRI.STATUS
+        WHEN 'application' THEN
+        '申请中'
+        WHEN 'audit' THEN
+        '已审核待确认退款'
+        WHEN 'cancelled' THEN
+        '已取消'
+        WHEN 'unusual' THEN
+        '收包异常'
+        WHEN 'receivedPacket' THEN
+        '已收包待审核'
+        WHEN 'completed' THEN
+        '已退款'
+        WHEN 'auditNoPass' THEN
+        '审核不通过'
+        ELSE
+        IRI.STATUS
+        END "status",
+        IRI.CAUSE_INFO "causeInfo",
+        TO_CHAR(IRL.REMARK) "remark"
+        FROM IUNI_RETURNGOODS_INFO IRI
+        LEFT JOIN IUNI_ORDER_INFO IOI
+        ON IRI.ORDER_SN = IOI.ORDER_SN
+        LEFT JOIN IUNI_RETURNGOODS_LOG IRL
+        ON IRI.DELIVERY_SN = IRL.DELIVERY_SN
+        AND IRL.OPERATE = 'shAudit'
+        <where>
+            IRI.STATUS NOT IN ('cancelled')
+            <if test="beginDate != null">
+                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ >= ]]> to_date(#beginDate#, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null">
+                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ < ]]> to_date(#endDate#, 'YYYY-MM-DD')+1
+            </if>
+        </where>
+        ) TMP
+        ORDER BY TMP."addTime" DESC, TMP."orderSn", TMP."createTime"
+    </select>
+
+</mapper>
+
+
+

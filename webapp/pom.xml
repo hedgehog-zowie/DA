@@ -15,6 +15,11 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>com.iuni.data</groupId>
+            <artifactId>da-core</artifactId>
+        </dependency>
+
         <!--spring begin-->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -117,131 +122,6 @@
         </dependency>
         <!--servlet-api end-->
 
-        <!--jasperreports begin-->
-        <!--<dependency>-->
-        <!--<groupId>net.sf.jasperreports</groupId>-->
-        <!--<artifactId>jasperreports</artifactId>-->
-        <!--<exclusions>-->
-        <!--<exclusion>-->
-        <!--<groupId>org.olap4j</groupId>-->
-        <!--<artifactId>olap4j</artifactId>-->
-        <!--</exclusion>-->
-        <!--<exclusion>-->
-        <!--<artifactId>commons-collections</artifactId>-->
-        <!--<groupId>commons-collections</groupId>-->
-        <!--</exclusion>-->
-        <!--<exclusion>-->
-        <!--<artifactId>commons-beanutils</artifactId>-->
-        <!--<groupId>commons-beanutils</groupId>-->
-        <!--</exclusion>-->
-        <!--<exclusion>-->
-        <!--<artifactId>commons-digester</artifactId>-->
-        <!--<groupId>commons-digester</groupId>-->
-        <!--</exclusion>-->
-        <!--<exclusion>-->
-        <!--<artifactId>commons-logging</artifactId>-->
-        <!--<groupId>commons-logging</groupId>-->
-        <!--</exclusion>-->
-        <!--</exclusions>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>com.iuni.data</groupId>-->
-        <!--<artifactId>font-simfang</artifactId>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>com.jaspersoft.studio.professional-edition</groupId>-->
-        <!--<artifactId>com.jaspersoft.studio.highcharts</artifactId>-->
-        <!--<version>6.0.1.final</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>com.jaspersoft.studio.professional-edition</groupId>-->
-        <!--<artifactId>com.jaspersoft.studio.pro.common</artifactId>-->
-        <!--<version>6.0.1.final</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>com.jaspersoft.studio.professional-edition</groupId>-->
-        <!--<artifactId>com.jaspersoft.studio.pro.fusion</artifactId>-->
-        <!--<version>6.0.1.final</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>com.jaspersoft.studio.professional-edition</groupId>-->
-        <!--<artifactId>com.jaspersoft.studio.pro.rcp</artifactId>-->
-        <!--<version>6.0.1.final</version>-->
-        <!--</dependency>-->
-        <!--jasperreports end-->
-
-        <!--groovy begin-->
-        <!--<dependency>-->
-        <!--<groupId>org.codehaus.groovy</groupId>-->
-        <!--<artifactId>groovy-all</artifactId>-->
-        <!--</dependency>-->
-        <!--groovy end-->
-
-        <!-- Spring Data JPA -->
-        <!--<dependency>-->
-        <!--<groupId>org.springframework.data</groupId>-->
-        <!--<artifactId>spring-data-jpa</artifactId>-->
-        <!--</dependency>-->
-
-        <!-- Database pooling -->
-        <!--<dependency>-->
-        <!--<groupId>c3p0</groupId>-->
-        <!--<artifactId>c3p0</artifactId>-->
-        <!--<type>jar</type>-->
-        <!--<scope>compile</scope>-->
-        <!--</dependency>-->
-
-        <!--  MySQL Connector -->
-        <!--<dependency>-->
-        <!--<groupId>mysql</groupId>-->
-        <!--<artifactId>mysql-connector-java</artifactId>-->
-        <!--<type>jar</type>-->
-        <!--<scope>compile</scope>-->
-        <!--</dependency>-->
-
-        <!--oracle connector-->
-        <!--<dependency>-->
-        <!--<groupId>com.oracle</groupId>-->
-        <!--<artifactId>ojdbc7</artifactId>-->
-        <!--</dependency>-->
-
-        <!-- Hibernate and JPA -->
-        <!--<dependency>-->
-        <!--<groupId>org.hibernate.java-persistence</groupId>-->
-        <!--<artifactId>jpa-api</artifactId>-->
-        <!--<scope>compile</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>org.hibernate</groupId>-->
-        <!--<artifactId>hibernate-entitymanager</artifactId>-->
-        <!--<exclusions>-->
-        <!--<exclusion>-->
-        <!--<groupId>cglib</groupId>-->
-        <!--<artifactId>cglib</artifactId>-->
-        <!--</exclusion>-->
-        <!--</exclusions>-->
-        <!--<scope>compile</scope>-->
-        <!--</dependency>-->
-
-        <!-- QueryDSL -->
-        <!--<dependency>-->
-        <!--<groupId>com.mysema.querydsl</groupId>-->
-        <!--<artifactId>querydsl-core</artifactId>-->
-        <!--<type>jar</type>-->
-        <!--<scope>compile</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>com.mysema.querydsl</groupId>-->
-        <!--<artifactId>querydsl-jpa</artifactId>-->
-        <!--<type>jar</type>-->
-        <!--<scope>compile</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>com.mysema.querydsl</groupId>-->
-        <!--<artifactId>querydsl-apt</artifactId>-->
-        <!--<scope>provided</scope>-->
-        <!--</dependency>-->
-
         <!--log begin-->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -261,18 +141,6 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-
-        <!--<dependency>-->
-        <!--<groupId>com.lowagie</groupId>-->
-        <!--<artifactId>itext</artifactId>-->
-        <!--<version>2.1.7</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-        <!--<groupId>org.olap4j</groupId>-->
-        <!--<artifactId>olap4j</artifactId>-->
-        <!--<version>1.1.0</version>-->
-        <!--</dependency>-->
 
         <!-- A seamless aspect-oriented extension to the Java programming language -->
         <dependency>
@@ -298,62 +166,6 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>jstl</artifactId>
-        </dependency>
-        <!--<dependency>-->
-            <!--<groupId>taglibs</groupId>-->
-            <!--<artifactId>standard</artifactId>-->
-        <!--</dependency>-->
-
-        <!-- quartz scheduler -->
-        <!--<dependency>-->
-        <!--<groupId>org.quartz-scheduler</groupId>-->
-        <!--<artifactId>quartz</artifactId>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>org.quartz-scheduler</groupId>-->
-        <!--<artifactId>quartz-jobs</artifactId>-->
-        <!--</dependency>-->
-        <!-- quartz end -->
-
-        <!--<dependency>-->
-        <!--<groupId>org.springframework</groupId>-->
-        <!--<artifactId>spring-test</artifactId>-->
-        <!--<version>4.1.1.RELEASE</version>-->
-        <!--</dependency>-->
-
-        <dependency>
-            <groupId>com.iuni.data</groupId>
-            <artifactId>da-core</artifactId>
-            <!--<exclusions>-->
-                <!--<exclusion>-->
-                    <!--<groupId>org.apache.hadoop</groupId>-->
-                    <!--<artifactId>hadoop-common</artifactId>-->
-                <!--</exclusion>-->
-                <!--<exclusion>-->
-                    <!--<groupId>org.apache.hive</groupId>-->
-                    <!--<artifactId>hive-jdbc</artifactId>-->
-                <!--</exclusion>-->
-                <!--<exclusion>-->
-                    <!--<groupId>org.apache.hive</groupId>-->
-                    <!--<artifactId>hive-metastore</artifactId>-->
-                <!--</exclusion>-->
-                <!--<exclusion>-->
-                    <!--<groupId>org.apache.hive</groupId>-->
-                    <!--<artifactId>hive-service</artifactId>-->
-                <!--</exclusion>-->
-                <!--<exclusion>-->
-                    <!--<groupId>org.apache.hbase</groupId>-->
-                    <!--<artifactId>hbase-common</artifactId>-->
-                <!--</exclusion>-->
-                <!--<exclusion>-->
-                    <!--<groupId>org.apache.hbase</groupId>-->
-                    <!--<artifactId>hbase-server</artifactId>-->
-                <!--</exclusion>-->
-                <!--<exclusion>-->
-                    <!--<groupId>org.apache.hbase</groupId>-->
-                    <!--<artifactId>hbase-client</artifactId>-->
-                <!--</exclusion>-->
-            <!--</exclusions>-->
         </dependency>
 
     </dependencies>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="repairs">
+
+    <!-- 非保修维修单查询 -->
+    <select id="selectNotInWarrantyRepairs">
+        SELECT IRI.PAY_CONFIRM_TIME PAY_CONFIRM_TIME,
+        '' PAYER,
+        IRI.REPAIRS_SN REPAIRS_SN,
+        CASE WHEN IRI.USERNAME IS NOT NULL THEN IRI.USERNAME
+        ELSE IRI.REFERER END USERNAME,
+        IRI.MOBILE MOBILE,
+        IRIM.OIMEI OIMEI,
+        IRM.MATTER_CODE MATTER_CODE,
+        IRM.MATTER_NAME MATTER_NAME,
+        IRM.QUANTITY QUANTITY,
+        IRM.MATTER_FEE MATTER_FEE,
+        IRM.HAND_FEE HAND_FEE,
+        '' INVOICE_TIME,
+        '' INVOICE_CODE,
+        IRI.FEE FEE,
+        IRI.REMARK REMARK
+        FROM IUNI_REPAIRSGOODS_INFO IRI
+        LEFT JOIN IUNI_REPAIRSGOODS_ITEM IRIM
+        ON IRIM.REPAIRS_SN = IRI.REPAIRS_SN
+        LEFT JOIN IUNI_REPAIRSGOODS_MATTER IRM
+        ON IRM.REPAIRS_SN = IRI.REPAIRS_SN
+        <where>
+            IRIM.TYPE_CODE = 'mobile'
+            AND IRI.FEE > 0
+            <if test="clients != null">
+                AND
+                (
+                IRI.USERNAME IN
+                <foreach item="client" index="index" collection="clients" open="(" separator="," close=")">
+                    #{client}
+                </foreach>
+                OR
+                IRI.REFERER IN
+                <foreach item="client" index="index" collection="clients" open="(" separator="," close=")">
+                    #{client}
+                </foreach>
+                )
+            </if>
+            <if test="phones != null">
+                AND IRI.MOBILE IN
+                <foreach item="phone" index="index" collection="phones" open="(" separator="," close=")">
+                    #{phone}
+                </foreach>
+            </if>
+            AND IRI.PAY_CONFIRM_TIME <![CDATA[ >= ]]> TO_DATE(#beginDate#, 'YYYY-MM-DD')
+            AND IRI.PAY_CONFIRM_TIME <![CDATA[ < ]]> TO_DATE(#endDate#, 'YYYY-MM-DD') + 1
+        </where>
+        ORDER BY IRI.PAY_CONFIRM_TIME DESC
+    </select>
+
+</mapper>

@@ -280,26 +280,63 @@ alter table IUNI_DA_CHAIN_STEP add constraint FK_CHAIN_STEP_CHAIN_ID foreign key
 alter table IUNI_DA_CHAIN_STEP add constraint FK_CHAIN_STEP_TYPE_ID foreign key (TYPE_ID) references IUNI_DA_CHAIN_STEP_TYPE (ID);
 
 /*==============================================================*/
+/* Table: IUNI_DA_CHANNEL_TYPE                                  */
+/*==============================================================*/
+create table IUNI_DA_CHANNEL_TYPE
+(
+   ID                   INT                  not null,
+   CODE                 INT                  not null,
+   NAME                 VARCHAR2(128)        not null,
+   "DESC"               VARCHAR2(4000),
+   STATUS               INT                  default 1 not null
+      constraint CKC_STATUS_CHANNEL_TYPE check (STATUS in (0,1)),
+   CANCEL_FLAG          INT                  default 0 not null
+      constraint CKC_CANCEL_FLAG_CHANNEL_TYPE check (CANCEL_FLAG in (0,1)),
+   CREATE_BY            VARCHAR2(128)        not null,
+   CREATE_DATE          DATE                 not null,
+   UPDATE_BY            VARCHAR2(128)        not null,
+   UPDATE_DATE          DATE                 not null,
+   constraint PK_IUNI_DA_CHANNEL_TYPE primary key (ID)
+);
+comment on table IUNI_DA_CHANNEL_TYPE is '渠道类型';
+comment on column IUNI_DA_CHANNEL_TYPE.CODE is '渠道类型编号';
+comment on column IUNI_DA_CHANNEL_TYPE.NAME is '渠道类型名称';
+comment on column IUNI_DA_CHANNEL_TYPE."DESC" is '备注';
+comment on column IUNI_DA_CHANNEL_TYPE.STATUS is '是否有效标识，0表示无效，1表示有效。';
+comment on column IUNI_DA_CHANNEL_TYPE.CANCEL_FLAG is '逻辑删除标识，0表示未删除，1表示删除。';
+
+/*==============================================================*/
 /* Table: IUNI_DA_CHANNEL                                       */
 /*==============================================================*/
 create table IUNI_DA_CHANNEL
 (
-  ID                   INT                  not null,
-  CODE                 VARCHAR2(16)         not null,
-  NAME                 VARCHAR2(64)         not null,
-  "DESC"               VARCHAR2(1024),
-  STATUS               INT                  not null,
-  CANCEL_FLAG          INT                  not null,
-  CREATE_BY            VARCHAR2(128)        not null,
-  CREATE_DATE          DATE                 not null,
-  UPDATE_BY            VARCHAR2(128)        not null,
-  UPDATE_DATE          DATE                 not null,
-  constraint PK_IUNI_DA_CHANNEL primary key (ID),
-  constraint UK_DA_CHANNEL_CODE unique (CODE)
+   ID                   INT                  not null,
+   NAME                 VARCHAR2(64)         not null,
+   CODE                 VARCHAR2(16)         not null,
+   ORIGINAL_URL         VARCHAR2(4096),
+   PROMOTION_URL        VARCHAR2(4096),
+   SHORT_URL            VARCHAR2(128),
+   STATUS               INT                  not null
+      constraint CKC_STATUS_CHANNEL check (STATUS in (0,1)),
+   CANCEL_FLAG          INT                  not null
+      constraint CKC_CANCEL_FLAG_CHANNEL check (CANCEL_FLAG in (0,1)),
+   TYPE_ID              INT,
+   CREATE_BY            VARCHAR2(128)        not null,
+   CREATE_DATE          DATE                 not null,
+   UPDATE_BY            VARCHAR2(128)        not null,
+   UPDATE_DATE          DATE                 not null,
+   constraint PK_IUNI_DA_CHANNEL primary key (ID),
+   constraint UK_DA_CHANNEL_CODE unique (CODE)
 );
 comment on table IUNI_DA_CHANNEL is '渠道';
-comment on column IUNI_DA_CHANNEL.CODE is '渠道代码';
 comment on column IUNI_DA_CHANNEL.NAME is '渠道名称';
+comment on column IUNI_DA_CHANNEL.CODE is '渠道代码';
+comment on column IUNI_DA_CHANNEL.ORIGINAL_URL is '原始链接';
+comment on column IUNI_DA_CHANNEL.PROMOTION_URL is '推广链接';
+comment on column IUNI_DA_CHANNEL.SHORT_URL is '短链接';
+comment on column IUNI_DA_CHANNEL.STATUS is '是否有效标识，0表示无效，1表示有效。';
+comment on column IUNI_DA_CHANNEL.CANCEL_FLAG is '逻辑删除标识，0表示未删除，1表示删除。';
+alter table IUNI_DA_CHANNEL add constraint FK_CHANNEL_TYPE_ID foreign key (TYPE_ID) references IUNI_DA_CHANNEL_TYPE (ID);
 
 /*==============================================================*/
 /* Table: IUNI_DA_WEBKPI                                        */

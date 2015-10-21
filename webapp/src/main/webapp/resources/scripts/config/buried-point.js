@@ -2,10 +2,10 @@ var BuriedPointTable = function () {
 
     var initTable = function () {
 
-        var table = $('#table_buried_point');
+        var buriedPointTable = $('#table_buried_point');
 
         // begin table_buried_point
-        table.dataTable({
+        buriedPointTable.dataTable({
 
             // Internationalisation. For more info refer to http://datatables.net/manual/i18n
             "language": {
@@ -43,13 +43,13 @@ var BuriedPointTable = function () {
                 'targets': [0]
             }, {
                 'width': '5%',
-                'targets': [0]
+                'targets': [0, 1]
             }, {
                 'width': '10%',
-                'targets': [1, 2, 3, 6, 8],
+                'targets': [2, 3, 6],
             }, {
                 'width': '15%',
-                'targets': [4, 5, 7]
+                'targets': [4, 5, 7, 8]
             }, {
                 'searchable': false,
                 'targets': [0]
@@ -61,7 +61,7 @@ var BuriedPointTable = function () {
 
         var tableWrapper = jQuery('#table_buried_point_wrapper');
 
-        table.find('.group-checkable').change(function () {
+        buriedPointTable.find('.group-checkable').change(function () {
             var set = jQuery(this).attr("data-set");
             var checked = jQuery(this).is(":checked");
             jQuery(set).each(function () {
@@ -78,7 +78,7 @@ var BuriedPointTable = function () {
             jQuery.uniform.update(set);
         });
 
-        table.on('change', 'tbody tr .checkboxes', function () {
+        buriedPointTable.on('change', 'tbody tr .checkboxes', function () {
             $(this).parents('tr').toggleClass("active");
         });
 
@@ -93,7 +93,7 @@ var BuriedPointTable = function () {
         $('#table_buried_point_delete').click(function (e) {
             e.preventDefault();
             var ids = "";
-            $(".checkboxes", table).each(function () {
+            $(".checkboxes", buriedPointTable).each(function () {
                 if ($(this).parents('tr').hasClass("active"))
                     ids += $(this).val() + ",";
                 return ids;
@@ -106,14 +106,24 @@ var BuriedPointTable = function () {
             location.href = "/config/buriedPoint/exportExcel";
         });
 
-        table.on('click', '.edit', function (e) {
+        buriedPointTable.on('click', '.edit', function (e) {
             e.preventDefault();
             location.href = "/config/buriedPoint/edit?id=" + $(this).attr("id").substring(5);
         });
 
-        table.on('click', '.delete', function (e) {
+        buriedPointTable.on('click', '.delete', function (e) {
             e.preventDefault();
             location.href = "/config/buriedPoint/delete?ids=" + $(this).attr("id").substring(7);
+        });
+
+        buriedPointTable.on('click', '.enable', function (e) {
+            e.preventDefault();
+            location.href = "/config/buriedPoint/enable?ids=" + $(this).attr("id").substring(7);
+        });
+
+        buriedPointTable.on('click', '.disable', function (e) {
+            e.preventDefault();
+            location.href = "/config/buriedPoint/disable?ids=" + $(this).attr("id").substring(8);
         });
 
     }

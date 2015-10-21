@@ -1,29 +1,15 @@
 package com.iuni.data.webapp.service.activity.impl;
 
-import com.iuni.data.persist.domain.webkpi.ClickWebKpi;
-import com.iuni.data.persist.domain.webkpi.PageWebKpi;
-import com.iuni.data.persist.domain.webkpi.QClickWebKpi;
-import com.iuni.data.persist.domain.webkpi.QPageWebKpi;
 import com.iuni.data.persist.mapper.activity.ActivityChannelMapper;
-import com.iuni.data.persist.model.activity.ChannelChartDto;
-import com.iuni.data.persist.model.activity.ChannelQueryDto;
-import com.iuni.data.persist.model.activity.ChannelTableDto;
-import com.iuni.data.persist.repository.webkpi.ClickWebKpiRepository;
-import com.iuni.data.persist.repository.webkpi.PageWebKpiRepository;
+import com.iuni.data.persist.model.activity.ActivityChannelChartDto;
+import com.iuni.data.persist.model.activity.ActivityChannelQueryDto;
+import com.iuni.data.persist.model.activity.ActivityChannelTableDto;
 import com.iuni.data.webapp.service.activity.ActivityService;
-import com.mysema.query.types.expr.BooleanExpression;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -39,32 +25,32 @@ public class ActivityServiceImpl implements ActivityService {
     private ActivityChannelMapper activityChannelMapper;
 
     @Override
-    public List<ChannelTableDto> selectActivityChannel(ChannelQueryDto queryDto) {
+    public List<ActivityChannelTableDto> selectActivityChannel(ActivityChannelQueryDto queryDto) {
         return activityChannelMapper.selectActivityChannel(queryDto);
     }
 
     @Override
-    public List<ChannelChartDto> selectOrderByActivityChannel(ChannelQueryDto queryDto) {
+    public List<ActivityChannelChartDto> selectOrderByActivityChannel(ActivityChannelQueryDto queryDto) {
         return activityChannelMapper.selectOrderByActivityChannel(queryDto);
     }
 
     @Override
-    public List<ChannelChartDto> selectPaidOrderByActivityChannel(ChannelQueryDto queryDto) {
+    public List<ActivityChannelChartDto> selectPaidOrderByActivityChannel(ActivityChannelQueryDto queryDto) {
         return activityChannelMapper.selectPaidOrderByActivityChannel(queryDto);
     }
 
     @Override
-    public List<ChannelChartDto> selectPVByActivityChannel(ChannelQueryDto queryDto) {
+    public List<ActivityChannelChartDto> selectPVByActivityChannel(ActivityChannelQueryDto queryDto) {
         return activityChannelMapper.selectPVByActivityChannel(queryDto);
     }
 
     @Override
-    public List<ChannelChartDto> selectUVByActivityChannel(ChannelQueryDto queryDto) {
+    public List<ActivityChannelChartDto> selectUVByActivityChannel(ActivityChannelQueryDto queryDto) {
         return activityChannelMapper.selectUVByActivityChannel(queryDto);
     }
 
     @Override
-    public List<ChannelChartDto> selectVVByActivityChannel(ChannelQueryDto queryDto) {
+    public List<ActivityChannelChartDto> selectVVByActivityChannel(ActivityChannelQueryDto queryDto) {
         return activityChannelMapper.selectVVByActivityChannel(queryDto);
     }
 

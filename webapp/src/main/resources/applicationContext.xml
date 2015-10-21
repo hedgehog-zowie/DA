@@ -19,22 +19,7 @@
         </mvc:argument-resolvers>
     </mvc:annotation-driven>
 
-    <!--<mvc:resources mapping="/bootstrap/**" location="/resources/adminlte/bootstrap/"/>-->
-    <!--<mvc:resources mapping="/dist/**" location="/resources/adminlte/dist/"/>-->
-    <!--<mvc:resources mapping="/plugins/**" location="/resources/adminlte/plugins/"/>-->
-    <!--<mvc:resources mapping="/font-awesome/**" location="/resources/font-awesome/"/>-->
-    <!--<mvc:resources mapping="/js/**" location="/resources/js/"/>-->
-    <!--<mvc:resources mapping="/css/**" location="/resources/css/"/>-->
     <mvc:resources mapping="/resources/**" location="/resources/"/>
-
-    <!--<bean id="appContextHolder" class="com.iuni.data.webapp.common.AppContextHolder" scope="singleton"/>-->
-
-    <context:property-placeholder location="classpath:hbase.properties" ignore-unresolvable="true"/>
-
-    <bean id="flowOfBuriedPointService" class="com.iuni.data.webapp.service.flow.impl.FlowOfBuriedPointServiceImpl"
-          p:hbaseQuorum="${hbase.zookeeper.quorum}"
-          p:tableName="${page.dataTable.name}">
-    </bean>
 
     <import resource="classpath:config/spring/applicationContext-shiro.xml"/>
     <import resource="classpath:config/spring/trace-context.xml"/>

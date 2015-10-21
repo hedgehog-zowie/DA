@@ -98,7 +98,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-md-0">
                                     <button id="query-button" type="submit" class="btn green">查询</button>
                                 </div>
                             </div>

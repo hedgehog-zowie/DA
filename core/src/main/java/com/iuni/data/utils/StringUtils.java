@@ -1,7 +1,6 @@
 package com.iuni.data.utils;
 
 import com.iuni.data.persist.model.AbstractQueryDto;
-import com.iuni.data.persist.model.activity.ChannelQueryDto;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -73,4 +72,5 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
             return String.valueOf(obj);
         }
     }
+
 }

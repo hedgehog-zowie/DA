@@ -1,14 +1,17 @@
 package com.iuni.data.webapp.controller.active;
 
+import com.iuni.data.persist.domain.ConfigConstants;
 import com.iuni.data.persist.domain.config.Channel;
-import com.iuni.data.persist.model.activity.ChannelTableDto;
-import com.iuni.data.persist.model.activity.ChannelQueryDto;
-import com.iuni.data.persist.model.activity.ChannelChartDto;
+import com.iuni.data.persist.domain.config.ChannelType;
+import com.iuni.data.persist.model.activity.ActivityChannelTableDto;
+import com.iuni.data.persist.model.activity.ActivityChannelQueryDto;
+import com.iuni.data.persist.model.activity.ActivityChannelChartDto;
 import com.iuni.data.utils.ExcelUtils;
 import com.iuni.data.utils.StringUtils;
 import com.iuni.data.utils.JsonUtils;
 import com.iuni.data.webapp.common.PageName;
 import com.iuni.data.webapp.service.activity.ActivityService;
+import com.iuni.data.webapp.service.config.ChannelTypeService;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,33 +36,39 @@ public class ChannelController {
 
     @Autowired
     private ActivityService activityService;
+    @Autowired
+    private ChannelTypeService channelTypeService;
 
     @RequestMapping
     public ModelAndView queryTable() {
-        ChannelQueryDto queryParam = new ChannelQueryDto();
+        ActivityChannelQueryDto queryParam = new ActivityChannelQueryDto();
         queryParam.setDateRangeString(StringUtils.getLastSevenDaysRangeString());
         return queryTable(queryParam);
     }
 
     @RequestMapping("query")
-    public ModelAndView queryTable(@ModelAttribute("queryParam") ChannelQueryDto queryParam) {
+    public ModelAndView queryTable(@ModelAttribute("queryParam") ActivityChannelQueryDto queryParam) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.active_channel.getPath());
         StringUtils.parseDateRangeString(queryParam);
-        List<ChannelTableDto> resultList = activityService.selectActivityChannel(queryParam);
+        List<ActivityChannelTableDto> resultList = activityService.selectActivityChannel(queryParam);
         modelAndView.addObject("resultList", resultList);
         modelAndView.addObject("queryParam", queryParam);
-        modelAndView.addObject("channelTypes", Channel.ChannelType.getAllChannelType());
+
+        ChannelType channelType = new ChannelType();
+        channelType.setCancelFlag(ConfigConstants.LOGICAL_CANCEL_FLAG_NOT_CANCEL);
+        channelType.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
+        modelAndView.addObject("channelTypes", channelTypeService.listChannelType(channelType));
         return modelAndView;
     }
 
     @RequestMapping("data")
     @ResponseBody
-    public Map<String, Object> queryChartData(@RequestBody ChannelQueryDto queryParam) {
+    public Map<String, Object> queryChartData(@RequestBody ActivityChannelQueryDto queryParam) {
         StringUtils.parseDateRangeString(queryParam);
         Map<String, Object> modelMap = new HashMap<>(2);
-        ChannelQueryDto.DataType dataType = ChannelQueryDto.DataType.valueOf(queryParam.getDataType());
-        List<ChannelChartDto> seriesData = new ArrayList<>();
+        ActivityChannelQueryDto.DataType dataType = ActivityChannelQueryDto.DataType.valueOf(queryParam.getDataType());
+        List<ActivityChannelChartDto> seriesData = new ArrayList<>();
         switch (dataType) {
             case on:
                 seriesData = activityService.selectOrderByActivityChannel(queryParam);
@@ -80,7 +89,7 @@ public class ChannelController {
                 break;
         }
         List<String> legendData = new ArrayList<>(seriesData.size());
-        for (ChannelChartDto echartsValueDto : seriesData)
+        for (ActivityChannelChartDto echartsValueDto : seriesData)
             legendData.add(echartsValueDto.getName());
         modelMap.put("title", dataType.getName());
         modelMap.put("legendData", legendData);
@@ -96,16 +105,16 @@ public class ChannelController {
      */
     @RequestMapping("exportExcel")
     public String exportExcel(String queryParamStr, HttpServletResponse response) {
-        ChannelQueryDto queryParam = JsonUtils.fromJson(queryParamStr, ChannelQueryDto.class);
+        ActivityChannelQueryDto queryParam = JsonUtils.fromJson(queryParamStr, ActivityChannelQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
             String fileName = new String(("活动-渠道分析(" + queryParam.getDateRangeString().replaceAll("\\s+","") + ")").getBytes(), "ISO8859-1");
             response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
 
             StringUtils.parseDateRangeString(queryParam);
-            List<ChannelTableDto> resultList = activityService.selectActivityChannel(queryParam);
+            List<ActivityChannelTableDto> resultList = activityService.selectActivityChannel(queryParam);
 
-            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(generateTableHeaders(), generateTableDatas(resultList));
+            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(ActivityChannelTableDto.generateTableHeader(), ActivityChannelTableDto.generateTableData(resultList));
             wb.write(response.getOutputStream());
 
             response.getOutputStream().flush();
@@ -120,71 +129,6 @@ public class ChannelController {
             }
         }
         return null;
-    }
-
-    /**
-     * 表头
-     * @return
-     */
-    private Map<String, String> generateTableHeaders() {
-        Map<String, String> tableHeader = new LinkedHashMap<>();
-        tableHeader.put("日期", "time");
-        tableHeader.put("推广渠道", "channelName");
-        tableHeader.put("推广链接", "channelUrl");
-        tableHeader.put("PV", "pv");
-        tableHeader.put("UV", "uv");
-        tableHeader.put("VV", "vv");
-        tableHeader.put("跳出率", "jumpRate");
-        tableHeader.put("人均浏览页面", "avrPages");
-        tableHeader.put("平均访问深度", "avrDeeps");
-        tableHeader.put("平均访问时间", "avrTimes");
-        tableHeader.put("注册页UV", "ruv");
-        tableHeader.put("注册成功数", "rsNum");
-        tableHeader.put("注册转化率", "rRate");
-        tableHeader.put("注册成功率", "rsRate");
-        tableHeader.put("下单总数量", "orderNum");
-        tableHeader.put("下单总金额", "orderAmount");
-        tableHeader.put("下单转化率", "orderTrans");
-        tableHeader.put("已支付订单数", "paidOrderNum");
-        tableHeader.put("已支付订单比", "payRate");
-        tableHeader.put("已支付订单金额", "paidOrderAmount");
-        tableHeader.put("客单价", "avgAmount");
-        return tableHeader;
-    }
-
-    /**
-     * 表数据
-     * @param channelTableDtoList
-     * @return
-     */
-    private List<Map<String, String>> generateTableDatas(List<ChannelTableDto> channelTableDtoList) {
-        List<Map<String, String>> tableDatas = new ArrayList<>();
-        for (ChannelTableDto channelTableDto : channelTableDtoList) {
-            Map<String, String> rowData = new HashMap<>();
-            rowData.put("time", channelTableDto.getTime().toString());
-            rowData.put("channelName", channelTableDto.getChannelName());
-            rowData.put("channelUrl", channelTableDto.getChannelUrl());
-            rowData.put("pv", String.valueOf(channelTableDto.getPv()));
-            rowData.put("uv", String.valueOf(channelTableDto.getUv()));
-            rowData.put("vv", String.valueOf(channelTableDto.getVv()));
-            rowData.put("jumpRate", String.valueOf(channelTableDto.getJumpRate()));
-            rowData.put("avrPages", String.valueOf(channelTableDto.getAvrPages()));
-            rowData.put("avrDeeps", String.valueOf(channelTableDto.getAvrDeeps()));
-            rowData.put("avrTimes", String.valueOf(channelTableDto.getAvrTimes()));
-            rowData.put("ruv", String.valueOf(channelTableDto.getRuv()));
-            rowData.put("rsNum", String.valueOf(channelTableDto.getRsNum()));
-            rowData.put("rRate", String.valueOf(channelTableDto.getrRate()));
-            rowData.put("rsRate", String.valueOf(channelTableDto.getRsRate()));
-            rowData.put("orderNum", String.valueOf(channelTableDto.getOrderNum()));
-            rowData.put("orderAmount", String.valueOf(channelTableDto.getOrderAmount()));
-            rowData.put("orderTrans", String.valueOf(channelTableDto.getOrderTrans()));
-            rowData.put("paidOrderNum", String.valueOf(channelTableDto.getPaidOrderAmount()));
-            rowData.put("payRate", String.valueOf(channelTableDto.getPayRate()));
-            rowData.put("paidOrderAmount", String.valueOf(channelTableDto.getPaidOrderAmount()));
-            rowData.put("avgAmount", String.valueOf(channelTableDto.getAvgAmount()));
-            tableDatas.add(rowData);
-        }
-        return tableDatas;
     }
 
 }

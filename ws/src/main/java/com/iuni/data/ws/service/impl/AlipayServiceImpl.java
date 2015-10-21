@@ -5,6 +5,7 @@ import com.iuni.data.persist.domain.taobao.AlipayRecord;
 import com.iuni.data.persist.domain.taobao.TradeRecord;
 import com.iuni.data.persist.repository.taobao.AlipayRecordRepository;
 import com.iuni.data.persist.repository.taobao.TradeRecordRepository;
+import com.iuni.data.utils.DateUtils;
 import com.iuni.data.ws.service.AlipayService;
 import com.taobao.api.ApiException;
 import com.taobao.api.internal.parser.json.JsonConverter;
@@ -62,8 +63,8 @@ public class AlipayServiceImpl implements AlipayService {
         List<TradeRecord> resultList = new ArrayList<>();
         if (tradeRecordList != null)
             for (com.taobao.api.domain.TradeRecord tradeRecord : tradeRecordList) {
-                TradeRecord nTradeRecord = new TradeRecord();
-                resultList.add(nTradeRecord.copy(tradeRecord));
+                TradeRecord nTradeRecord = translateTradeRecord(tradeRecord);
+                resultList.add(nTradeRecord);
 //            tradeRecordRepository.deleteByAlipayOrderNo(nTradeRecord.getAlipayOrderNo(), nTradeRecord.getCreateTime());
                 logger.debug("trade record: {}", nTradeRecord.toString());
             }
@@ -92,14 +93,63 @@ public class AlipayServiceImpl implements AlipayService {
         List<AlipayRecord> resultList = new ArrayList<>();
         if (alipayRecordList != null)
             for (com.taobao.api.domain.AlipayRecord alipayRecord : alipayRecordList) {
-                AlipayRecord nAlipayRecord = new AlipayRecord();
-                resultList.add(nAlipayRecord.copy(alipayRecord));
+                AlipayRecord nAlipayRecord = translateAlipayRecord(alipayRecord);
+                resultList.add(nAlipayRecord);
 //            alipayRecordRepository.deleteByAlipayOrderNo(nAlipayRecord.getAlipayOrderNo(), nAlipayRecord.getCreateTime());
                 logger.debug("alipay record: {}", nAlipayRecord.toString());
             }
 
         alipayRecordRepository.save(resultList);
         return true;
+    }
+
+    /**
+     * 转化结果
+     * @param tradeRecord
+     * @return
+     */
+    private TradeRecord translateTradeRecord(com.taobao.api.domain.TradeRecord tradeRecord) {
+        TradeRecord nTradeRecord = new TradeRecord();
+        nTradeRecord.setAlipayOrderNo(tradeRecord.getAlipayOrderNo());
+        nTradeRecord.setCreateTime(DateUtils.dateToSimpleDateStr(tradeRecord.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
+        nTradeRecord.setMerchantOrderNo(tradeRecord.getMerchantOrderNo());
+        nTradeRecord.setOrderType(tradeRecord.getOrderType());
+        nTradeRecord.setOrderStatus(tradeRecord.getOrderStatus());
+        nTradeRecord.setOwnerUserId(tradeRecord.getOwnerUserId());
+        nTradeRecord.setOwnerLogonId(tradeRecord.getOwnerLogonId());
+        nTradeRecord.setOwnerName(tradeRecord.getOwnerName());
+        nTradeRecord.setOppositeUserId(tradeRecord.getOppositeUserId());
+        nTradeRecord.setOppositeName(tradeRecord.getOppositeName());
+        nTradeRecord.setOppositeLogonId(tradeRecord.getOppositeLogonId());
+        nTradeRecord.setOrderTitle(tradeRecord.getOrderTitle());
+        nTradeRecord.setTotalAmount(tradeRecord.getTotalAmount());
+        nTradeRecord.setServiceCharge(tradeRecord.getServiceCharge());
+        nTradeRecord.setOrderFrom(tradeRecord.getOrderFrom());
+        nTradeRecord.setModifiedTime(DateUtils.dateToSimpleDateStr(tradeRecord.getModifiedTime(), "yyyy-MM-dd HH:mm:ss"));
+        nTradeRecord.setInOutType(tradeRecord.getInOutType());
+        return nTradeRecord;
+    }
+
+    /**
+     * 转化结果
+     *
+     * @param alipayRecord
+     * @return
+     */
+    private AlipayRecord translateAlipayRecord(com.taobao.api.domain.AlipayRecord alipayRecord) {
+        AlipayRecord nAlipayRecord = new AlipayRecord();
+        nAlipayRecord.setAlipayOrderNo(alipayRecord.getAlipayOrderNo());
+        nAlipayRecord.setBalance(alipayRecord.getBalance());
+        nAlipayRecord.setMemo(alipayRecord.getMemo());
+        nAlipayRecord.setOptUserId(alipayRecord.getOptUserId());
+        nAlipayRecord.setMerchantOrderNo(alipayRecord.getMerchantOrderNo());
+        nAlipayRecord.setCreateTime(alipayRecord.getCreateTime());
+        nAlipayRecord.setSelfUserId(alipayRecord.getSelfUserId());
+        nAlipayRecord.setBusinessType(alipayRecord.getBusinessType());
+        nAlipayRecord.setOutAmount(alipayRecord.getOutAmount());
+        nAlipayRecord.setType(alipayRecord.getType());
+        nAlipayRecord.setInAmount(alipayRecord.getInAmount());
+        return nAlipayRecord;
     }
 
 }

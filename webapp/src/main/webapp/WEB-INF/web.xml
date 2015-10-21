@@ -25,11 +25,49 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>springMvc</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
+
+    <!-- druid监控配置 -->
+    <servlet>
+        <servlet-name>DruidStatView</servlet-name>
+        <servlet-class>com.alibaba.druid.support.http.StatViewServlet</servlet-class>
+        <init-param>
+            <!-- 允许清空统计数据 -->
+            <param-name>resetEnable</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <!-- 用户名 -->
+            <param-name>loginUsername</param-name>
+            <param-value>admin</param-value>
+        </init-param>
+        <init-param>
+            <!-- 密码 -->
+            <param-name>loginPassword</param-name>
+            <param-value>iunidaadmin</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DruidStatView</servlet-name>
+        <url-pattern>/druid/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- druid监控配置 -->
+    <filter>
+        <filter-name>DruidWebStatFilter</filter-name>
+        <filter-class>com.alibaba.druid.support.http.WebStatFilter</filter-class>
+        <init-param>
+            <param-name>exclusions</param-name>
+            <param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*, /exportExcel</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>DruidWebStatFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <filter>
         <filter-name>shiroFilter</filter-name>
@@ -39,7 +77,6 @@
             <param-value>true</param-value>
         </init-param>
     </filter>
-
     <filter-mapping>
         <filter-name>shiroFilter</filter-name>
         <url-pattern>/*</url-pattern>
@@ -66,4 +103,14 @@
     <!--<welcome-file>index.jsp</welcome-file>-->
     <!--</welcome-file-list>-->
 
+    <error-page>
+        <!-- Missing login -->
+        <error-code>404</error-code>
+        <location>/jsp/error/404.jsp</location>
+    </error-page>
+    <error-page>
+        <!-- Uncaught exception -->
+        <error-code>500</error-code>
+        <location>/jsp/error/500.jsp</location>
+    </error-page>
 </web-app>

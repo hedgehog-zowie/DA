@@ -8,7 +8,9 @@ alter table IUNI_DA_WEBKPI_CLICK drop constraint FK_WEBKPI_CLICK_RTAG_ID;
 drop table IUNI_DA_WEBKPI_CLICK cascade constraints;
 
 -- channel
+alter table IUNI_DA_CHANNEL drop constraint FK_CHANNEL_TYPE_ID;
 drop table IUNI_DA_CHANNEL cascade constraints;
+drop table IUNI_DA_CHANNEL_TYPE cascade constraints;
 
 -- flow source and type
 alter table IUNI_DA_FLOW_SOURCE drop constraint FK_FLOW_SOURCE_TYPE_ID;

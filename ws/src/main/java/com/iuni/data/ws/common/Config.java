@@ -1,16 +1,10 @@
 package com.iuni.data.ws.common;
 
 import com.iuni.data.common.Constants;
-import com.iuni.data.ws.util.PropertiesUtil;
+import com.iuni.data.utils.PropertiesUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.util.Bytes;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Properties;
 
 /**
  * @author Nicholas

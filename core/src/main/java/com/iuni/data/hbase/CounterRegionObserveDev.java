@@ -36,7 +36,6 @@ public class CounterRegionObserveDev extends BaseRegionObserver {
 
     private static final Logger logger = LoggerFactory.getLogger(CounterRegionObserveDev.class);
 
-    private static final Configuration conf = new Configuration();
     private static final String uvTableName = "uv_t";
     private static final String vvTableName = "vv_t";
     private static final String ipTableName = "ip_t";
@@ -73,6 +72,8 @@ public class CounterRegionObserveDev extends BaseRegionObserver {
         }
         // counter column name
         String dayTimeStr = DateUtils.dateToSimpleDateStr(new Date(Long.parseLong(timestampStr)), "yyyyMMdd");
+
+        Configuration conf = e.getEnvironment().getConfiguration();
 
         HTable uvTable = new HTable(conf, uvTableName);
         List<Cell> uvCells = put.get(Bytes.toBytes(Constants.pageReportDataTableCfDefault), Bytes.toBytes(CommonField.VK.getRealFiled()));

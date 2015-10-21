@@ -1,11 +1,13 @@
 package com.iuni.data.webapp.controller.config;
 
-import com.iuni.data.common.ConfigConstants;
+import com.iuni.data.persist.domain.ConfigConstants;
 import com.iuni.data.persist.domain.config.Channel;
+import com.iuni.data.persist.domain.config.ChannelType;
 import com.iuni.data.utils.ExcelUtils;
 import com.iuni.data.utils.GenerateShortUrlUtils;
 import com.iuni.data.webapp.common.PageName;
 import com.iuni.data.webapp.service.config.ChannelService;
+import com.iuni.data.webapp.service.config.ChannelTypeService;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,8 @@ public class ChannelConfigController {
 
     @Autowired
     private ChannelService channelService;
+    @Autowired
+    private ChannelTypeService channelTypeService;
 
     /**
      * 渠道配置
@@ -45,7 +49,7 @@ public class ChannelConfigController {
         Channel channel = new Channel();
         // 0 表示有效
         channel.setCancelFlag(ConfigConstants.LOGICAL_CANCEL_FLAG_NOT_CANCEL);
-        channel.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
+//        channel.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
         channelList = channelService.listChannel(channel);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.config_channel.getPath());
@@ -78,7 +82,12 @@ public class ChannelConfigController {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.config_channel_edit.getPath());
         modelAndView.addObject("channel", channel);
-        modelAndView.addObject("channelTypes", Channel.ChannelType.getAllChannelType());
+
+        ChannelType channelType = new ChannelType();
+        channelType.setCancelFlag(ConfigConstants.LOGICAL_CANCEL_FLAG_NOT_CANCEL);
+        channelType.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
+        modelAndView.addObject("channelTypes", channelTypeService.listChannelType(channelType));
+
         return modelAndView;
     }
 
@@ -109,6 +118,28 @@ public class ChannelConfigController {
     public String deleteChannel(@RequestParam(value = "ids", required = true) String ids) {
         logger.info("delete channel. ids: {}", ids);
         channelService.deleteChannel(ids);
+        return "redirect:/config/channel";
+    }
+
+    /**
+     * 启用
+     * @return
+     */
+    @RequestMapping("/enable")
+    public String enableChannel(@RequestParam(value = "ids", required = true) String ids){
+        logger.info("enable channel. ids: {}", ids);
+        channelService.enableChannel(ids);
+        return "redirect:/config/channel";
+    }
+
+    /**
+     * 禁用
+     * @return
+     */
+    @RequestMapping("/disable")
+    public String disableChannel(@RequestParam(value = "ids", required = true) String ids){
+        logger.info("disable channel. ids: {}", ids);
+        channelService.disableChannel(ids);
         return "redirect:/config/channel";
     }
 
@@ -161,7 +192,7 @@ public class ChannelConfigController {
             channel.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
             channelList = channelService.listChannel(channel);
 
-            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(generateTableHeaders(), generateTableDatas(channelList));
+            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(Channel.generateTableHeader(), Channel.generateTableData(channelList));
             wb.write(response.getOutputStream());
 
             response.getOutputStream().flush();
@@ -176,43 +207,6 @@ public class ChannelConfigController {
             }
         }
         return null;
-    }
-
-    /**
-     * 表头
-     * @return
-     */
-    private Map<String, String> generateTableHeaders() {
-        Map<String, String> tableHeader = new LinkedHashMap<>();
-        tableHeader.put("名称", "name");
-        tableHeader.put("渠道AD编码", "code");
-        tableHeader.put("渠道类型", "channelType");
-        tableHeader.put("原始链接", "originalUrl");
-        tableHeader.put("推广链接", "promotionUrl");
-        tableHeader.put("短链接", "shortUrl");
-        tableHeader.put("备注", "desc");
-        return tableHeader;
-    }
-
-    /**
-     * 表数据
-     * @param channelList
-     * @return
-     */
-    private List<Map<String, String>> generateTableDatas(List<Channel> channelList) {
-        List<Map<String, String>> tableDatas = new ArrayList<>();
-        for (Channel channel : channelList) {
-            Map<String, String> rowData = new HashMap<>();
-            rowData.put("name", channel.getName());
-            rowData.put("code", channel.getCode());
-            rowData.put("channelType", channel.getChannelType());
-            rowData.put("originalUrl", channel.getOriginalUrl());
-            rowData.put("promotionUrl", channel.getPromotionUrl());
-            rowData.put("shortUrl", channel.getShortUrl());
-            rowData.put("desc", channel.getDesc());
-            tableDatas.add(rowData);
-        }
-        return tableDatas;
     }
 
     /* ================= */

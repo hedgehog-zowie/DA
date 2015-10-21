@@ -244,12 +244,17 @@ var ActiveChannelTable = function () {
 
         $('#activity-channel-table-export').click(function (e) {
             e.preventDefault();
-            var dateRangeString = $("#daterangepicker").val();
-            var channelType = $("#channelType").val();
-            var channelCode = $("#channelCode").val();
+            var dateRangeString = $("#daterangepicker").val() ? $("#daterangepicker").val() : "";
+            var channelTypeId = $("#channelType").val() ? $("#channelType").val() : 0;
+            var channelCode = $("#channelCode").val() ? $("#channelCode").val() : "";
             var queryParams = {
                 "dateRangeString": dateRangeString,
-                "channel": {"channelType": channelType, "code": channelCode},
+                "channel": {
+                    "channelType": {
+                        "id": channelTypeId
+                    },
+                    "code": channelCode
+                },
             };
             location.href = "/activity/channel/exportExcel?queryParamStr=" + JSON.stringify(queryParams);
         });

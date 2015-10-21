@@ -36,8 +36,6 @@ public class CounterRegionObserve extends BaseRegionObserver {
 
     private static final Logger logger = LoggerFactory.getLogger(CounterRegionObserve.class);
 
-    private static final Configuration conf = new Configuration();
-
     @Override
     public void postPut(ObserverContext<RegionCoprocessorEnvironment> e, Put put, WALEdit edit, Durability durability) throws IOException {
         String rowKey = Bytes.toString(put.getRow());
@@ -70,6 +68,8 @@ public class CounterRegionObserve extends BaseRegionObserver {
         }
         // counter column name
         String dayTimeStr = DateUtils.dateToSimpleDateStr(new Date(Long.parseLong(timestampStr)), "yyyyMMdd");
+
+        Configuration conf = e.getEnvironment().getConfiguration();
 
         HTable uvTable = new HTable(conf, Constants.hbaseTable_UV_DEFAULT);
         List<Cell> uvCells = put.get(Bytes.toBytes(Constants.pageReportDataTableCfDefault), Bytes.toBytes(CommonField.VK.getRealFiled()));

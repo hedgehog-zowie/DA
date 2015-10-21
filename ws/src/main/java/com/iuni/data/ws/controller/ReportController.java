@@ -11,7 +11,7 @@ import com.iuni.data.utils.HttpUtils;
 import com.iuni.data.ws.common.Config;
 import com.iuni.data.ws.common.CookieKey;
 import com.iuni.data.ws.common.ReturnCode;
-import com.iuni.data.ws.util.CookieUtil;
+import com.iuni.data.utils.CookieUtil;
 import net.sf.json.JSONArray;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.client.Get;
@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -105,11 +106,11 @@ public class ReportController {
                     }
                 }
                 if (StringUtils.isBlank(vk)) {
-                    vk = getUvCookieVal();
-                    CookieUtil.addToCookie(request, response, CookieKey.VK.getName(), vk);
+                    vk = getUvCookieVal(ip);
+                    CookieUtil.addToCookie(request, response, CookieKey.VK.getName(), vk, Integer.MAX_VALUE);
                 }
                 if (StringUtils.isBlank(sid)) {
-                    sid = getUvCookieVal();
+                    sid = getVvCookieVal();
                     CookieUtil.addToCookie(request, response, CookieKey.SID.getName(), sid);
                 }
                 // save report data to hbase
@@ -261,15 +262,23 @@ public class ReportController {
      *
      * @return String
      */
-    private String getUvCookieVal() {
+    private String getUvCookieVal(String ip) {
         String uvCookieVal;
         long time = System.nanoTime();
 
-        uvCookieVal = CookieUtil.genUvCookie(time);
+        uvCookieVal = CookieUtil.genUvCookie(ip, time);
         if (uvCookieVal == null)
             uvCookieVal = String.valueOf(time);
 
         return uvCookieVal;
+    }
+
+    /**
+     * 获取VV Cookie Value
+     * @return
+     */
+    private String getVvCookieVal() {
+        return UUID.randomUUID().toString();
     }
 
 }

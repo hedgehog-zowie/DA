@@ -20,4 +20,7 @@ public interface BuriedPointService {
 
     boolean deleteBuriedPoint(String ids);
 
+    boolean enableBuriedPoint(String ids);
+
+    boolean disableBuriedPoint(String ids);
 }

@@ -1,8 +1,12 @@
 package com.iuni.data.webapp.service.config.impl;
 
+import com.iuni.data.persist.domain.ConfigConstants;
 import com.iuni.data.persist.domain.config.Channel;
+import com.iuni.data.persist.domain.config.ChannelType;
 import com.iuni.data.persist.domain.config.QChannel;
+import com.iuni.data.persist.domain.config.QChannelType;
 import com.iuni.data.persist.repository.config.ChannelRepository;
+import com.iuni.data.persist.repository.config.ChannelTypeRepository;
 import com.iuni.data.webapp.service.config.ChannelService;
 import com.iuni.data.webapp.sso.service.AccountService;
 import com.mysema.query.types.expr.BooleanExpression;
@@ -35,7 +39,7 @@ public class ChannelServiceImpl implements ChannelService {
         Channel channel = null;
         try {
             channel = channelRepository.findOne(id);
-            channel.setChannelType(channel.getCode().substring(0, 2));
+//            channelType.setChannelType(channelType.getCode().substring(0, 2));
             channel.setChannelSerial(channel.getCode().substring(2, 4));
             channel.setActiveDate(channel.getCode().substring(4));
         } catch (Exception e) {
@@ -67,8 +71,8 @@ public class ChannelServiceImpl implements ChannelService {
         while (iterator.hasNext()) {
             Channel nChannel = iterator.next();
             String code = nChannel.getCode();
-            if(code.length() == Channel.CODE_LENGTH) {
-                nChannel.setChannelType(code.substring(0, 2));
+            if (code.length() == Channel.CODE_LENGTH) {
+//                nChannel.setChannelType(code.substring(0, 2));
                 nChannel.setChannelSerial(code.substring(2, 4));
                 nChannel.setActiveDate(code.substring(4));
             }
@@ -89,9 +93,75 @@ public class ChannelServiceImpl implements ChannelService {
         if (oldChannel != null) {
             channel.setCreateBy(oldChannel.getCreateBy());
             channel.setCreateDate(oldChannel.getCreateDate());
+            channel.setStatus(oldChannel.getStatus());
             channel.setBasicInfoForUpdate(accountService.getCurrentUser().getLoginName());
         }
         return saveChannel(channel);
+    }
+
+    @Override
+    public boolean deleteChannel(String ids) {
+        List<Channel> channelList = new ArrayList<>();
+        try {
+            String[] idArray = ids.split(",");
+            for (String id : idArray) {
+                if (!StringUtils.isNumeric(id))
+                    continue;
+                Channel channel = getById(Long.parseLong(id));
+                if (channel != null) {
+                    channel.setBasicInfoForCancel(accountService.getCurrentUser().getLoginName());
+                    channelList.add(channel);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("logic delete channel error. msg: {}", e.getLocalizedMessage());
+            return false;
+        }
+        return saveChannel(channelList);
+    }
+
+    @Override
+    public boolean enableChannel(String ids){
+        List<Channel> channelList = new ArrayList<>();
+        try {
+            String[] idArray = ids.split(",");
+            for (String id : idArray) {
+                if (!StringUtils.isNumeric(id))
+                    continue;
+                Channel channel = getById(Long.parseLong(id));
+                if (channel != null) {
+                    channel.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
+                    channel.setBasicInfoForUpdate(accountService.getCurrentUser().getLoginName());
+                    channelList.add(channel);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("enable channel error. msg: {}", e.getLocalizedMessage());
+            return false;
+        }
+        return saveChannel(channelList);
+    }
+
+    @Override
+    public boolean disableChannel(String ids){
+        List<Channel> channelList = new ArrayList<>();
+        try {
+            String[] idArray = ids.split(",");
+            for (String id : idArray) {
+                if (!StringUtils.isNumeric(id))
+                    continue;
+                Channel channel = getById(Long.parseLong(id));
+                if (channel != null) {
+                    channel.setStatus(ConfigConstants.STATUS_FLAG_INVALID);
+                    channel.setBasicInfoForUpdate(accountService.getCurrentUser().getLoginName());
+                    channelList.add(channel);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("disable channel error. msg: {}", e.getLocalizedMessage());
+            return false;
+        }
+        return saveChannel(channelList);
     }
 
     private boolean saveChannel(Channel channel) {
@@ -112,27 +182,6 @@ public class ChannelServiceImpl implements ChannelService {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public boolean deleteChannel(String ids) {
-        List<Channel> channelList = new ArrayList<>();
-        try {
-            String[] idArray = ids.split(",");
-            for (String id : idArray) {
-                if (!StringUtils.isNumeric(id))
-                    continue;
-                Channel channel = getById(Long.parseLong(id));
-                if (channel != null) {
-                    channel.setBasicInfoForCancel(accountService.getCurrentUser().getLoginName());
-                    channelList.add(channel);
-                }
-            }
-        } catch (Exception e) {
-            logger.error("logic delete channel step error. msg: {}", e.getLocalizedMessage());
-            return false;
-        }
-        return saveChannel(channelList);
     }
 
     /**
@@ -162,4 +211,5 @@ public class ChannelServiceImpl implements ChannelService {
         }
         return booleanExpression;
     }
+
 }

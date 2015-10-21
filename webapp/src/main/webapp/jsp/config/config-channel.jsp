@@ -37,12 +37,6 @@
                 <i class="fa fa-dashboard"></i> Home > 系统配置 > 来源配置 >
                 <small>渠道配置</small>
             </h1>
-            <%--<ol class="breadcrumb">--%>
-            <%--<li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>--%>
-            <%--<li><a href="#">系统配置</a></li>--%>
-            <%--<li><a href="#">来源配置</a></li>--%>
-            <%--<li class="active">渠道配置</li>--%>
-            <%--</ol>--%>
         </section>
 
         <!-- Main content -->
@@ -99,10 +93,19 @@
                                         <td>${channel.createDate}</td>
                                         <td>${channel.desc}</td>
                                         <td>
-                                            <a class="edit" id="edit_${channel.id}" href="javascript:;"><i
-                                                    class="fa fa-pencil text-green"></i> 编辑 </a>
+                                            <a class="edit text-blue" id="edit_${channel.id}" href="javascript:;"><i
+                                                    class="fa fa-pencil text-blue"></i> 编辑 </a>
                                             |
-                                            <a class="delete" id="delete_${channel.id}" href="javascript:;"><i
+                                            <c:if test="${channel.status == 1}">
+                                                <a class="disable text-yellow" id="disable_${channel.id}" href="javascript:;"><i
+                                                        class="fa fa-stop text-yellow"></i> 禁用 </a>
+                                            </c:if>
+                                            <c:if test="${channel.status == 0}">
+                                                <a class="enable text-green" id="enable_${channel.id}" href="javascript:;"><i
+                                                        class="fa fa-play text-green"></i> 启用 </a>
+                                            </c:if>
+                                            |
+                                            <a class="delete text-red" id="delete_${channel.id}" href="javascript:;"><i
                                                     class="fa fa-remove text-red"></i> 删除 </a>
                                         </td>
                                     </tr>

@@ -1,5 +1,6 @@
 package com.iuni.data.webapp.service.config.impl;
 
+import com.iuni.data.persist.domain.ConfigConstants;
 import com.iuni.data.persist.domain.config.BuriedPoint;
 import com.iuni.data.persist.domain.config.QBuriedPoint;
 import com.iuni.data.persist.repository.config.BuriedPointRepository;
@@ -69,6 +70,7 @@ public class BuriedPointServiceImpl implements BuriedPointService {
         if (oldBuriedPoint != null) {
             buriedPoint.setCreateBy(oldBuriedPoint.getCreateBy());
             buriedPoint.setCreateDate(oldBuriedPoint.getCreateDate());
+            buriedPoint.setStatus(oldBuriedPoint.getStatus());
             buriedPoint.setBasicInfoForUpdate(accountService.getCurrentUser().getLoginName());
         }
         return saveBuriedPoint(buriedPoint);
@@ -90,6 +92,50 @@ public class BuriedPointServiceImpl implements BuriedPointService {
             }
         } catch (Exception e) {
             logger.error("logic delete buriedPoint error. msg: {}", e.getLocalizedMessage());
+            return false;
+        }
+        return saveBuriedPoint(buriedPointList);
+    }
+
+    @Override
+    public boolean enableBuriedPoint(String ids){
+        List<BuriedPoint> buriedPointList = new ArrayList<>();
+        try {
+            String[] idArray = ids.split(",");
+            for (String id : idArray) {
+                if (!StringUtils.isNumeric(id))
+                    continue;
+                BuriedPoint buriedPoint = getById(Long.parseLong(id));
+                if (buriedPoint != null) {
+                    buriedPoint.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
+                    buriedPoint.setBasicInfoForUpdate(accountService.getCurrentUser().getLoginName());
+                    buriedPointList.add(buriedPoint);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("enable buriedPoint error. msg: {}", e.getLocalizedMessage());
+            return false;
+        }
+        return saveBuriedPoint(buriedPointList);
+    }
+
+    @Override
+    public boolean disableBuriedPoint(String ids){
+        List<BuriedPoint> buriedPointList = new ArrayList<>();
+        try {
+            String[] idArray = ids.split(",");
+            for (String id : idArray) {
+                if (!StringUtils.isNumeric(id))
+                    continue;
+                BuriedPoint buriedPoint = getById(Long.parseLong(id));
+                if (buriedPoint != null) {
+                    buriedPoint.setStatus(ConfigConstants.STATUS_FLAG_INVALID);
+                    buriedPoint.setBasicInfoForUpdate(accountService.getCurrentUser().getLoginName());
+                    buriedPointList.add(buriedPoint);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("enable buriedPoint error. msg: {}", e.getLocalizedMessage());
             return false;
         }
         return saveBuriedPoint(buriedPointList);

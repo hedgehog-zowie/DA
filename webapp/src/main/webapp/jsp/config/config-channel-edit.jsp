@@ -66,7 +66,8 @@
                                         <button class="close" data-close="alert"></button>
                                         校验通过！
                                     </div>
-                                    <input type="hidden" id="channel-id" name="id" value="${channel.id}" path="id"/>
+                                    <form:input type="hidden" id="channel-id" name="id" value="${channel.id}"
+                                                path="id"/>
 
                                     <div class="form-group">
                                         <name class="control-name col-md-3">渠道名称 <span class="required">
@@ -74,9 +75,10 @@
                                         </name>
 
                                         <div class="col-md-4">
-                                            <input type="text" name="name" value="${channel.name}" data-required="1"
-                                                   class="form-control"
-                                                   path="name"/>
+                                            <form:input type="text" name="name" value="${channel.name}"
+                                                        data-required="1"
+                                                        class="form-control"
+                                                        path="name"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -85,9 +87,9 @@
                                         </name>
 
                                         <div class="col-md-4">
-                                            <input type="text" id="original_url" name="originalUrl"
-                                                   value="${channel.originalUrl}" data-required="1"
-                                                   class="form-control change" path="originalUrl"/>
+                                            <form:input type="text" id="original_url" name="originalUrl"
+                                                        value="${channel.originalUrl}" data-required="1"
+                                                        class="form-control change" path="originalUrl"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -97,21 +99,23 @@
 
                                         <div class="col-md-2">
                                             <form:select class="form-control select2me" id="channelType"
-                                                         name="channelType" value="${channel.channelType}"
-                                                         path="channelType"
+                                                         name="channelType.id" value="${channel.channelType.id}"
+                                                         path="channelType.id"
                                                          items="${channelTypes}" itemLabel="name" itemValue="id"/>
                                         </div>
                                         <div class="col-md-2">
-                                            <input id="channelSerial" name="channelSerial"
-                                                   value="${channel.channelSerial}" path="channelSerial"
-                                                   placeholder="请输入2位数字" type="text"
-                                                   class="form-control change"/>
+                                            <form:input id="channelSerial" name="channelSerial"
+                                                        value="${channel.channelSerial}" path="channelSerial"
+                                                        placeholder="请输入2位数字" type="text"
+                                                        class="form-control change"/>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="input-group date date-picker" data-date-format="yymmdd">
-                                                <input type="text" placeholder="选择日期" class="form-control" readonly
-                                                       id="datepicker" name="activeDate" value="${channel.activeDate}"
-                                                       path="activeDate"/>
+                                                <form:input type="text" placeholder="选择日期" class="form-control"
+                                                            readonly="true"
+                                                            id="datepicker" name="activeDate"
+                                                            value="${channel.activeDate}"
+                                                            path="activeDate"/>
 												<span class="input-group-btn">
 												<button class="btn default" type="button"><i class="fa fa-calendar"></i>
                                                 </button>
@@ -127,10 +131,10 @@
                                         </name>
 
                                         <div class="col-md-4">
-                                            <input type="text" id="promotion_url" name="promotionUrl"
-                                                   value="${channel.promotionUrl}" data-required="1"
-                                                   class="form-control" path="promotionUrl"
-                                                   readonly/>
+                                            <form:input type="text" id="promotion_url" name="promotionUrl"
+                                                        value="${channel.promotionUrl}" data-required="1"
+                                                        class="form-control" path="promotionUrl"
+                                                        readonly="true"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -141,18 +145,18 @@
                                         </name>
 
                                         <div class="col-md-4">
-                                            <input type="text" id="short_url" name="shortUrl"
-                                                   value="${channel.shortUrl}" data-required="1"
-                                                   class="form-control" path="shortUrl"
-                                                   readonly/>
+                                            <form:input type="text" id="short_url" name="shortUrl"
+                                                        value="${channel.shortUrl}" data-required="1"
+                                                        class="form-control" path="shortUrl"
+                                                        readonly="true"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <name class="control-name col-md-3">渠道备注</name>
 
                                         <div class="col-md-4">
-                                            <input name="desc" value="${channel.desc}" type="text"
-                                                   class="form-control"/>
+                                            <form:input name="desc" value="${channel.desc}" type="text"
+                                                        class="form-control" path="desc"/>
                                         </div>
                                     </div>
 

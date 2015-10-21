@@ -1,6 +1,7 @@
 package com.iuni.data.analyze.cube;
 
 import com.iuni.data.common.Constants;
+import com.iuni.data.persist.domain.ConfigConstants;
 import com.iuni.data.persist.domain.config.Channel;
 import com.iuni.data.persist.domain.config.FlowSource;
 import com.iuni.data.persist.domain.config.RTag;
@@ -38,13 +39,13 @@ public class DataCube {
     public static Channel newChannel(String code) {
         Date date = new Date();
         Channel newChannel = new Channel();
-        newChannel.setCancelFlag(0);
+        newChannel.setCancelFlag(ConfigConstants.LOGICAL_CANCEL_FLAG_CANCEL);
         int codeLength = code.length() > 10 ? 10 : code.length();
         newChannel.setCode(code.substring(0, codeLength));
         newChannel.setCreateBy(DataCube.class.getSimpleName());
         newChannel.setCreateDate(date);
         newChannel.setName(code.substring(0, codeLength));
-        newChannel.setStatus(0);
+        newChannel.setStatus(ConfigConstants.STATUS_FLAG_INVALID);
         newChannel.setUpdateBy(DataCube.class.getSimpleName());
         newChannel.setUpdateDate(date);
         return newChannel;

@@ -99,10 +99,19 @@
                                         <td>${buriedPoint.createDate}</td>
                                         <td>${buriedPoint.desc}</td>
                                         <td>
-                                            <a class="edit" id="edit_${buriedPoint.id}" href="javascript:;"><i
-                                                    class="fa fa-pencil text-green"></i> 编辑 </a>
+                                            <a class="edit text-blue" id="edit_${buriedPoint.id}" href="javascript:;"><i
+                                                    class="fa fa-pencil text-blue"></i> 编辑 </a>
                                             |
-                                            <a class="delete" id="delete_${buriedPoint.id}" href="javascript:;"><i
+                                            <c:if test="${buriedPoint.status == 1}">
+                                                <a class="disable text-yellow" id="disable_${buriedPoint.id}" href="javascript:;"><i
+                                                        class="fa fa-stop text-yellow"></i> 禁用 </a>
+                                            </c:if>
+                                            <c:if test="${buriedPoint.status == 0}">
+                                                <a class="enable text-green" id="enable_${buriedPoint.id}" href="javascript:;"><i
+                                                        class="fa fa-play text-green"></i> 启用 </a>
+                                            </c:if>
+                                            |
+                                            <a class="delete text-red" id="delete_${buriedPoint.id}" href="javascript:;"><i
                                                     class="fa fa-remove text-red"></i> 删除 </a>
                                         </td>
                                     </tr>

@@ -42,8 +42,11 @@ var ChannelTable = function () {
                 'orderable': false,
                 'targets': [0]
             }, {
-                'width': '10%',
-                'targets': [0, 5]
+                'width': '5%',
+                'targets': [0]
+            }, {
+                'width': '15%',
+                'targets': [5]
             }, {
                 'width': '20%',
                 'targets': [1, 2, 3, 4]
@@ -110,6 +113,16 @@ var ChannelTable = function () {
         channelTable.on('click', '.delete', function (e) {
             e.preventDefault();
             location.href = "/config/channel/delete?ids=" + $(this).attr("id").substring(7);
+        });
+
+        channelTable.on('click', '.enable', function (e) {
+            e.preventDefault();
+            location.href = "/config/channel/enable?ids=" + $(this).attr("id").substring(7);
+        });
+
+        channelTable.on('click', '.disable', function (e) {
+            e.preventDefault();
+            location.href = "/config/channel/disable?ids=" + $(this).attr("id").substring(8);
         });
 
     }

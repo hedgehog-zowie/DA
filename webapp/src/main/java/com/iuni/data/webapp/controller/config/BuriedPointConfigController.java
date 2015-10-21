@@ -1,6 +1,6 @@
 package com.iuni.data.webapp.controller.config;
 
-import com.iuni.data.common.ConfigConstants;
+import com.iuni.data.persist.domain.ConfigConstants;
 import com.iuni.data.persist.domain.config.BuriedPoint;
 import com.iuni.data.utils.ExcelUtils;
 import com.iuni.data.webapp.common.PageName;
@@ -44,7 +44,7 @@ public class BuriedPointConfigController {
         BuriedPoint buriedPoint = new BuriedPoint();
         // 0 表示有效
         buriedPoint.setCancelFlag(ConfigConstants.LOGICAL_CANCEL_FLAG_NOT_CANCEL);
-        buriedPoint.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
+//        buriedPoint.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
         buriedPointList = buriedPointService.listBuriedPoint(buriedPoint);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.config_buriedPoint.getPath());
@@ -111,6 +111,28 @@ public class BuriedPointConfigController {
     }
 
     /**
+     * 启用
+     * @return
+     */
+    @RequestMapping("/enable")
+    public String enableBuriedPoint(@RequestParam(value = "ids", required = true) String ids){
+        logger.info("enable buriedPoint. ids: {}", ids);
+        buriedPointService.enableBuriedPoint(ids);
+        return "redirect:/config/buriedPoint";
+    }
+
+    /**
+     * 禁用
+     * @return
+     */
+    @RequestMapping("/disable")
+    public String disableBuriedPoint(@RequestParam(value = "ids", required = true) String ids){
+        logger.info("disable buriedPoint. ids: {}", ids);
+        buriedPointService.disableBuriedPoint(ids);
+        return "redirect:/config/buriedPoint";
+    }
+
+    /**
      * 导出
      *
      * @param response
@@ -130,7 +152,7 @@ public class BuriedPointConfigController {
             buriedPoint.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
             buriedPointList = buriedPointService.listBuriedPoint(buriedPoint);
 
-            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(generateTableHeaders(), generateTableDatas(buriedPointList));
+            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(BuriedPoint.generateTableHeader(), BuriedPoint.generateTableData(buriedPointList));
             wb.write(response.getOutputStream());
 
             response.getOutputStream().flush();
@@ -145,45 +167,6 @@ public class BuriedPointConfigController {
             }
         }
         return null;
-    }
-
-    /**
-     * 表头
-     *
-     * @return
-     */
-    private Map<String, String> generateTableHeaders() {
-        Map<String, String> tableHeader = new LinkedHashMap<>();
-        tableHeader.put("站点编码", "websiteCode");
-        tableHeader.put("站点名称", "website");
-        tableHeader.put("页面名称", "pageName");
-        tableHeader.put("页面位置", "pagePosition");
-        tableHeader.put("埋点编码", "pointFlag");
-        tableHeader.put("添加时间", "createDate");
-        tableHeader.put("备注", "desc");
-        return tableHeader;
-    }
-
-    /**
-     * 表数据
-     *
-     * @param buriedPointList
-     * @return
-     */
-    private List<Map<String, String>> generateTableDatas(List<BuriedPoint> buriedPointList) {
-        List<Map<String, String>> tableDatas = new ArrayList<>();
-        for (BuriedPoint buriedPoint : buriedPointList) {
-            Map<String, String> rowData = new HashMap<>();
-            rowData.put("websiteCode", buriedPoint.getWebsiteCode());
-            rowData.put("website", buriedPoint.getWebsite());
-            rowData.put("pageName", buriedPoint.getPageName());
-            rowData.put("pagePosition", buriedPoint.getPagePosition());
-            rowData.put("pointFlag", buriedPoint.getPointFlag());
-            rowData.put("createDate", String.valueOf(buriedPoint.getCreateDate()));
-            rowData.put("desc", buriedPoint.getDesc());
-            tableDatas.add(rowData);
-        }
-        return tableDatas;
     }
 
     /* ================= */

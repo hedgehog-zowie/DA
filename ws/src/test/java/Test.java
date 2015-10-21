@@ -21,6 +21,8 @@ public class Test {
 
     public static void main(String args[]) throws IOException {
 
+        System.out.println(UUID.randomUUID().toString());
+
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), 29, 0, 0, 0);
 //        Date startTime = calendar.getTime();

@@ -647,7 +647,7 @@
             </dependency>
             <dependency>
                 <groupId>com.iuni.data</groupId>
-                <artifactId>da-rpc</artifactId>
+                <artifactId>da-persist</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>

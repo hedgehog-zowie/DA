@@ -11,7 +11,7 @@ import java.util.List;
  */
 public interface FlowOfBuriedPointService {
 
-    List<FlowOfBuriedPointForTableDto> selectFlowOfBuriedPoints(FlowOfBuriedPointForQueryDto buriedPointQueryDto);
+    List<FlowOfBuriedPointForTableDto> selectFlowOfBuriedPointsFromOracle(FlowOfBuriedPointForQueryDto buriedPointQueryDto);
 
     List<FlowOfBuriedPointForTableDto> selectFlowOfBuriedPointsFromHbase(FlowOfBuriedPointForQueryDto buriedPointForQueryDto);
 }

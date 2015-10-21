@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="aliPay">
+
+    <select id="selectAliPay">
+        SELECT
+        DECODE(IDATR.ALIPAY_ORDER_NO, NULL, IDAR.ALIPAY_ORDER_NO, IDATR.ALIPAY_ORDER_NO) "alipayOrderNo",
+        IDAR.MERCHANT_ORDER_NO "merchartOrderNo",
+        IDAR.CREATE_TIME "createTime",
+        IDATR.OPPOSITE_LOGON_ID "logonId",
+        IDATR.OPPOSITE_NAME "oppositeName",
+        IOI.USER_NAME "userName",
+        IOI.OSN "osn",
+        IOI.ORDER_SN "orderCode",
+        IDAR.IN_AMOUNT "inAmount",
+        IDAR.OUT_AMOUNT "outAmount",
+        IDAR.BALANCE "balance",
+        IDAR. TYPE "type",
+        IDAR.MEMO "memo"
+        FROM
+        IUNI_DA_ALIPAY_RECORD IDAR
+        LEFT JOIN IUNI_DA_ALIPAY_TRADE_RECORD IDATR ON IDAR.MERCHANT_ORDER_NO = IDATR.MERCHANT_ORDER_NO
+        LEFT JOIN IUNI_ORDER_INFO IOI ON SUBSTR(IDAR.MERCHANT_ORDER_NO, INSTR(IDAR.MERCHANT_ORDER_NO, 'T200P') + 5) =
+        IOI.OSN
+        <where>
+            <if test="orderCode != null">
+                AND (IOI.ORDER_SN LIKE '%' || #orderCode# || '%' OR IOI.OSN LIKE '%' || #orderCode# || '%')
+            </if>
+            <if test="beginDate != null">
+                AND TO_DATE(IDAR.CREATE_TIME, 'YYYY-MM-DD HH24:MI:SS') <![CDATA[ >= ]]> TO_DATE(#beginDate#, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null">
+                AND TO_DATE(IDAR.CREATE_TIME, 'YYYY-MM-DD HH24:MI:SS') <![CDATA[ < ]]> TO_DATE(#endDate#, 'YYYY-MM-DD') + 1
+            </if>
+        </where>
+        ORDER BY IDATR.ALIPAY_ORDER_NO,
+        IDATR.MERCHANT_ORDER_NO
+    </select>
+
+</mapper>

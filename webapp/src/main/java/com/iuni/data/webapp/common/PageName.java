@@ -9,6 +9,8 @@ public enum PageName {
 
     config_channel("config/config-channel"),
     config_channel_edit("config/config-channel-edit"),
+    config_channel_type("config/config-channel-type"),
+    config_channel_type_edit("config/config-channel-type-edit"),
 
     config_buriedPoint("config/config-buried-point"),
     config_buriedPoint_edit("config/config-buried-point-edit"),
@@ -17,6 +19,9 @@ public enum PageName {
     flow_buried_point_today("flow/flow-buried-point-today"),
 
     active_channel("activity/activity-channel"),
+
+    financial_transfer_details("financial/financial-transfer-details"),
+
     ;
 
 
