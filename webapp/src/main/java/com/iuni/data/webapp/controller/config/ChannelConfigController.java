@@ -21,7 +21,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Nicholas
@@ -78,7 +79,7 @@ public class ChannelConfigController {
         return addOrEditChannel(channelService.getById(id));
     }
 
-    private ModelAndView addOrEditChannel(Channel channel){
+    private ModelAndView addOrEditChannel(Channel channel) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.config_channel_edit.getPath());
         modelAndView.addObject("channel", channel);
@@ -99,7 +100,8 @@ public class ChannelConfigController {
     @RequestMapping("/save")
     public String saveChannel(@ModelAttribute("channel") Channel channel) {
         logger.info("save channel: {}", channel.toString());
-        channel.setCode(String.valueOf(channel.getChannelType()) + String.valueOf(channel.getChannelSerial()) + String.valueOf(channel.getActiveDate()));
+        ChannelType channelType =channelTypeService.getById(channel.getChannelType().getId());
+        channel.setCode(String.valueOf(channelType.getCode()) + String.valueOf(channel.getChannelSerial()) + String.valueOf(channel.getActiveDate()));
         channel.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
         if (channel.getId() == 0)
             channelService.addChannel(channel);
@@ -123,10 +125,11 @@ public class ChannelConfigController {
 
     /**
      * 启用
+     *
      * @return
      */
     @RequestMapping("/enable")
-    public String enableChannel(@RequestParam(value = "ids", required = true) String ids){
+    public String enableChannel(@RequestParam(value = "ids", required = true) String ids) {
         logger.info("enable channel. ids: {}", ids);
         channelService.enableChannel(ids);
         return "redirect:/config/channel";
@@ -134,10 +137,11 @@ public class ChannelConfigController {
 
     /**
      * 禁用
+     *
      * @return
      */
     @RequestMapping("/disable")
-    public String disableChannel(@RequestParam(value = "ids", required = true) String ids){
+    public String disableChannel(@RequestParam(value = "ids", required = true) String ids) {
         logger.info("disable channel. ids: {}", ids);
         channelService.disableChannel(ids);
         return "redirect:/config/channel";
@@ -146,18 +150,38 @@ public class ChannelConfigController {
     /**
      * 检查是否存在此code
      *
-     * @param channelCode
+     * @param channelId
+     * @param channelTypeId
+     * @param channelSerial
+     * @param datepicker
      * @return
      */
     @RequestMapping("/existCode")
     @ResponseBody
-    public boolean isExistChannelCode(Integer channelId, String channelCode) {
-        Channel channel = channelService.getByCode(channelCode);
+    public boolean isExistChannelCode(Long channelId, Long channelTypeId, String channelSerial, String datepicker) {
+        ChannelType channelType = channelTypeService.getById(channelTypeId);
+        Channel channel = channelService.getByCode(channelType.getCode() + channelSerial + datepicker);
         if (channel == null)
             return false;
         if (channel.getId() == channelId)
             return false;
         return true;
+    }
+
+    /**
+     * 生成短链接
+     *
+     * @param originalUrl
+     * @param channelTypeId
+     * @param channelSerial
+     * @param datepicker
+     * @return
+     */
+    @RequestMapping("/generatePromotionUrl")
+    @ResponseBody
+    public String generatePromotionUrl(String originalUrl, Long channelTypeId, String channelSerial, String datepicker) {
+        ChannelType channelType = channelTypeService.getById(channelTypeId);
+        return originalUrl + "?ad_id=" + channelType.getCode() + channelSerial + datepicker;
     }
 
     /**
@@ -192,7 +216,9 @@ public class ChannelConfigController {
             channel.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
             channelList = channelService.listChannel(channel);
 
-            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(Channel.generateTableHeader(), Channel.generateTableData(channelList));
+            List<ExcelUtils.SheetData> sheetDataList = new ArrayList<>();
+            sheetDataList.add(new ExcelUtils.SheetData("渠道列表", Channel.generateTableHeader(), Channel.generateTableData(channelList)));
+            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(sheetDataList);
             wb.write(response.getOutputStream());
 
             response.getOutputStream().flush();

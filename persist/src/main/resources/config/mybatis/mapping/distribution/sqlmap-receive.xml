@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.distribution.ReceiveMapper">
+
+    <!-- 退货明细结果 -->
+    <resultMap id="returnGoodsResult" type="com.iuni.data.persist.model.distribution.ReturnGoodsDetailsTableDto">
+        <result property="time" column="time"/>
+        <result property="backChannel" column="deliveryCode"/>
+        <result property="orderCode" column="orderCode"/>
+        <result property="orderUser" column="orderUser"/>
+        <result property="sku" column="sku"/>
+        <result property="name" column="name"/>
+        <result property="quantity" column="quantity"/>
+        <result property="backReason" column="backReason"/>
+        <result property="remark" column="remark"/>
+        <result property="invoice" column="invoice"/>
+        <result property="shippingName" column="shippingName"/>
+        <result property="backCode" column="backCode"/>
+        <result property="imei" column="imei"/>
+        <result property="handledBy" column="handledBy"/>
+    </resultMap>
+    <!-- ============= 退货明细报表（物流） ====================== -->
+    <select id="selectReturnGoodsDetails" parameterType="com.iuni.data.persist.model.distribution.ReturnGoodsDetailsQueryDto" resultMap="returnGoodsResult">
+--         SELECT * FROM
+--         (
+        SELECT SWSC.CREATE_TIME "time",
+        SWB.ORDER_CODE "orderCode",
+        SWB.REMARK_BACKING "backReason",
+        CASE SWB.IS_INVOICE
+        WHEN '1' THEN
+        '有'
+        WHEN '0' THEN
+        '/'
+        ELSE
+        SWB.IS_INVOICE
+        END "invoice",
+        SWB.BACK_CODE "backCode",
+        SWB.HANDLED_BY "handledBy",
+        SWSC.QUANTITY "quantity",
+        SWB.REMARK_BACKED "remark",
+        SWSO.ORDER_USER "orderUser",
+        IOS.SOURCE_NAME "backChannel",
+        IOS.SOURCE_CODE "backOption",
+        SWS.SKU_CODE "sku",
+        SWS.SKU_NAME "name",
+        SWS.MATERIAL_CODE "materialCode",
+        SWBI.INDIV_CODE "IMEI",
+        SWSI2.SHIPPING_NAME "shippingName"
+        FROM SYN_WMS_STOCK_CHANGE SWSC
+        LEFT JOIN SYN_WMS_SALES_ORDER SWSO
+        ON SWSC.ORIGINAL_CODE = SWSO.ORDER_CODE
+        LEFT JOIN SYN_WMS_STOCK SWSS
+        ON SWSC.STOCK_ID = SWSS.ID
+        LEFT JOIN SYN_WMS_SKU SWS
+        ON SWSS.SKU_ID = SWS.ID
+        LEFT JOIN SYN_WMS_BACK SWB
+        ON SWB.ORDER_CODE = SWSO.ORDER_CODE
+        LEFT JOIN SYN_WMS_BACK_INDIV SWBI
+        ON SWB.BACK_CODE = SWBI.BACK_CODE
+        AND SWS.SKU_CODE = SWBI.SKU_CODE
+        LEFT JOIN (SELECT IWSI.SHIPPING_NO, MAX(SWS.SHIPPING_NAME) "SHIPPING_NAME"
+        FROM SYN_WMS_SHIPPING_INFO IWSI
+        LEFT JOIN SYN_WMS_SHIPPING SWS
+        ON SWS.ID = IWSI.SHIPPING_ID
+        GROUP BY IWSI.SHIPPING_NO) SWSI2
+        ON SWSI2.SHIPPING_NO = SWB.SHIPPING_NO
+        LEFT JOIN (SELECT DISTINCT (WMS_SOURCE_CODE) SOURCE_CODE,
+        WMS_SOURCE_NAME SOURCE_NAME
+        FROM IUNI_ORDER_SOURCE
+        ORDER BY WMS_SOURCE_CODE) IOS
+        ON IOS.SOURCE_CODE = SWSO.ORDER_SOURCE
+        <where>
+            SWSC.STOCK_TYPE = '4'
+            AND SWSC.BIZ_TYPE IN ('102')
+            AND SWB.BACK_STATUS IN ('2', '4', '5')
+            <if test="startDateStr != null">
+                AND SWSC.CREATE_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="startDateStr != null">
+                AND SWSC.CREATE_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+        UNION ALL
+        SELECT SWSC.CREATE_TIME "time",
+        SWSC.ORIGINAL_CODE "orderCode",
+        CASE
+        WHEN SWSC.BIZ_TYPE = '103' THEN
+        '拒收'
+        WHEN SWSC.BIZ_TYPE = '106' THEN
+        '刷单入库'
+        ELSE
+        SWSC.BIZ_TYPE
+        END "backReason",
+        NULL "invoice",
+        NULL "backCode",
+        NULL "handledBy",
+        SWSC.QUANTITY "quantity",
+        NULL "remark",
+        SWSO.ORDER_USER "orderUser",
+        IOS.SOURCE_NAME "backChannel",
+        IOS.SOURCE_CODE "backOption",
+        SWS.SKU_CODE "sku",
+        SWS.SKU_NAME "name",
+        SWS.MATERIAL_CODE "materialCode",
+        NULL "IMEI",
+        NULL "shippingName"
+        FROM SYN_WMS_STOCK_CHANGE SWSC
+        LEFT JOIN SYN_WMS_SALES_ORDER SWSO
+        ON SWSC.ORIGINAL_CODE = SWSO.ORDER_CODE
+        LEFT JOIN SYN_WMS_STOCK SWSS
+        ON SWSC.STOCK_ID = SWSS.ID
+        LEFT JOIN SYN_WMS_SKU SWS
+        ON SWSS.SKU_ID = SWS.ID
+        LEFT JOIN (SELECT DISTINCT (WMS_SOURCE_CODE) SOURCE_CODE,
+        WMS_SOURCE_NAME SOURCE_NAME
+        FROM IUNI_ORDER_SOURCE
+        ORDER BY WMS_SOURCE_CODE) IOS
+        ON IOS.SOURCE_CODE = SWSO.ORDER_SOURCE
+        <where>
+            SWSC.STOCK_TYPE = '4'
+            AND SWSC.BIZ_TYPE IN ('103', '106')
+            <if test="startDateStr != null">
+                AND SWSC.CREATE_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND SWSC.CREATE_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+        <!--) T1-->
+        <!--WHERE 1 = 1-->
+        <!--<if test="backOption != null">-->
+            <!--AND T1."backOption" IN-->
+            <!--<foreach collection="backOption" index="index" item="item" open="(" separator="," close=")">-->
+                <!--#{item}-->
+            <!--</foreach>-->
+        <!--</if>-->
+        UNION ALL
+--         SELECT * FROM
+--         (
+        SELECT SWR.HANDLED_TIME "time",
+        SWR.ORIGINAL_ID "orderCode",
+        '调拨退货' "backReason",
+        NULL "invoice",
+        SWR.RECEIVE_CODE "backCode",
+        NULL "handledBy",
+        SWRG.QUANTITY "quantity",
+        SWR.REMARK "remark",
+        SWR.TRANSFER_PARTNER_NAME "orderUser",
+        IOS.SOURCE_NAME "backChannel",
+        IOS.SOURCE_CODE "receiveOption",
+        SWS.SKU_CODE "sku",
+        SWS.SKU_NAME "name",
+        SWS.MATERIAL_CODE "materialCode",
+        NULL "IMEI",
+        NULL "shippingName"
+        FROM SYN_WMS_RECEIVE SWR
+        LEFT JOIN SYN_WMS_RECEIVE_GOODS SWRG
+        ON SWR.ID = SWRG.RECEIVE_ID
+        LEFT JOIN SYN_WMS_SKU SWS
+        ON SWRG.SKU_ID = SWS.ID
+        LEFT JOIN SYN_WMS_TRANSFER_PARTNER SWTP
+        ON SWTP.ID = SWR.TRANSFER_PARTNER_ID
+        LEFT JOIN (SELECT DISTINCT (CODE) SOURCE_CODE, NAME SOURCE_NAME
+        FROM SYN_WMS_TRANSFER_PARTNER
+        WHERE CODE NOT IN ('88888', '110538')
+        AND C_PARENT_ID IS NULL
+        ORDER BY CODE) IOS
+        ON IOS.SOURCE_CODE = SWTP.CODE
+        <where>
+            SWR.HANDLING_STATUS = '1'
+            AND (SWRG.USE_FLAG IS NULL OR SWRG.USE_FLAG <![CDATA[ <> ]]> '0')
+            AND SWR.RECEIVE_TYPE IN ('104', '107')
+            <if test="startDateStr != null">
+                AND SWR.HANDLED_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND SWR.HANDLED_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+        <!--) T2-->
+        <!--<where>-->
+            <!--<if test="receiveOption != null">-->
+                <!--AND T2."receiveOption" IN-->
+                <!--<foreach collection="receiveOption" index="index" item="item" open="(" separator="," close=")">-->
+                    <!--#{item}-->
+                <!--</foreach>-->
+            <!--</if>-->
+        <!--</where>-->
+    </select>
+
+</mapper>

@@ -3,6 +3,7 @@ package com.iuni.data.persist.mapper.activity;
 import com.iuni.data.persist.model.activity.ActivityChannelTableDto;
 import com.iuni.data.persist.model.activity.ActivityChannelQueryDto;
 import com.iuni.data.persist.model.activity.ActivityChannelChartDto;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 

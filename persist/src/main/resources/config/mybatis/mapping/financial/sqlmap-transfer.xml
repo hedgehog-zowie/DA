@@ -3,9 +3,24 @@
 
 <mapper namespace="com.iuni.data.persist.mapper.financial.TransferMapper">
 
+    <!-- 调拔明细结果 -->
+    <resultMap id="transferDetailsResult" type="com.iuni.data.persist.model.financial.TransferDetailsTableDto">
+        <result property="transferId" column="transferId"/>
+        <result property="warehouse" column="warehouse"/>
+        <result property="transferTo" column="transferTo"/>
+        <result property="consignee" column="consignee"/>
+        <result property="contact" column="contact"/>
+        <result property="transferSend" column="transferSend"/>
+        <result property="logisticNo" column="logisticNo"/>
+        <result property="shippingTime" column="shippingTime"/>
+        <result property="status" column="status"/>
+        <result property="name" column="name"/>
+        <result property="quantity" column="quantity"/>
+        <result property="measureUnit" column="measureUnit"/>
+        <result property="returnNum" column="returnNum"/>
+    </resultMap>
     <!-- 调拔明细统计报表 -->
-    <select id="selectTransferDetails" parameterType="com.iuni.data.persist.model.financial.TransferDetailsQueryDto"
-            resultType="com.iuni.data.persist.model.financial.TransferDetailsTableDto">
+    <select id="selectTransferDetails" parameterType="com.iuni.data.persist.model.financial.TransferDetailsQueryDto" resultMap="transferDetailsResult">
         select T0."transferId",
         T0."warehouse",
         T0."transferTo",
@@ -15,7 +30,7 @@
         T0."logisticNo",
         T0."shippingTime",
         T3.STATUS "status",
-        T0."skuName",
+        T0."name",
         T0."quantity",
         T0."measureUnit",
         case
@@ -31,7 +46,7 @@
         IWT.LOGISTIC_NO "logisticNo",
         IWT.STATUS "status",
         IWT.SHIPPING_TIME "shippingTime",
-        IWTG.SKU_NAME "skuName",
+        IWTG.SKU_NAME "name",
         IWTG.QUANTITY "quantity",
         IWTG.MEASURE_UNIT "measureUnit",
         IWW.WAREHOUSE_NAME "warehouse",
@@ -52,10 +67,10 @@
         ON IWLO.ORDER_CODE = IWT.ORDER_CODE
         <where>
             <if test="startDateStr != null">
-                AND IWT.SHIPPING_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy-mm-dd')
+                AND IWT.SHIPPING_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
             </if>
             <if test="endDateStr != null">
-                AND IWT.SHIPPING_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy-mm-dd')+1
+                AND IWT.SHIPPING_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
             </if>
         </where>
         order by IWT.SHIPPING_TIME, IWT.ID) T0
@@ -68,10 +83,10 @@
         on (IWIF.FLOW_ID = IWT.ID and IWIF.SKU_ID = IWTG.SKU_ID)
         <where>
             <if test="startDateStr != null">
-                AND IWT.SHIPPING_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy-mm-dd')
+                AND IWT.SHIPPING_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
             </if>
             <if test="endDateStr != null">
-                AND IWT.SHIPPING_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy-mm-dd')+1
+                AND IWT.SHIPPING_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
             </if>
             AND IWIF.FLOW_TYPE = 104
         </where>
@@ -88,28 +103,36 @@
         order by t0."transferId",
         T0."warehouse",
         T3.STATUS,
-        T0."skuName",
+        T0."name",
         T0."shippingTime"
     </select>
 
+    <!-- 内部调拔明细结果 -->
+    <resultMap id="inTransferDetailsResult" type="com.iuni.data.persist.model.financial.InTransferDetailsTableDto">
+        <result property="shippingTime" column="shippingTime"/>
+        <result property="transferCode" column="transferCode"/>
+        <result property="outWarehouseName" column="outWarehouseName"/>
+        <result property="inWarehouseName" column="inWarehouseName"/>
+        <result property="code" column="code"/>
+        <result property="materialCode" column="materialCode"/>
+        <result property="name" column="name"/>
+        <result property="quantity" column="quantity"/>
+    </resultMap>
     <!-- =========内部调拨明细报表============ -->
-    <sql id="selectInTransferDetails">
-        SELECT * FROM (
+    <select id="selectInTransferDetails" parameterType="com.iuni.data.persist.model.financial.InTransferDetailsQueryDto" resultMap="inTransferDetailsResult">
         SELECT
         IWT.SHIPPING_TIME "shippingTime",
         IWT.ID "transferCode",
-        IWWH.WAREHOUSE_CODE "outWarehouseCode",
-        IWWH.WAREHOUSE_NAME "warehouseName",
+        IWWH.WAREHOUSE_NAME "outWarehouseName",
         CASE
         WHEN IWT.ORDER_CODE IS NOT NULL THEN
         IWLO.COMPANY_NAME
         ELSE
         IWT.TRANSFER_TO
-        END "transferSale",
-        IWWR.WARES_NAME "goodsName",
-        IWS.SKU_CODE "skuCode",
+        END "inWarehouseName",
+        IWS.SKU_CODE "code",
         IWS.MATERIAL_CODE "materialCode",
-        IWS.SKU_NAME "skuName",
+        IWS.SKU_NAME "name",
         IWTG.QUANTITY "quantity"
         FROM
         SYN_WMS_TRANSFER IWT
@@ -121,79 +144,13 @@
         <where>
             IWT.BILL_TYPE = '1'
             AND IWT.STATUS = '2'
-            <if test="beginDate != null">
-                AND IWT.SHIPPING_TIME <![CDATA[ >= ]]> to_date(#{startDateStr},'yyyy-mm-dd')
+            <if test="startDateStr != null">
+                AND IWT.SHIPPING_TIME <![CDATA[ >= ]]> to_date(#{startDateStr},'YYYY/MM/DD')
             </if>
-            <if test="endDate != null">
-                AND IWT.SHIPPING_TIME <![CDATA[ < ]]> to_date(#{endDateStr},'yyyy-mm-dd')+1
-            </if>
-        </where>
-        )TMP
-        <where>
-            <if test="warehouseName != null">
-                AND TMP."warehouseName" LIKE '%' || #warehouseName# || '%'
-            </if>
-            <if test="transferSale != null">
-                AND TMP."transferSale" LIKE '%' || #transferSale# || '%'
-            </if>
-            <if test="materialCode != null">
-                AND TMP."materialCode" LIKE '%' || #materialCode# || '%'
-            </if>
-            <if test="outWarehouseCode != null">
-                AND TMP."outWarehouseCode" = #outWarehouseCode#
+            <if test="endDateStr != null">
+                AND IWT.SHIPPING_TIME <![CDATA[ < ]]> to_date(#{endDateStr},'YYYY/MM/DD')+1
             </if>
         </where>
-        order by TMP."shippingTime", TMP."transferCode"
-    </sql>
-
-    <!-- =======调拨明细统计报表（物流） —— 调出====== -->
-    <sql id="selectWmsTransferStatForWl">
-        SELECT IWT.SHIPPING_TIME "shippingTime",
-        ITT.WMS_TRANSFER_NAME "billType",
-        CASE
-        WHEN IWT.ORDER_CODE IS NOT NULL THEN
-        SWLO.COMPANY_NAME
-        ELSE
-        SWTP.NAME
-        END "transferName",
-        SWW.WAREHOUSE_NAME "wareHouse",
-        CASE IWT.TRANS_TYPE
-        WHEN '0' THEN
-        '良品'
-        WHEN '1' THEN
-        '次品'
-        ELSE
-        IWT.TRANS_TYPE
-        END "transferType",
-        IWTG.TRANSFER_ID "transferId",
-        IWTG.QUANTITY "quantity",
-        IWS.SKU_CODE "sku",
-        IWS.SKU_NAME "skuName",
-        IWS.MATERIAL_CODE "materialCode",
-        IWT.PO "outOrderCode"
-        FROM SYN_WMS_TRANSFER IWT
-        LEFT JOIN SYN_WMS_TRANSFER_GOODS IWTG
-        ON IWTG.TRANSFER_ID = IWT.ID
-        LEFT JOIN SYN_WMS_SKU IWS
-        ON IWTG.SKU_ID = IWS.ID
-        LEFT JOIN SYN_WMS_WAREHOUSE SWW
-        ON IWT.WAREHOUSE_ID = SWW.ID
-        LEFT JOIN SYN_WMS_TRANSFER_PARTNER SWTP
-        ON SWTP.ID = IWT.TRANSFER_SALE
-        LEFT JOIN SYN_WMS_LARGE_ORDER SWLO
-        ON SWLO.ORDER_CODE = IWT.ORDER_CODE
-        LEFT JOIN IUNI_TRANSFER_TYPE ITT
-        ON ITT.WMS_TRANSFER_CODE = IWT.BILL_TYPE
-        <where>
-            AND IWT.STATUS = '2'
-            <if test="beginDate != null">
-                AND IWT.SHIPPING_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY-MM-DD')
-            </if>
-            <if test="endDate != null">
-                AND IWT.SHIPPING_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY-MM-DD')+1
-            </if>
-        </where>
-        ORDER BY IWT.SHIPPING_TIME, IWTG.TRANSFER_ID, IWS.SKU_CODE
-    </sql>
+    </select>
 
 </mapper>

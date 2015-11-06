@@ -1,9 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="weChatPay">
+<mapper namespace="com.iuni.data.persist.mapper.financial.WeChatPayMapper">
 
-    <select id="selectWeChatPay">
+    <!-- 微信支付对账结果 -->
+    <resultMap id="weChatPayResult" type="com.iuni.data.persist.model.financial.WeChatPayTableDto">
+        <result property="tradeDate" column="tradeDate"/>
+        <result property="weChatOrderSn" column="wxOrderSn"/>
+        <result property="mchOrderSn" column="mchOrderSn"/>
+        <result property="merchandise" column="merchandise"/>
+        <result property="userSign" column="userSign"/>
+        <result property="status" column="status"/>
+        <result property="amount" column="amount"/>
+        <result property="currency" column="currency"/>
+        <result property="discount" column="discount"/>
+    </resultMap>
+    <!-- 微信支付对账报表-->
+    <select id="selectWeChatPay" parameterType="com.iuni.data.persist.model.financial.WeChatPayQueryDto" resultMap="weChatPayResult">
         SELECT T.TRADE_DATE "tradeDate",
         T.WX_ORDER_NO "wxOrderSn",
         T.MCH_ORDER_SN "mchOrderSn",
@@ -34,14 +47,14 @@
         END "discount"
         FROM IUNI_DA_WEIXIN_PAY_BILL_DETAIL T
         where 1 = 1
-        <if test="orderCode != null">
-            AND T.MERCHANDISE LIKE '%' || #orderCode# || '%'
+        <!--<if test="orderCode != null">-->
+            <!--AND T.MERCHANDISE LIKE '%' || #{orderCode$} || '%'-->
+        <!--</if>-->
+        <if test="startDateStr != null">
+            AND TO_DATE(T.TRADE_DATE, 'YYYY/MM/DD HH24:MI:SS') <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
         </if>
-        <if test="beginDate != null">
-            AND TO_DATE(T.TRADE_DATE, 'YYYY-MM-DD HH24:MI:SS') <![CDATA[ >= ]]> TO_DATE(#beginDate#, 'YYYY-MM-DD')
-        </if>
-        <if test="endDate != null">
-            AND TO_DATE(T.TRADE_DATE, 'YYYY-MM-DD HH24:MI:SS') <![CDATA[ < ]]> TO_DATE(#endDate#, 'YYYY-MM-DD') + 1
+        <if test="endDateStr != null">
+            AND TO_DATE(T.TRADE_DATE, 'YYYY/MM/DD HH24:MI:SS') <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
         </if>
         ORDER BY T.TRADE_DATE
     </select>

@@ -25,6 +25,8 @@ public class CookieUtil {
      * @return
      */
 	public static String genUvCookie(String ip, Long time){
+        if("0:0:0:0:0:0:0:1".equals(ip))
+            ip = "127.0.0.1";
 
 		StringBuffer buf = new StringBuffer();
 		Random random = new Random();

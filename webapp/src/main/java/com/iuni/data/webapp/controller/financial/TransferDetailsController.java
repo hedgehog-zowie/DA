@@ -1,5 +1,6 @@
 package com.iuni.data.webapp.controller.financial;
 
+import com.iuni.data.persist.model.financial.StockMoveDetailsTableDto;
 import com.iuni.data.persist.model.financial.TransferDetailsQueryDto;
 import com.iuni.data.persist.model.financial.TransferDetailsTableDto;
 import com.iuni.data.utils.ExcelUtils;
@@ -18,13 +19,14 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Nicholas
  *         Email:   nicholas.chen@iuni.com
  */
-@Controller
+@Controller("transferDetailsControllerOfFinancial")
 @RequestMapping("/financial/transferDetails")
 public class TransferDetailsController {
 
@@ -44,7 +46,7 @@ public class TransferDetailsController {
     public ModelAndView queryTable(@ModelAttribute("queryParam") TransferDetailsQueryDto queryParam) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.financial_transfer_details.getPath());
-        StringUtils.parseDateRangeString(queryParam);
+        queryParam.parseDateRangeString();
         List<TransferDetailsTableDto> resultList = transferService.selectTransferDetails(queryParam);
         modelAndView.addObject("resultList", resultList);
         modelAndView.addObject("queryParam", queryParam);
@@ -56,13 +58,15 @@ public class TransferDetailsController {
         TransferDetailsQueryDto queryParam = JsonUtils.fromJson(queryParamStr, TransferDetailsQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
-            String fileName = new String(("调拔明细统计报表(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
+            String fileName = new String(("调拔明细报表(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
             response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
 
-            StringUtils.parseDateRangeString(queryParam);
+            queryParam.parseDateRangeString();
             List<TransferDetailsTableDto> resultList = transferService.selectTransferDetails(queryParam);
 
-            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(TransferDetailsTableDto.generateTableHeader(), TransferDetailsTableDto.generateTableData(resultList));
+            List<ExcelUtils.SheetData> sheetDataList = new ArrayList<>();
+            sheetDataList.add(new ExcelUtils.SheetData("调拔明细", TransferDetailsTableDto.generateTableHeader(), TransferDetailsTableDto.generateTableData(resultList)));
+            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(sheetDataList);
             wb.write(response.getOutputStream());
 
             response.getOutputStream().flush();

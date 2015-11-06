@@ -9,19 +9,29 @@ import com.iuni.data.persist.model.AbstractQueryDto;
  */
 public class ActivityChannelQueryDto extends AbstractQueryDto {
 
-    private Channel channel;
+    private String channelCode;
+
+    private Integer channelTypeId;
 
     private String dataType;
 
     public ActivityChannelQueryDto() {
     }
 
-    public Channel getChannel() {
-        return channel;
+    public String getChannelCode() {
+        return channelCode;
     }
 
-    public void setChannel(Channel channel) {
-        this.channel = channel;
+    public void setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
+    }
+
+    public Integer getChannelTypeId() {
+        return channelTypeId;
+    }
+
+    public void setChannelTypeId(Integer channelTypeId) {
+        this.channelTypeId = channelTypeId;
     }
 
     public String getDataType() {

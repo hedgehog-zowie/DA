@@ -170,7 +170,9 @@ var ChannelFormValidation = function () {
                 async: false,
                 data: {
                     channelId: $('#channel-id').val(),
-                    channelCode: $('#channelType').val() + $('#channelSerial').val() + $('#datepicker').val()
+                    channelTypeId: $('#channelTypeId').val(),
+                    channelSerial: $('#channelSerial').val(),
+                    datepicker: $('#datepicker').val(),
                 },
                 url: "/config/channel/existCode",
                 success: function (result) {
@@ -324,10 +326,28 @@ var ChannelFormValidation = function () {
         }
 
         $('#button_generate_promotion_url').click(function (e) {
-            if (channelForm.validate().element($('#original_url')) && channelForm.validate().element($('#channelType'))
+            if (channelForm.validate().element($('#original_url')) && channelForm.validate().element($('#channelTypeId'))
                 && channelForm.validate().element($('#channelSerial')) && channelForm.validate().element($('#datepicker'))) {
-                $('#promotion_url').val($('#original_url').val() + '?ad_id=' + $('#channelType').val() + $('#channelSerial').val() + $('#datepicker').val());
-                channelForm.validate().element($('#promotion_url'));
+                $.ajax({
+                    type: "post",
+                    dataType: "html",
+                    cache: false,
+                    data: {
+                        originalUrl: $('#original_url').val(),
+                        channelTypeId: $('#channelTypeId').val(),
+                        channelSerial: $('#channelSerial').val(),
+                        datepicker: $('#datepicker').val(),
+                    },
+                    url: "/config/channel/generatePromotionUrl",
+                    success: function (data) {
+                        $('#promotion_url').val(data);
+                        channelForm.validate().element($('#promotion_url'));
+                    }, error: function (obj, info, errObj) {
+                        alert(info);
+                    }
+                });
+                //$('#promotion_url').val($('#original_url').val() + '?ad_id=' + $('#channelType').val() + $('#channelSerial').val() + $('#datepicker').val());
+                //channelForm.validate().element($('#promotion_url'));
             }
         });
 

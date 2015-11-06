@@ -6,6 +6,8 @@ drop table IUNI_DA_WEBKPI_PAGE cascade constraints;
 alter table IUNI_DA_WEBKPI_CLICK drop constraint FK_WEBKPI_CLICK_CHANNEL_ID;
 alter table IUNI_DA_WEBKPI_CLICK drop constraint FK_WEBKPI_CLICK_RTAG_ID;
 drop table IUNI_DA_WEBKPI_CLICK cascade constraints;
+alter table IUNI_DA_WEBKPI_CHANNEL drop constraint FK_WEBKPI_CHANNEL_CHANNEL_CODE;
+drop table IUNI_DA_WEBKPI_CHANNEL cascade constraints;
 
 -- channel
 alter table IUNI_DA_CHANNEL drop constraint FK_CHANNEL_TYPE_ID;
@@ -46,3 +48,8 @@ drop table IUNI_DA_RTAG_TYPE cascade constraints;
 -- user defin
 drop table IUNI_DA_USER_DEFINED_REPORT cascade constraints;
 drop table IUNI_DA_USER_CHAIN cascade constraints;
+
+-- system constants
+alter table IUNI_DA_SYSTEM_CONSTANTS_VALUE drop constraint FK_SYSTEM_CONSTANTS_VALUE_CID;
+drop table IUNI_DA_SYSTEM_CONSTANTS_VALUE cascade constraints;
+drop table IUNI_DA_SYSTEM_CONSTANTS cascade constraints;

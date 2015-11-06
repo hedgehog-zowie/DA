@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.distribution.ShippingMapper">
+
+    <!-- 运费报表结果 -->
+    <resultMap id="freightResult" type="com.iuni.data.persist.model.distribution.FreightTableDto">
+        <result property="shippingTime" column="shippingTime"/>
+        <result property="deliveryCode" column="deliveryCode"/>
+        <result property="orderCode" column="orderCode"/>
+        <result property="status" column="status"/>
+        <result property="userName" column="userName"/>
+        <result property="address" column="address"/>
+        <result property="weight" column="weight"/>
+        <result property="amount" column="amount"/>
+        <result property="protectFee" column="protectFee"/>
+        <result property="deliveryFee" column="deliveryFee"/>
+        <result property="type" column="type"/>
+    </resultMap>
+    <!-- 运费报表-正向 -->
+    <select id="selectFreightOfForward" parameterType="com.iuni.data.persist.model.distribution.FreightQueryDto" resultMap="freightResult">
+        SELECT SWSO.SHIPPING_TIME "shippingTime",
+        SWSO.SHIPPING_NO "deliveryCode",
+        SWSO.ORDER_CODE "orderCode",
+        CASE SWSO.ORDER_STATUS WHEN '5' THEN '已签收' ELSE '未签收' END "status",
+        SWSO.CONSIGNEE "userName",
+        SWSO.ADDRESS "address",
+        SWSO.WEIGHT "weight",
+        SWSO.ORDER_AMOUNT "amount",
+        '' "protectFee",
+        SWSO.DELIVERY_FEE "deliveryFee",
+        '零售发货' "type"
+        FROM SYN_WMS_SALES_ORDER SWSO
+        <where>
+            SWSO.SHIPPING_NO IS NOT NULL
+            <if test="startDateStr != null">
+                AND SWSO.SHIPPING_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND SWSO.SHIPPING_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+    </select>
+    <!-- 运费报表-逆向 -->
+    <select id="selectFreightOfReverse" parameterType="com.iuni.data.persist.model.distribution.FreightQueryDto" resultMap="freightResult">
+        SELECT SWEI.SHIPPING_TIME "shippingTime",
+        SWEI.F_SHIPPING_NO "deliveryCode",
+        SWEI.ORDER_CODE "orderCode",
+        CASE SWEI.STATUS WHEN '8' THEN '已签收' ELSE '未签收' END "status",
+        SWEI.CONSIGNEE "userName",
+        SWEI.ADDRESS "address",
+        TO_CHAR(SWEI.WEIGHT) "weight",
+        SWEG2."amount" "amount",
+        '' "protectFee",
+        SWEI.F_SHIPPING_FEE "deliveryFee",
+        '换货' "type"
+        FROM SYN_WMS_EXCHANGE_INFO SWEI
+        LEFT JOIN (
+        SELECT SWEG.EXCHANGE_CODE,
+        SUM(SWEG.UNIT_PRICE * (SWEG.DEFECTIVE_NUM + SWEG.NONDEFECTIVE_NUM)) "amount"
+        FROM SYN_WMS_EXCHANGE_GOODS SWEG
+        GROUP BY SWEG.EXCHANGE_CODE) SWEG2
+        ON SWEI.EXCHANGE_CODE = SWEG2.EXCHANGE_CODE
+        <where>
+            SWEI.F_SHIPPING_NO IS NOT NULL
+            <if test="startDateStr != null">
+                AND SWEI.SHIPPING_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND SWEI.SHIPPING_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+        UNION ALL
+        SELECT SWR.UPDATE_TIME "shippingTime",
+        SWR.F_SHIPPING_NO "deliveryCode",
+        SWR.ORDER_CODE "orderCode",
+        CASE SWR.HANDLE_STATUS WHEN '8' THEN '已签收' ELSE '未签收' END "status",
+        SWR.CONSIGNEE "userName",
+        SWR.ADDRESS "address",
+        TO_CHAR(SWR.WEIGHT) "weight",
+        SWRG2."amount" "amount",
+        '' "protectFee",
+        SWR.F_SHIPPING_FEE "deliveryFee",
+        '维修发货' "type"
+        FROM SYN_WMS_REPAIR SWR
+        LEFT JOIN (
+        SELECT SWRG.REPAIR_CODE,
+        SUM(SWRG.GOODS_PRICE * SWRG.ACTUAL_NUM) "amount"
+        FROM SYN_WMS_REPAIR_GOODS SWRG
+        GROUP BY SWRG.REPAIR_CODE) SWRG2
+        ON SWR.REPAIR_CODE = SWRG2.REPAIR_CODE
+        <where>
+            SWR.F_SHIPPING_NO IS NOT NULL
+            <if test="startDateStr != null">
+                AND SWR.CREATE_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="startDateStr != null">
+                AND SWR.CREATE_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+    </select>
+
+</mapper>
+
+
+

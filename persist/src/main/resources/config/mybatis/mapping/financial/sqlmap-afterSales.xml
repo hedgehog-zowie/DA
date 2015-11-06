@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="afterSales">
+<mapper namespace="com.iuni.data.persist.mapper.financial.AfterSalesMapper">
 
+    <!-- 订单售后次数结果 -->
+    <resultMap id="afterSalesNumOfOrderResult" type="com.iuni.data.persist.model.financial.AfterSalesNumOfOrderTableDto">
+        <result property="orderSn" column="orderSn"/>
+        <result property="addTime" column="addTime"/>
+        <result property="userName" column="userName"/>
+        <result property="mobile" column="mobile"/>
+        <result property="type" column="type"/>
+        <result property="sn" column="sn"/>
+        <result property="createTime" column="createTime"/>
+        <result property="status" column="status"/>
+        <result property="causeInfo" column="causeInfo"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
     <!-- 订单售后次数统计报表 -->
-    <select id="selectAfterSalesNumOfOrder">
-        SELECT *
-        FROM (SELECT IEI.ORDER_SN "orderSn",
+    <select id="selectAfterSalesNumOfOrder" parameterType="com.iuni.data.persist.model.financial.AfterSalesNumOfOrderQueryDto" resultMap="afterSalesNumOfOrderResult">
+        SELECT IEI.ORDER_SN "orderSn",
         UNIX_TO_ORACLE(IOI.ADD_TIME) "addTime",
         IEI.CONSIGNEE "userName",
         IEI.MOBILE "mobile",
@@ -56,11 +68,11 @@
         <where>
             IEI.SSTATUS NOT IN ('cancle', 'cancleToOther')
             AND IEI.ORDER_TYPE = 'order'
-            <if test="beginDate != null">
-                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ >= ]]> to_date(#beginDate#, 'YYYY-MM-DD')
+            <if test="startDateStr != null">
+                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
             </if>
-            <if test="endDate != null">
-                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ < ]]> to_date(#endDate#, 'YYYY-MM-DD')+1
+            <if test="endDateStr != null">
+                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
             </if>
         </where>
         UNION ALL
@@ -116,11 +128,11 @@
         <where>
             IRI.SSTATUS NOT IN ('0', '18')
             AND IRI.ORDER_TYPE = 'order'
-            <if test="beginDate != null">
-                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ >= ]]> to_date(#beginDate#, 'YYYY-MM-DD')
+            <if test="startDateStr != null">
+                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
             </if>
-            <if test="endDate != null">
-                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ < ]]> to_date(#endDate#, 'YYYY-MM-DD')+1
+            <if test="endDateStr != null">
+                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
             </if>
         </where>
         UNION ALL
@@ -159,17 +171,88 @@
         AND IRL.OPERATE = 'shAudit'
         <where>
             IRI.STATUS NOT IN ('cancelled')
-            <if test="beginDate != null">
-                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ >= ]]> to_date(#beginDate#, 'YYYY-MM-DD')
+            <if test="startDateStr != null">
+                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
             </if>
-            <if test="endDate != null">
-                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ < ]]> to_date(#endDate#, 'YYYY-MM-DD')+1
+            <if test="endDateStr != null">
+                AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
             </if>
         </where>
-        ) TMP
-        ORDER BY TMP."addTime" DESC, TMP."orderSn", TMP."createTime"
     </select>
 
+    <!-- 非保修维修单结果 -->
+    <resultMap id="notInWarrantyDetailsResult" type="com.iuni.data.persist.model.financial.NotInWarrantyDetailsTableDto">
+        <result property="payConfirmTime" column="PAY_CONFIRM_TIME"/>
+        <result property="payer" column="PAYER"/>
+        <result property="repairsSn" column="REPAIRS_SN"/>
+        <result property="userName" column="USERNAME"/>
+        <result property="mobile" column="MOBILE"/>
+        <result property="imei" column="OIMEI"/>
+        <result property="materialCode" column="MATTER_CODE"/>
+        <result property="materialName" column="MATTER_NAME"/>
+        <result property="quantity" column="QUANTITY"/>
+        <result property="materialFee" column="MATTER_FEE"/>
+        <result property="handFee" column="HAND_FEE"/>
+        <result property="invoiceTime" column="INVOICE_TIME"/>
+        <result property="invoiceCode" column="INVOICE_CODE"/>
+        <result property="fee" column="FEE"/>
+        <result property="remark" column="REMARK"/>
+    </resultMap>
+    <!-- 非保修维修单查询 -->
+    <select id="selectNotInWarrantyRepairs" parameterType="com.iuni.data.persist.model.financial.NotInWarrantyDetailsQueryDto" resultMap="notInWarrantyDetailsResult">
+        SELECT IRI.PAY_CONFIRM_TIME PAY_CONFIRM_TIME,
+        '' PAYER,
+        IRI.REPAIRS_SN REPAIRS_SN,
+        CASE WHEN IRI.USERNAME IS NOT NULL THEN IRI.USERNAME
+        ELSE IRI.REFERER END USERNAME,
+        IRI.MOBILE MOBILE,
+        IRIM.OIMEI OIMEI,
+        IRM.MATTER_CODE MATTER_CODE,
+        IRM.MATTER_NAME MATTER_NAME,
+        IRM.QUANTITY QUANTITY,
+        IRM.MATTER_FEE MATTER_FEE,
+        IRM.HAND_FEE HAND_FEE,
+        '' INVOICE_TIME,
+        '' INVOICE_CODE,
+        IRI.FEE FEE,
+        IRI.REMARK REMARK
+        FROM IUNI_REPAIRSGOODS_INFO IRI
+        LEFT JOIN IUNI_REPAIRSGOODS_ITEM IRIM
+        ON IRIM.REPAIRS_SN = IRI.REPAIRS_SN
+        LEFT JOIN IUNI_REPAIRSGOODS_MATTER IRM
+        ON IRM.REPAIRS_SN = IRI.REPAIRS_SN
+        <where>
+            IRIM.TYPE_CODE = 'mobile'
+            AND IRI.FEE > 0
+            <!--<if test="clients != null">-->
+                <!--AND-->
+                <!--(-->
+                <!--IRI.USERNAME IN-->
+                <!--<foreach item="client" index="index" collection="clients" open="(" separator="," close=")">-->
+                    <!--#{client}-->
+                <!--</foreach>-->
+                <!--OR-->
+                <!--IRI.REFERER IN-->
+                <!--<foreach item="client" index="index" collection="clients" open="(" separator="," close=")">-->
+                    <!--#{client}-->
+                <!--</foreach>-->
+                <!--)-->
+            <!--</if>-->
+            <!--<if test="phones != null">-->
+                <!--AND IRI.MOBILE IN-->
+                <!--<foreach item="phone" index="index" collection="phones" open="(" separator="," close=")">-->
+                    <!--#{phone}-->
+                <!--</foreach>-->
+            <!--</if>-->
+            <if test="startDateStr != null">
+                AND IRI.PAY_CONFIRM_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IRI.PAY_CONFIRM_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+        ORDER BY IRI.PAY_CONFIRM_TIME DESC
+    </select>
 </mapper>
 
 

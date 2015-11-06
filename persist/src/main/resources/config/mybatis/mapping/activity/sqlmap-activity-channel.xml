@@ -50,24 +50,23 @@
         T4."orderAmount" / T4."orderNum" "avgAmount"
         FROM
         (
-        SELECT IDW.TIME "time",
-        IDW.CHANNEL_ID "channelId",
-        SUM(IDW.PV) "pv",
-        SUM(IDW.UV) "uv",
-        SUM(IDW.VV) "vv",
-        SUM(IDW.STAY_TIME) / 1000 "stayTime",
-        SUM(IDW.TOTAL_JUMP) "totalJump"
-        FROM IUNI_DA_WEBKPI IDW
+        SELECT IDWC.TIME "time",
+        IDWC.CHANNEL_ID "channelId",
+        IDWC.PV "pv",
+        IDWC.UV "uv",
+        IDWC.VV "vv",
+        IDWC.STAY_TIME / 1000 "stayTime",
+        IDWC.TOTAL_JUMP "totalJump"
+        FROM IUNI_DA_WEBKPI_CHANNEL IDWC
         <where>
-            IDW.TTYPE = 'dd'
+            IDWC.TTYPE = 'dd'
             <if test="startDateStr != null">
-                AND IDW.TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+                AND IDWC.TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
             </if>
             <if test="endDateStr != null">
-                AND IDW.TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+                AND IDWC.TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
             </if>
         </where>
-        GROUP BY IDW.TIME, IDW.CHANNEL_ID
         ) T1
         LEFT JOIN
         (
@@ -147,11 +146,11 @@
         <where>
             IDC.STATUS = 1
             AND IDC.CANCEL_FLAG = 0
-            <if test="channel != null and channel.code != null">
-                AND IDC.CODE LIKE '%' || #{channel.code} || '%'
+            <if test="channelCode != null">
+                AND IDC.CODE LIKE '%' || #{channelCode} || '%'
             </if>
-            <if test="channel != null and channel.channelType != null and channel.channelType.id != 0">
-                AND IDC.TYPE_ID = #{channel.channelType.id}
+            <if test="channelTypeId != null">
+                AND IDC.TYPE_ID = #{channelTypeId}
             </if>
         </where>
         ORDER BY T1."time", T1."channelId"
@@ -166,11 +165,11 @@
         <where>
             IDC.STATUS = 1
             AND IDC.CANCEL_FLAG = 0
-            <if test="channel != null and channel.code != null">
-                AND IDC.CODE LIKE '%' || #{channel.code} || '%'
+            <if test="channelCode != null">
+                AND IDC.CODE LIKE '%' || #{channelCode} || '%'
             </if>
-            <if test="channel != null and channel.channelType != null">
-                AND IDC.CODE LIKE #{channel.channelType} || '%'
+            <if test="channelTypeId != null">
+                AND IDC.TYPE_ID = #{channelTypeId}
             </if>
             <if test="startDateStr != null">
                 AND UNIX_TO_ORACLE(IOI.ADD_TIME) <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
@@ -192,11 +191,11 @@
         WHERE 1 = 1
         AND IDC.STATUS = 1
         AND IDC.CANCEL_FLAG = 0
-        <if test="channel != null and channel.code != null">
-            AND IDC.CODE LIKE '%' || #{channel.code} || '%'
+        <if test="channelCode != null">
+            AND IDC.CODE LIKE '%' || #{channelCode} || '%'
         </if>
-        <if test="channel != null and channel.channelType != null">
-            AND IDC.CODE LIKE #{channel.channelType} || '%'
+        <if test="channelTypeId != null">
+            AND IDC.TYPE_ID = #{channelTypeId}
         </if>
         <if test="startDateStr != null">
             AND UNIX_TO_ORACLE(IOI.PAY_TIME) <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
@@ -216,11 +215,11 @@
         WHERE 1 = 1
         AND IDC.STATUS = 1
         AND IDC.CANCEL_FLAG = 0
-        <if test="channel != null and channel.code != null">
-            AND IDC.CODE LIKE '%' || #{channel.code} || '%'
+        <if test="channelCode != null">
+            AND IDC.CODE LIKE '%' || #{channelCode} || '%'
         </if>
-        <if test="channel != null and channel.channelType != null">
-            AND IDC.CODE LIKE #{channel.channelType} || '%'
+        <if test="channelTypeId != null">
+            AND IDC.TYPE_ID = #{channelTypeId}
         </if>
         <if test="startDateStr != null">
             AND IDW.TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
@@ -240,11 +239,11 @@
         WHERE 1 = 1
         AND IDC.STATUS = 1
         AND IDC.CANCEL_FLAG = 0
-        <if test="channel != null and channel.code != null">
-            AND IDC.CODE LIKE '%' || #{channel.code} || '%'
+        <if test="channelCode != null">
+            AND IDC.CODE LIKE '%' || #{channelCode} || '%'
         </if>
-        <if test="channel != null and channel.channelType != null">
-            AND IDC.CODE LIKE #{channel.channelType} || '%'
+        <if test="channelTypeId != null">
+            AND IDC.TYPE_ID = #{channelTypeId}
         </if>
         <if test="startDateStr != null">
             AND IDW.TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
@@ -264,11 +263,11 @@
         WHERE 1 = 1
         AND IDC.STATUS = 1
         AND IDC.CANCEL_FLAG = 0
-        <if test="channel != null and channel.code != null">
-            AND IDC.CODE LIKE '%' || #{channel.code} || '%'
+        <if test="channelCode != null">
+            AND IDC.CODE LIKE '%' || #{channelCode} || '%'
         </if>
-        <if test="channel != null and channel.channelType != null">
-            AND IDC.CODE LIKE #{channel.channelType} || '%'
+        <if test="channelTypeId != null">
+            AND IDC.TYPE_ID = #{channelTypeId}
         </if>
         <if test="startDateStr != null">
             AND IDW.TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')

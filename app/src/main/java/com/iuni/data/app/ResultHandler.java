@@ -8,9 +8,11 @@ import com.iuni.data.persist.domain.config.Channel;
 import com.iuni.data.persist.domain.webkpi.ClickWebKpi;
 import com.iuni.data.persist.domain.webkpi.PageWebKpi;
 import com.iuni.data.persist.domain.webkpi.WebKpi;
+import com.iuni.data.persist.domain.webkpi.WebKpiByChannel;
 import com.iuni.data.persist.repository.config.ChannelRepository;
 import com.iuni.data.persist.repository.webkpi.ClickWebKpiRepository;
 import com.iuni.data.persist.repository.webkpi.PageWebKpiRepository;
+import com.iuni.data.persist.repository.webkpi.WebKpiByChannelRepository;
 import com.iuni.data.persist.repository.webkpi.WebKpiRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +41,8 @@ public class ResultHandler implements LifecycleAware {
     private ClickWebKpiRepository clickWebKpiRepository;
     @Autowired
     private WebKpiRepository webKpiRepository;
+    @Autowired
+    private WebKpiByChannelRepository webKpiByChannelRepository;
 
     private LifecycleState lifecycleState;
 
@@ -57,8 +61,10 @@ public class ResultHandler implements LifecycleAware {
             Channel existChannel = channelRepository.findByCode(channel.getCode());
             if (existChannel != null)
                 channel = existChannel;
-            else
+            else {
+                logger.info("add new channel: {}", channel.getCode());
                 channel = channelRepository.save(channel);
+            }
             channelMap.put(channel.getCode(), channel);
         }
         return channelMap.get(channel.getCode());
@@ -100,6 +106,18 @@ public class ResultHandler implements LifecycleAware {
         webKpiRepository.save(webKpiMap.values());
     }
 
+    private void saveWebKpiByChannel(TType tType, Date time, Map<String, WebKpiByChannel> webKpiByChannelMap) {
+        Date date = new Date();
+        webKpiByChannelRepository.delete(webKpiByChannelRepository.findByTimeAndTtype(time, tType.getPattern()));
+        // save data
+        Map<String, Channel> channelMap = new HashMap<>();
+        for (WebKpiByChannel webKpiByChannel : webKpiByChannelMap.values()) {
+            webKpiByChannel.setCreateDate(date);
+            webKpiByChannel.setChannel(saveChannel(webKpiByChannel.getChannel(), channelMap));
+        }
+        webKpiByChannelRepository.save(webKpiByChannelMap.values());
+    }
+
     @Override
     public void start() {
         logger.info("analyzeResultHandler starting");
@@ -111,6 +129,7 @@ public class ResultHandler implements LifecycleAware {
                 while (lifecycleState == LifecycleState.START) {
                     try {
                         Result result = resultBlockingQueue.take();
+                        // todo 需修改
                         if (result.getPageWebKpiMap() != null && result.getPageWebKpiMap().size() != 0) {
                             savePageWebKpi(result.gettType(), result.getTime(), result.getPageWebKpiMap());
                         }
@@ -119,6 +138,9 @@ public class ResultHandler implements LifecycleAware {
                         }
                         if (result.getPageWebKpiForWholeSiteMap() != null && result.getPageWebKpiForWholeSiteMap().size() != 0) {
                             saveWebKpi(result.gettType(), result.getTime(), result.getPageWebKpiForWholeSiteMap());
+                        }
+                        if (result.getWebKpiByChannelMap() != null && result.getWebKpiByChannelMap().size() != 0) {
+                            saveWebKpiByChannel(result.gettType(), result.getTime(), result.getWebKpiByChannelMap());
                         }
                     } catch (InterruptedException e) {
                         logger.error("save result to db error, {}", e);

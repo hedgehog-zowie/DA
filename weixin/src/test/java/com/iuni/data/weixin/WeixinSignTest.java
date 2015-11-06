@@ -23,7 +23,7 @@ public class WeixinSignTest {
 //        String[] dates = {"20150518", "20150519", "20150521", "20150721",
 //                "20150801", "20150802", "20150803", "20150804", "20150805", "20150806",
 //                "20150807", "20150808", "20150809", "20150810", "20150811", "20150812"};
-        String[] dates = {"20150812", "20150813"};
+        String[] dates = {"20151019", "20151020", "20151028"};
         for (String date : dates) {
             System.out.println("==============" + date + " begin================");
             Map<String, String> params = new HashMap<>();
@@ -44,6 +44,7 @@ public class WeixinSignTest {
             }
             sb.append("</xml>");
             String datastr = sb.toString();
+            System.out.println(datastr);
 //        String datastr = "<xml>\n" +
 //                "  <appid>wxa47e81ec14fc7dad</appid>\n" +
 //                "  <bill_date>20150806</bill_date>\n" +

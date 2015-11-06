@@ -12,6 +12,7 @@ public enum AnalyzeType {
     PAGE("com.iuni.data.analyze.PageAnalyze"),
     CLICK("com.iuni.data.analyze.ClickAnalyze"),
     PAGE_FOR_WHOLE_SITE("com.iuni.data.analyze.PageAnalyzeForWholeSite"),
+    WHOLE_SITE_BY_CHANNEL("com.iuni.data.analyze.WholeSiteAnalyzeByChannel"),
     ;
 
     private final String className;

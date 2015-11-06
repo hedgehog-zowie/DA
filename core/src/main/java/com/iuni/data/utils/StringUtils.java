@@ -55,11 +55,11 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
         return DateUtils.dateToSimpleDateStr(DateUtils.computeStartDate(date, -7), "yyyy/MM/dd") + dateRangeToStr + DateUtils.dateToSimpleDateStr(DateUtils.computeStartDate(date, -1), "yyyy/MM/dd");
     }
 
-    public static void parseDateRangeString(AbstractQueryDto queryDto) {
-        String[] strs = queryDto.getDateRangeString().split(dateRangeToStr);
-        queryDto.setStartDateStr(strs[0].trim());
-        queryDto.setEndDateStr(strs[1].trim());
-    }
+//    public static void parseDateRangeString(AbstractQueryDto queryDto) {
+//        String[] strs = queryDto.getDateRangeString().split(dateRangeToStr);
+//        queryDto.setStartDateStr(strs[0].trim());
+//        queryDto.setEndDateStr(strs[1].trim());
+//    }
 
     public static String getObjectStringValue(final Object obj) {
         if (obj == null) {

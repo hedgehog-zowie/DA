@@ -20,10 +20,10 @@ public class LoginController {
 //    @Autowired
 //    private AccountService accountService;
 
-    @RequestMapping("login")
-    public String login() {
-        return "redirect:/login";
-    }
+//    @RequestMapping("login")
+//    public String login() {
+//        return "redirect:/login";
+//    }
 
     @RequestMapping("logout")
     public String logout(HttpServletRequest request, HttpServletResponse response) throws IOException {

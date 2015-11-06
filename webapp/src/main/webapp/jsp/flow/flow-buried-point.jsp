@@ -92,8 +92,6 @@
                             导出 <i class="fa fa-file"></i>
                         </button>
                     </li>
-                    <%--<li><a href="#flow-buried-point-chart-tab" data-toggle="tab">图</a></li>--%>
-                    <li class="active"><a href="#flow-buried-point-table-tab" data-toggle="tab">表</a></li>
                     <li class="pull-left header"><i class="fa fa-inbox"></i> 埋点流量历史统计</li>
                 </ul>
                 <div class="tab-content no-padding">
@@ -130,10 +128,6 @@
                             </tbody>
                         </table>
                     </div>
-                    <%--<div class="chart tab-pane" id="flow-buried-point-chart-tab" style="position: relative; height: 600px">--%>
-                    <%--<div id="flow-buried-point-chart" class="col-md-10 form-group" style="height: 600px"/>--%>
-                    <%--</div>--%>
-
                 </div>
             </div>
             <!-- /.nav-tabs-custom -->

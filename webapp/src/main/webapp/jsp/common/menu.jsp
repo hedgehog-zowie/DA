@@ -18,7 +18,7 @@
         <ul class="sidebar-menu">
             <li class="header">导 航</li>
             <c:forEach items="${menuList}" var="menu">
-                <li class="treeview">
+                <li class="treeview" style="white-space: normal;">
                     <a href="#">
                         <i class="fa fa-tasks"></i>
                         <span> ${menu.name} </span>
@@ -26,12 +26,12 @@
                     </a>
                     <ul class="treeview-menu">
                         <c:forEach items="${menu.child}" var="subMenu">
-                            <li>
+                            <li style="white-space: normal;">
                                 <a href="#"><i class="fa fa-circle-o text-yellow"></i> ${subMenu.name} <i
                                         class="fa fa-angle-left pull-right"></i></a>
                                 <ul class="treeview-menu">
                                     <c:forEach items="${subMenu.child}" var="subSubMenu">
-                                        <li><a class="partial" href="${subSubMenu.path}"><i
+                                        <li style="white-space: normal;"><a class="partial" href="${subSubMenu.path}"><i
                                                 class="fa fa-circle-o text-red"></i> ${subSubMenu.name} </a>
                                         </li>
                                     </c:forEach>

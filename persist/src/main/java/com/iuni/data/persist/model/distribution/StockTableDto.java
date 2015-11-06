@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class StockTableDto extends AbstractTableDto {
 
-    private Date time;
+    private String time;
     private String wareHouse;
     private String skuCode;
     private String goodsName;
@@ -23,12 +23,16 @@ public class StockTableDto extends AbstractTableDto {
     private String endNonDefeQty;
     private String endDefeQty;
     private String occupyStockQty;
+    /**
+     * 采购入库
+     */
+    private String procurementIn;
 
-    public Date getTime() {
+    public String getTime() {
         return time;
     }
 
-    public void setTime(Date time) {
+    public void setTime(String time) {
         this.time = time;
     }
 
@@ -128,17 +132,30 @@ public class StockTableDto extends AbstractTableDto {
         this.occupyStockQty = occupyStockQty;
     }
 
+    public String getProcurementIn() {
+        return procurementIn;
+    }
+
+    public void setProcurementIn(String procurementIn) {
+        this.procurementIn = procurementIn;
+    }
+
     public static Map<String, String> generateTableHeader() {
         Map<String, String> tableHeader = new LinkedHashMap<>();
-        tableHeader.put("日期", "date");
+        tableHeader.put("日期", "time");
         tableHeader.put("仓库", "wareHouse");
         tableHeader.put("SKU", "skuCode");
-        tableHeader.put("物料编码", "materialCode");
-        tableHeader.put("规格型号", "skuName");
+        tableHeader.put("商品类型", "goodsName");
+        tableHeader.put("名称规格", "skuName");
+        tableHeader.put("ERP物料编码", "materialCode");
         tableHeader.put("单位", "measureUnit");
-        tableHeader.put("良品", "acceptedGoods");
-        tableHeader.put("次品", "defectiveGoods");
-        tableHeader.put("库存合计", "totalGoods");
+        tableHeader.put("入库", "inStockQty");
+        tableHeader.put("采购入库", "procurementIn");
+        tableHeader.put("出库", "outStockQty");
+        tableHeader.put("总库存", "endStockQty");
+        tableHeader.put("可销库存", "endNonDefeQty");
+        tableHeader.put("不可销库存", "endDefeQty");
+        tableHeader.put("占用库存", "occupyStockQty");
         return tableHeader;
     }
 
@@ -146,12 +163,20 @@ public class StockTableDto extends AbstractTableDto {
         List<Map<String, Object>> tableData = new ArrayList<>();
         for (StockTableDto stockTableDto : stockTableDtoList) {
             Map<String, Object> rowData = new HashMap<>();
-            rowData.put("date",stockTableDto.getTime());
+            rowData.put("time",stockTableDto.getTime());
             rowData.put("wareHouse",stockTableDto.getWareHouse());
             rowData.put("skuCode",stockTableDto.getSkuCode());
-            rowData.put("materialCode",stockTableDto.getMaterialCode());
+            rowData.put("goodsName",stockTableDto.getGoodsName());
             rowData.put("skuName",stockTableDto.getSkuName());
+            rowData.put("materialCode",stockTableDto.getMaterialCode());
             rowData.put("measureUnit",stockTableDto.getMeasureUnit());
+            rowData.put("inStockQty",stockTableDto.getInStockQty());
+            rowData.put("procurementIn",stockTableDto.getProcurementIn());
+            rowData.put("outStockQty",stockTableDto.getOutStockQty());
+            rowData.put("endStockQty",stockTableDto.getEndStockQty());
+            rowData.put("endNonDefeQty",stockTableDto.getEndNonDefeQty());
+            rowData.put("endDefeQty",stockTableDto.getEndDefeQty());
+            rowData.put("occupyStockQty",stockTableDto.getOccupyStockQty());
             tableData.add(rowData);
         }
         return tableData;

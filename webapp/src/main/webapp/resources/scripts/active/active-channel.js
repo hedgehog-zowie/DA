@@ -87,9 +87,9 @@ var ActiveChannelTable = function () {
                     'echarts/chart/funnel'
                 ],
                 function (ec) {
-                    var dateRangeString = $("#daterangepicker").val();
-                    var channelType = $("#channelType").val();
-                    var channelCode = $("#channelCode").val();
+                    var dateRangeString = $("#daterangepicker").val() ? $("#daterangepicker").val() : "";
+                    var channelTypeId = $("#channelType").val() ? $("#channelType").val() : 0;
+                    var channelCode = $("#channelCode").val() ? $("#channelCode").val() : "";
                     //var dataType = $(".data-type[checked]").val();
                     //if (typeof(dataType) == "undefined")
                     //    dataType = $("input[name='data-type'][checked]").val();
@@ -99,7 +99,12 @@ var ActiveChannelTable = function () {
                     }
                     var queryParams = {
                         "dateRangeString": dateRangeString,
-                        "channel": {"channelType": channelType, "code": channelCode},
+                        "channel": {
+                            "channelType": {
+                                "id": channelTypeId
+                            },
+                            "code": channelCode
+                        },
                         "dataType": dataType
                     };
                     var url = "/activity/channel/data";

@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="aliPay">
+<mapper namespace="com.iuni.data.persist.mapper.financial.AliPayMapper">
 
-    <select id="selectAliPay">
+    <!-- 支付宝结果 -->
+    <resultMap id="aliPayResult" type="com.iuni.data.persist.model.financial.AliPayTableDto">
+        <result property="aliPayOrderNo" column="alipayOrderNo"/>
+        <result property="merchantOrderNo" column="merchantOrderNo"/>
+        <result property="createTime" column="createTime"/>
+        <result property="logonId" column="logonId"/>
+        <result property="oppositeName" column="oppositeName"/>
+        <result property="osn" column="osn"/>
+        <result property="orderCode" column="orderCode"/>
+        <result property="inAmount" column="inAmount"/>
+        <result property="outAmount" column="outAmount"/>
+        <result property="balance" column="balance"/>
+        <result property="type" column="type"/>
+        <result property="memo" column="memo"/>
+    </resultMap>
+    <!-- 支付宝报表 -->
+    <select id="selectAliPay" parameterType="com.iuni.data.persist.model.financial.AliPayQueryDto" resultMap="aliPayResult">
         SELECT
         DECODE(IDATR.ALIPAY_ORDER_NO, NULL, IDAR.ALIPAY_ORDER_NO, IDATR.ALIPAY_ORDER_NO) "alipayOrderNo",
-        IDAR.MERCHANT_ORDER_NO "merchartOrderNo",
+        IDAR.MERCHANT_ORDER_NO "merchantOrderNo",
         IDAR.CREATE_TIME "createTime",
         IDATR.OPPOSITE_LOGON_ID "logonId",
         IDATR.OPPOSITE_NAME "oppositeName",
@@ -24,14 +40,14 @@
         LEFT JOIN IUNI_ORDER_INFO IOI ON SUBSTR(IDAR.MERCHANT_ORDER_NO, INSTR(IDAR.MERCHANT_ORDER_NO, 'T200P') + 5) =
         IOI.OSN
         <where>
-            <if test="orderCode != null">
-                AND (IOI.ORDER_SN LIKE '%' || #orderCode# || '%' OR IOI.OSN LIKE '%' || #orderCode# || '%')
+            <!--<if test="orderCode != null">-->
+                <!--AND (IOI.ORDER_SN LIKE '%' || #{orderCode} || '%' OR IOI.OSN LIKE '%' || #{orderCode} || '%')-->
+            <!--</if>-->
+            <if test="startDateStr != null">
+                AND TO_DATE(IDAR.CREATE_TIME, 'YYYY/MM/DD HH24:MI:SS') <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
             </if>
-            <if test="beginDate != null">
-                AND TO_DATE(IDAR.CREATE_TIME, 'YYYY-MM-DD HH24:MI:SS') <![CDATA[ >= ]]> TO_DATE(#beginDate#, 'YYYY-MM-DD')
-            </if>
-            <if test="endDate != null">
-                AND TO_DATE(IDAR.CREATE_TIME, 'YYYY-MM-DD HH24:MI:SS') <![CDATA[ < ]]> TO_DATE(#endDate#, 'YYYY-MM-DD') + 1
+            <if test="endDateStr != null">
+                AND TO_DATE(IDAR.CREATE_TIME, 'YYYY/MM/DD HH24:MI:SS') <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
             </if>
         </where>
         ORDER BY IDATR.ALIPAY_ORDER_NO,

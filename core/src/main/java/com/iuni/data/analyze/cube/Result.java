@@ -4,6 +4,7 @@ import com.iuni.data.common.TType;
 import com.iuni.data.persist.domain.webkpi.ClickWebKpi;
 import com.iuni.data.persist.domain.webkpi.PageWebKpi;
 import com.iuni.data.persist.domain.webkpi.WebKpi;
+import com.iuni.data.persist.domain.webkpi.WebKpiByChannel;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -21,11 +22,13 @@ public class Result {
     private final Map<String, PageWebKpi> pageWebKpiMap;
     private final Map<String, ClickWebKpi> clickWebKpiMap;
     private final Map<String, WebKpi> pageWebKpiForWholeSiteMap;
+    private final Map<String, WebKpiByChannel> webKpiByChannelMap;
 
     public Result(){
         clickWebKpiMap = new HashMap<>();
         pageWebKpiMap = new HashMap<>();
         pageWebKpiForWholeSiteMap = new HashMap<>();
+        webKpiByChannelMap = new HashMap<>();
     }
 
     public Date getTime() {
@@ -56,10 +59,15 @@ public class Result {
         return pageWebKpiForWholeSiteMap;
     }
 
+    public Map<String, WebKpiByChannel> getWebKpiByChannelMap() {
+        return webKpiByChannelMap;
+    }
+
     public void clear(){
-        this.clickWebKpiMap.clear();
-        this.pageWebKpiMap.clear();
-        this.pageWebKpiForWholeSiteMap.clear();
+        clickWebKpiMap.clear();
+        pageWebKpiMap.clear();
+        pageWebKpiForWholeSiteMap.clear();
+        webKpiByChannelMap.clear();
     }
 
     public void addPageWebKpi(Map<String, PageWebKpi> pageWebKpiMap){
@@ -72,6 +80,10 @@ public class Result {
 
     public void addPageWebKpiForWholeSiteMap(Map<String, WebKpi> pageWebKpiForWholeSiteMap){
         this.pageWebKpiForWholeSiteMap.putAll(pageWebKpiForWholeSiteMap);
+    }
+
+    public void addWebKpiByChannelMap(Map<String, WebKpiByChannel> webKpiByChannelMap){
+        this.webKpiByChannelMap.putAll(webKpiByChannelMap);
     }
 
 }

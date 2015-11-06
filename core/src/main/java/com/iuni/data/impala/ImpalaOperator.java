@@ -78,7 +78,7 @@ public class ImpalaOperator {
         ResultSet rs = null;
         try {
             connection = this.connector.connect();
-            logger.info("create new impala connection");
+            logger.info("create new impala connection, execute query: {}", queryStr);
             stmt = connection.createStatement();
             rs = stmt.executeQuery(queryStr);
             int columnSize = rs.getMetaData().getColumnCount();
@@ -88,7 +88,7 @@ public class ImpalaOperator {
                     row.add(rs.getString(i + 1));
                 resultList.add(row);
             }
-            logger.info("executed query: {}", queryStr);
+            logger.info("query succeed.");
         } catch (SQLException e) {
             String errorStr = "impala execute error, please check sql : " + queryStr + ". error msg : " + e.getMessage();
             logger.error(errorStr, e);

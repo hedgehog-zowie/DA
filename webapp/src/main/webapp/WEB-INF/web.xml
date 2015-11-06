@@ -102,15 +102,19 @@
     <!--<welcome-file-list>-->
     <!--<welcome-file>index.jsp</welcome-file>-->
     <!--</welcome-file-list>-->
-
+    <error-page>
+        <!-- Missing login -->
+        <error-code>400</error-code>
+        <location>/jsp/error/common-error.jsp</location>
+    </error-page>
     <error-page>
         <!-- Missing login -->
         <error-code>404</error-code>
-        <location>/jsp/error/404.jsp</location>
+        <location>/jsp/error/common-error.jsp</location>
     </error-page>
     <error-page>
         <!-- Uncaught exception -->
         <error-code>500</error-code>
-        <location>/jsp/error/500.jsp</location>
+        <location>/jsp/error/common-error.jsp</location>
     </error-page>
 </web-app>

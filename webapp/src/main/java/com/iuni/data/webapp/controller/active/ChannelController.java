@@ -1,14 +1,13 @@
 package com.iuni.data.webapp.controller.active;
 
 import com.iuni.data.persist.domain.ConfigConstants;
-import com.iuni.data.persist.domain.config.Channel;
 import com.iuni.data.persist.domain.config.ChannelType;
-import com.iuni.data.persist.model.activity.ActivityChannelTableDto;
-import com.iuni.data.persist.model.activity.ActivityChannelQueryDto;
 import com.iuni.data.persist.model.activity.ActivityChannelChartDto;
+import com.iuni.data.persist.model.activity.ActivityChannelQueryDto;
+import com.iuni.data.persist.model.activity.ActivityChannelTableDto;
 import com.iuni.data.utils.ExcelUtils;
-import com.iuni.data.utils.StringUtils;
 import com.iuni.data.utils.JsonUtils;
+import com.iuni.data.utils.StringUtils;
 import com.iuni.data.webapp.common.PageName;
 import com.iuni.data.webapp.service.activity.ActivityService;
 import com.iuni.data.webapp.service.config.ChannelTypeService;
@@ -17,12 +16,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Nicholas
@@ -50,7 +55,7 @@ public class ChannelController {
     public ModelAndView queryTable(@ModelAttribute("queryParam") ActivityChannelQueryDto queryParam) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.active_channel.getPath());
-        StringUtils.parseDateRangeString(queryParam);
+        queryParam.parseDateRangeString();
         List<ActivityChannelTableDto> resultList = activityService.selectActivityChannel(queryParam);
         modelAndView.addObject("resultList", resultList);
         modelAndView.addObject("queryParam", queryParam);
@@ -65,7 +70,7 @@ public class ChannelController {
     @RequestMapping("data")
     @ResponseBody
     public Map<String, Object> queryChartData(@RequestBody ActivityChannelQueryDto queryParam) {
-        StringUtils.parseDateRangeString(queryParam);
+        queryParam.parseDateRangeString();
         Map<String, Object> modelMap = new HashMap<>(2);
         ActivityChannelQueryDto.DataType dataType = ActivityChannelQueryDto.DataType.valueOf(queryParam.getDataType());
         List<ActivityChannelChartDto> seriesData = new ArrayList<>();
@@ -108,13 +113,15 @@ public class ChannelController {
         ActivityChannelQueryDto queryParam = JsonUtils.fromJson(queryParamStr, ActivityChannelQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
-            String fileName = new String(("活动-渠道分析(" + queryParam.getDateRangeString().replaceAll("\\s+","") + ")").getBytes(), "ISO8859-1");
+            String fileName = new String(("活动-渠道分析(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
             response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
 
-            StringUtils.parseDateRangeString(queryParam);
+            queryParam.parseDateRangeString();
             List<ActivityChannelTableDto> resultList = activityService.selectActivityChannel(queryParam);
 
-            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(ActivityChannelTableDto.generateTableHeader(), ActivityChannelTableDto.generateTableData(resultList));
+            List<ExcelUtils.SheetData> sheetDataList = new ArrayList<>();
+            sheetDataList.add(new ExcelUtils.SheetData("活动-渠道分析", ActivityChannelTableDto.generateTableHeader(), ActivityChannelTableDto.generateTableData(resultList)));
+            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(sheetDataList);
             wb.write(response.getOutputStream());
 
             response.getOutputStream().flush();

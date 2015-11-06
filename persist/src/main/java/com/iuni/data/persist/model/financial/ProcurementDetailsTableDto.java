@@ -12,6 +12,7 @@ public class ProcurementDetailsTableDto extends AbstractTableDto {
 
     private Date time;
     private String supplierName;
+    private String receiveType;
     private String procurementSn;
     private String receiveCode;
     private String sku;
@@ -34,6 +35,14 @@ public class ProcurementDetailsTableDto extends AbstractTableDto {
 
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
+    }
+
+    public String getReceiveType() {
+        return receiveType;
+    }
+
+    public void setReceiveType(String receiveType) {
+        this.receiveType = receiveType;
     }
 
     public String getProcurementSn() {
@@ -96,6 +105,7 @@ public class ProcurementDetailsTableDto extends AbstractTableDto {
         Map<String, String> tableHeader = new LinkedHashMap<>();
         tableHeader.put("入库日期", "time");
         tableHeader.put("供应商", "supplierName");
+        tableHeader.put("入库类型", "receiveType");
         tableHeader.put("采购订单号", "procurementSn");
         tableHeader.put("入库单号", "receiveCode");
         tableHeader.put("SKU", "sku");
@@ -110,15 +120,16 @@ public class ProcurementDetailsTableDto extends AbstractTableDto {
         List<Map<String, Object>> tableData = new ArrayList<>();
         for(ProcurementDetailsTableDto procurementDetailsTableDto: procurementDetailsTableDtoList){
             Map<String, Object> rowData = new HashMap<>();
-            rowData.put("入库日期", procurementDetailsTableDto.getTime());
-            rowData.put("供应商", procurementDetailsTableDto.getSupplierName());
-            rowData.put("采购订单号", procurementDetailsTableDto.getProcurementSn());
-            rowData.put("入库单号", procurementDetailsTableDto.getReceiveCode());
-            rowData.put("SKU", procurementDetailsTableDto.getSku());
-            rowData.put("物料编码", procurementDetailsTableDto.getMaterialCode());
-            rowData.put("名称规格", procurementDetailsTableDto.getSkuName());
-            rowData.put("数量", procurementDetailsTableDto.getQuantity());
-            rowData.put("备注", procurementDetailsTableDto.getRemark());
+            rowData.put("time", procurementDetailsTableDto.getTime());
+            rowData.put("supplierName", procurementDetailsTableDto.getSupplierName());
+            rowData.put("receiveType", procurementDetailsTableDto.getReceiveType());
+            rowData.put("procurementSn", procurementDetailsTableDto.getProcurementSn());
+            rowData.put("receiveCode", procurementDetailsTableDto.getReceiveCode());
+            rowData.put("sku", procurementDetailsTableDto.getSku());
+            rowData.put("materialCode", procurementDetailsTableDto.getMaterialCode());
+            rowData.put("skuName", procurementDetailsTableDto.getSkuName());
+            rowData.put("quantity", procurementDetailsTableDto.getQuantity());
+            rowData.put("remark", procurementDetailsTableDto.getRemark());
             tableData.add(rowData);
         }
         return tableData;

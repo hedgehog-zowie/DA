@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.distribution.ReverseMapper">
+
+    <!-- 逆向签收表 - 退货 - 结果 -->
+    <resultMap id="reverseSignOfBackResult" type="com.iuni.data.persist.model.distribution.ReverseSignOfBackTableDto">
+        <result property="orderSn" column="orderSn"/>
+        <result property="deliverySn" column="deliverySn"/>
+        <result property="status" column="status"/>
+        <result property="isInvoice" column="isInvoice"/>
+        <result property="goodsName" column="goodsName"/>
+        <result property="userName" column="userName"/>
+        <result property="mobile" column="mobile"/>
+        <result property="address" column="address"/>
+        <result property="processTime" column="processTime"/>
+        <result property="auditTime" column="auditTime"/>
+    </resultMap>
+    <!-- 逆向签收表 - 退货 -->
+    <select id="selectReverseSignOfBack" parameterType="com.iuni.data.persist.model.distribution.ReverseSignQueryDto" resultMap="reverseSignOfBackResult">
+        SELECT IOI.ORDER_SN "orderSn",
+        IOI.REFERER "referer",
+        IRIO.DELIVERY_SN "exchangeSn",
+        CASE IRIO.STATUS
+        WHEN 'application' THEN '申请中'
+        WHEN 'audit' THEN '已审核待确认退款'
+        WHEN 'cancelled' THEN '已取消'
+        WHEN 'unusual' THEN '收包异常'
+        WHEN 'receivedPacket' THEN '已收包待审核'
+        WHEN 'completed' THEN '已退款'
+        WHEN 'auditNoPass' THEN '审核不通过'
+        ELSE IRIO.STATUS
+        END
+        "status",
+        CASE IRIO.IS_INVOICE
+        WHEN '1' THEN
+        '是'
+        ELSE
+        '否'
+        END "isInvoice",
+        IRIM.GOODS_NAME "goodsName",
+        IOI.USER_NAME "userName",
+        IOI.MOBILE "mobile",
+        IOI.ADDRESS "address",
+        IRIO.PROCESS_TIME "receiveTime",
+        IRIO.CUSTOM_AUDIT_TIME "auditTime"
+        FROM IUNI_RETURNGOODS_INFO IRIO
+        LEFT JOIN IUNI_RETURNGOODS_ITEM IRIM
+        ON IRIO.DELIVERY_SN = IRIM.DELIVERY_SN
+        LEFT JOIN IUNI_ORDER_INFO IOI
+        ON IRIO.ORDER_SN = IOI.ORDER_SN
+        LEFT JOIN (SELECT DISTINCT (ORDER_SOURCE_CODE) SOURCE_CODE,
+        ORDER_SOURCE_NAME SOURCE_NAME
+        FROM IUNI_ORDER_SOURCE
+        WHERE ORDER_SOURCE_CODE IS NOT NULL
+        ORDER BY ORDER_SOURCE_CODE) IOS
+        ON IOI.REFERER = IOS.SOURCE_CODE
+        <where>
+            <!--<if test="orderSource != null">-->
+                <!--AND IOI.REFERER = #orderSource#-->
+            <!--</if>-->
+            <!--<if test="status != null">-->
+                <!--AND IRIO.STATUS = #status#-->
+            <!--</if>-->
+            <if test="startDateStr != null">
+                AND IRIO.ADD_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IRIO.ADD_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+        ORDER BY IOI.ORDER_SN, IRIO.DELIVERY_SN
+    </select>
+
+    <!-- 逆向签收表 - 退货 - 结果 -->
+    <resultMap id="reverseSignOfExchangeResult" type="com.iuni.data.persist.model.distribution.ReverseSignOfExchangeTableDto">
+        <result property="orderSn" column="orderSn"/>
+        <result property="exchangeSn" column="exchangeSn"/>
+        <result property="status" column="status"/>
+        <result property="goodsName" column="goodsName"/>
+        <result property="userName" column="userName"/>
+        <result property="mobile" column="mobile"/>
+        <result property="address" column="address"/>
+        <result property="receiveTime" column="receiveTime"/>
+        <result property="checkTime" column="checkTime"/>
+        <result property="auditTime" column="auditTime"/>
+        <result property="shippingTime" column="shippingTime"/>
+    </resultMap>
+    <!-- 逆向签收表 - 换货 -->
+    <select id="selectReverseSignOfExchange" parameterType="com.iuni.data.persist.model.distribution.ReverseSignQueryDto" resultMap="reverseSignOfExchangeResult">
+        SELECT IOI.ORDER_SN "orderSn",
+        IOI.REFERER "referer",
+        IEI.EXCHANGE_SN "exchangeSn",
+        CASE IEI.SSTATUS
+        WHEN 'cancle' THEN '已取消'
+        WHEN 'cancleWaitDelivery' THEN '取消待发货'
+        WHEN 'waitReceivePackage' THEN '待收包'
+        WHEN 'receivePackageUnusual' THEN '换货收包异常'
+        WHEN 'waitInitialCheck' THEN '待售后初检'
+        WHEN 'waitGassAudit' THEN '待售后审核'
+        WHEN 'shipped' THEN '已发货'
+        WHEN 'signed' THEN '已签收'
+        WHEN 'completed' THEN '已完成'
+        WHEN 'waitCustomerAudit' THEN '待客服审核'
+        WHEN 'waitDelivery' THEN '待发货'
+        WHEN 'cancleToRepairs' THEN '转报修'
+        WHEN 'cancleToReturn' THEN '转退货'
+        WHEN 'cancleToOther' THEN '作废'
+        ELSE IEI.SSTATUS
+        END "status",
+        IEIM.GOODS_NAME "goodsName",
+        CASE WHEN IOI.USER_NAME IS NOT NULL THEN IOI.USER_NAME
+        ELSE IEI.REFERER END "userName",
+        IOI.MOBILE "mobile",
+        IOI.ADDRESS "address",
+        IEI.RECEIVE_PACKET_TIME "receiveTime",
+        IEI.GASS_AUDIT_TIME "checkTime",
+        IEI.CUSTOM_AUDIT_TIME "auditTime",
+        IEI.F_SHIPPING_TIME "shippingTime"
+        FROM IUNI_EXCHANGEGOODS_INFO IEI
+        LEFT JOIN IUNI_ORDER_INFO IOI
+        ON IEI.ORDER_SN = IOI.ORDER_SN
+        LEFT JOIN IUNI_EXCHANGEGOODS_ITEM IEIM
+        ON IEI.EXCHANGE_SN = IEIM.EXCHANGE_SN
+        <where>
+            <!--<if test="orderSource != null">-->
+                <!--AND-->
+                <!--(-->
+                <!--IOI.REFERER = #orderSource#-->
+                <!--OR-->
+                <!--IEI.REFERER = #orderSource#-->
+                <!--)-->
+            <!--</if>-->
+            <!--<if test="status != null">-->
+                <!--AND IEI.SSTATUS = #status#-->
+            <!--</if>-->
+            <if test="startDateStr != null">
+                AND IEI.CREATE_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IEI.CREATE_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+        ORDER BY IOI.ORDER_SN, IEI.EXCHANGE_SN
+    </select>
+
+    <!-- 逆向签收表 - 维修 - 结果 -->
+    <resultMap id="reverseSignOfRepairResult" type="com.iuni.data.persist.model.distribution.ReverseSignOfRepairTableDto">
+        <result property="orderSn" column="orderSn"/>
+        <result property="exchangeSn" column="exchangeSn"/>
+        <result property="status" column="status"/>
+        <result property="goodsName" column="goodsName"/>
+        <result property="userName" column="userName"/>
+        <result property="mobile" column="mobile"/>
+        <result property="address" column="address"/>
+        <result property="receiveTime" column="receiveTime"/>
+        <result property="checkTime" column="checkTime"/>
+        <result property="auditTime" column="auditTime"/>
+        <result property="shippingTime" column="shippingTime"/>
+    </resultMap>
+    <!-- 逆向签收表 - 维修 -->
+    <select id="selectReverseSignOfRepair" parameterType="com.iuni.data.persist.model.distribution.ReverseSignQueryDto" resultMap="reverseSignOfRepairResult">
+        SELECT IOI.ORDER_SN "orderSn",
+        IOI.REFERER "referer",
+        IRI.REPAIRS_SN "repairSn",
+        CASE IRI.SSTATUS
+        WHEN '0' THEN '已取消'
+        WHEN '1' THEN '待收包'
+        WHEN '4' THEN '报修收包异常'
+        WHEN '3' THEN '待售后初检'
+        WHEN '14' THEN '待客服审核'
+        WHEN '5' THEN '待售后维修'
+        WHEN '15' THEN '待付款'
+        WHEN '2' THEN '待发货'
+        WHEN '6' THEN '已发货'
+        WHEN '8' THEN '已签收'
+        WHEN '10' THEN '已完成'
+        WHEN '16' THEN '转退货'
+        WHEN '17' THEN '转换货'
+        WHEN '18' THEN '作废'
+        WHEN '19' THEN '取消待发货'
+        ELSE IRI.SSTATUS
+        END "status",
+        IRIM.GOODS_NAME "goodsName",
+        CASE WHEN IOI.USER_NAME IS NOT NULL THEN IOI.USER_NAME
+        ELSE IRI.REFERER END "userName",
+        IOI.MOBILE "mobile",
+        IOI.ADDRESS "address",
+        IRI.RECEIVE_PACKET_TIME "receiveTime",
+        IRI.INITIAL_CHECK_TIME "checkTime",
+        IRI.CUSTOM_AUDIT_TIME "auditTime",
+        IRI.F_SHIPPING_TIME "shippingTime"
+        FROM IUNI_REPAIRSGOODS_INFO IRI
+        LEFT JOIN IUNI_ORDER_INFO IOI
+        ON IRI.ORDER_SN = IOI.ORDER_SN
+        LEFT JOIN IUNI_REPAIRSGOODS_ITEM IRIM
+        ON IRI.ORDER_SN = IRIM.ORDER_SN
+        <where>
+            <!--<if test="orderSource != null">-->
+                <!--AND-->
+                <!--(-->
+                <!--IOI.REFERER = #orderSource#-->
+                <!--OR-->
+                <!--IEI.REFERER = #orderSource#-->
+                <!--)-->
+            <!--</if>-->
+            <!--<if test="status != null">-->
+                <!--AND IEI.SSTATUS = #status#-->
+            <!--</if>-->
+            <if test="startDateStr != null">
+                AND IRI.CREATE_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IRI.CREATE_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+        ORDER BY IOI.ORDER_SN, IRI.REPAIRS_SN
+    </select>
+
+</mapper>
+
+
+

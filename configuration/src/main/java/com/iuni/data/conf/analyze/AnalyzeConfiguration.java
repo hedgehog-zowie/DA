@@ -30,6 +30,7 @@ public class AnalyzeConfiguration extends ComponentConfiguration {
         PAGE("com.iuni.data.conf.analyze.PageAnalyzeConfiguration"),
         CLICK("com.iuni.data.conf.analyze.ClickAnalyzeConfiguration"),
         PAGE_FOR_WHOLE_SITE("com.iuni.data.conf.analyze.PageAnalyzeForWholeSiteConfiguration"),
+        WHOLE_SITE_BY_CHANNEL("com.iuni.data.conf.analyze.WholeSiteAnalyzeByChannelConfiguration"),
         ;
 
         private String analyzeConfigurationName;

@@ -1,0 +1,1154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.distribution.StockMapper">
+
+    <!-- 销售出库明细结果 -->
+    <resultMap id="stockMoveDetailsResult" type="com.iuni.data.persist.model.distribution.StockMoveDetailsTableDto">
+        <result property="time" column="time"/>
+        <result property="orderSource" column="orderSource"/>
+        <result property="orderType" column="orderType"/>
+        <result property="sku" column="sku"/>
+        <result property="name" column="name"/>
+        <result property="name" column="name"/>
+        <result property="materialCode" column="materialCode"/>
+        <result property="orderCode" column="orderCode"/>
+        <result property="outerOrderCode" column="outerOrderCode"/>
+        <result property="payNo" column="payNo"/>
+        <result property="deliveryCode" column="deliveryCode"/>
+        <result property="price" column="price"/>
+        <result property="quantity" column="quantity"/>
+    </resultMap>
+    <!-- 销售出库明细 -->
+    <select id="selectStockMoveDetails" parameterType="com.iuni.data.persist.model.distribution.StockMoveDetailsQueryDto" resultMap="stockMoveDetailsResult">
+        SELECT IWSO.SHIPPING_TIME "time",
+        IOS.SOURCE_NAME "orderSource",
+        IWSO.ORDER_CODE "orderCode",
+        CASE IWSO.ORDER_TYPE WHEN '1' THEN '刷单' WHEN '2' THEN '以旧换新' ELSE '普通订单' END "orderType",
+        IWSO.OUTER_ORDER_CODE "outerOrderCode",
+        IWSO.PAY_NO "payNo",
+        IWSO.DELIVERY_CODE "deliveryCode",
+        IWSOG.UNIT_PRICE "price",
+        IWSOG.QUANTITY "quantity",
+        IWS.SKU_CODE "sku",
+        IWS.SKU_NAME "name",
+        IWS.MATERIAL_CODE "materialCode",
+        IWW.WARES_NAME "name",
+        IOS.SOURCE_CODE "orderList"
+        FROM SYN_WMS_SALES_ORDER IWSO
+        LEFT JOIN SYN_WMS_SALES_ORDER_GOODS IWSOG
+        ON IWSO.ID = IWSOG.ORDER_ID
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWSOG.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWS.WARES_ID = IWW.ID
+        LEFT JOIN (SELECT DISTINCT (WMS_SOURCE_CODE) SOURCE_CODE,
+        WMS_SOURCE_NAME SOURCE_NAME
+        FROM IUNI_ORDER_SOURCE
+        ORDER BY WMS_SOURCE_CODE) IOS
+        ON IOS.SOURCE_CODE = IWSO.ORDER_SOURCE
+        <where>
+            (IWSO.ORDER_MERGER_TYPE IS NULL OR IWSO.ORDER_MERGER_TYPE = 2)
+            <!--<if test="orderType != null">-->
+                <!--IWSO.ORDER_TYPE = #orderType#-->
+            <!--</if>-->
+            <if test="startDateStr != null">
+                AND IWSO.SHIPPING_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWSO.SHIPPING_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+    </select>
+
+    <!-- 各渠道进退换数量汇总结果 -->
+    <resultMap id="stockByChannelResult" type="com.iuni.data.persist.model.distribution.StockByChannelTableDto">
+        <result property="date" column="DATETIME"/>
+        <result property="sourceName" column="SOURCE_NAME"/>
+        <result property="code" column="SKU_CODE"/>
+        <result property="name" column="CAT_NAME"/>
+        <result property="name" column="SKU_NAME"/>
+        <result property="materialCode" column="MATERIAL_CODE"/>
+        <result property="measureUnit" column="MEASURE_UNIT"/>
+        <result property="send" column="FH" javaType="int"/>
+        <result property="back" column="TH" javaType="int"/>
+        <result property="backOfExchange" column="HH" javaType="int"/>
+        <result property="reject" column="JS" javaType="int"/>
+        <result property="backOfScalping" column="SDTH" javaType="int"/>
+    </resultMap>
+    <!-- 各渠道进退换数量汇总报表 -->
+    <select id="selectStockByChannel" parameterType="com.iuni.data.persist.model.distribution.StockByChannelQueryDto" resultMap="stockByChannelResult">
+        SELECT T.DATETIME,
+        T.SOURCE_NAME,
+        T.SKU_CODE,
+        T.SKU_NAME,
+        T.CAT_NAME,
+        T.MATERIAL_CODE,
+        T.MEASURE_UNIT,
+        SUM(T.FH) "FH",
+        SUM(T.TH) "TH",
+        SUM(T.HH) "HH",
+        SUM(T.JS) "JS",
+        SUM(T.SDTH) "SDTH"
+        FROM
+        (
+        SELECT TO_CHAR(T1.DATETIME, 'YYYY/MM/DD') "DATETIME",
+        T1.SOURCE_CODE,
+        T1.SOURCE_NAME,
+        T1.SKU_CODE,
+        T1.SKU_NAME,
+        T1.CAT_NAME,
+        T1.MATERIAL_CODE,
+        T1.MEASURE_UNIT,
+        DECODE(T1.BIZ_TYPE, '调拔发货', ABS(SUM(T1.QUANTITY)), 0) "FH",
+        DECODE(T1.BIZ_TYPE, '调拔退货', ABS(SUM(T1.QUANTITY)), 0) "TH",
+        DECODE(T1.BIZ_TYPE, '调拔换货退回', ABS(SUM(T1.QUANTITY)), 0) "HH",
+        0 "JS",
+        0 "SDTH"
+        FROM (
+        SELECT
+        CASE IWT.BILL_TYPE
+        WHEN '0' THEN
+        '调拔发货-大客户销售'
+        WHEN '1' THEN
+        '调拔发货-对内调拨'
+        WHEN '2' THEN
+        '调拔发货-大客户下单'
+        WHEN '3' THEN
+        '调拔发货-调拨换货发货'
+        ELSE
+        '调拔发货-' || IWT.BILL_TYPE
+        END "BIZ_TYPE",
+        IWT.SHIPPING_TIME "DATETIME",
+        IWT.ID "CODE",
+        IOS.SOURCE_NAME "SOURCE_CODE",
+        IWTP.NAME "SOURCE_NAME",
+        IWWH.ID "WAREHOUSE_ID",
+        IWWH.WAREHOUSE_NAME,
+        IWS.SKU_CODE,
+        IWWC.CAT_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT,
+        IWTG.QUANTITY QUANTITY
+        FROM SYN_WMS_TRANSFER IWT
+        LEFT JOIN SYN_WMS_TRANSFER_GOODS IWTG
+        ON IWTG.TRANSFER_ID = IWT.ID
+        LEFT JOIN SYN_WMS_TRANSFER_PARTNER IWTP
+        ON IWTP.ID = IWT.TRANSFER_SALE
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWTG.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWS.WARES_ID = IWW.ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY IWWC
+        ON IWW.CAT_ID = IWWC.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWT.WAREHOUSE_ID = IWWH.ID
+        LEFT JOIN
+        (
+        SELECT DISTINCT (CODE) SOURCE_CODE,
+        NAME SOURCE_NAME
+        FROM SYN_WMS_TRANSFER_PARTNER
+        <where>
+            CODE NOT IN ('88888', '110538')
+            AND C_PARENT_ID IS NULL
+        </where>
+        ORDER BY CODE
+        ) IOS ON IOS.SOURCE_CODE = IWTP.CODE
+        <where>
+            IWT.BILL_TYPE <![CDATA[ <> ]]> '2'
+            <if test="startDateStr != null">
+                AND IWT.SHIPPING_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWT.SHIPPING_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        UNION ALL
+        SELECT
+        CASE IWT.BILL_TYPE
+        WHEN '0' THEN
+        '调拔发货-大客户销售'
+        WHEN '1' THEN
+        '调拔发货-对内调拨'
+        WHEN '2' THEN
+        '调拔发货-大客户下单'
+        WHEN '3' THEN
+        '调拔发货-调拨换货发货'
+        ELSE
+        '调拔发货-' || IWT.BILL_TYPE
+        END "BIZ_TYPE",
+        IWT.SHIPPING_TIME "DATETIME",
+        IWT.ID "CODE",
+        CASE
+        WHEN IWLO.COMPANY_NAME LIKE '%京东%' THEN
+        '100503'
+        WHEN IWLO.COMPANY_NAME LIKE '%苏宁%' THEN
+        '100553'
+        ELSE
+        'other'
+        END "SOURCE_CODE",
+        IWLO.COMPANY_NAME "SOURCE_NAME",
+        IWWH.ID "WAREHOUSE_ID",
+        IWWH.WAREHOUSE_NAME,
+        IWS.SKU_CODE,
+        IWWC.CAT_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT,
+        IWTG.QUANTITY QUANTITY
+        FROM SYN_WMS_TRANSFER IWT
+        LEFT JOIN SYN_WMS_TRANSFER_GOODS IWTG
+        ON IWTG.TRANSFER_ID = IWT.ID
+        LEFT JOIN SYN_WMS_LARGE_ORDER IWLO
+        ON IWLO.ORDER_CODE = IWT.ORDER_CODE
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWTG.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWS.WARES_ID = IWW.ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY IWWC
+        ON IWW.CAT_ID = IWWC.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWT.WAREHOUSE_ID = IWWH.ID
+        <where>
+            IWT.BILL_TYPE = '2'
+            <if test="startDateStr != null">
+                AND IWT.SHIPPING_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWT.SHIPPING_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        UNION ALL
+        SELECT CASE IWR.RECEIVE_TYPE
+        WHEN '104' THEN
+        '调拔退货'
+        WHEN '107' THEN
+        '调拔换货退回'
+        END "BIZ_TYPE",
+        '' "BILL_TYPE",
+        IWR.HANDLED_TIME "DATETIME",
+        IWR.RECEIVE_CODE "CODE",
+        IOS.SOURCE_CODE "SOURCE_CODE",
+        IOS.SOURCE_NAME "SOURCE_NAME",
+        IWWH.ID "WAREHOUSE_ID",
+        IWWH.WAREHOUSE_NAME,
+        IWS.SKU_CODE,
+        IWWC.CAT_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT,
+        IWRG.QUANTITY
+        FROM SYN_WMS_RECEIVE IWR
+        LEFT JOIN SYN_WMS_TRANSFER_PARTNER IWTP
+        ON IWR.TRANSFER_PARTNER_ID = IWTP.ID
+        LEFT JOIN SYN_WMS_RECEIVE_GOODS IWRG
+        ON IWRG.RECEIVE_ID = IWR.ID
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWRG.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWS.WARES_ID = IWW.ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY IWWC
+        ON IWW.CAT_ID = IWWC.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWR.WAREHOUSE_ID = IWWH.ID
+        LEFT JOIN
+        (
+        SELECT DISTINCT (CODE) SOURCE_CODE,
+        NAME SOURCE_NAME
+        FROM SYN_WMS_TRANSFER_PARTNER
+        <where>
+            CODE NOT IN ('88888', '110538')
+            AND C_PARENT_ID IS NULL
+        </where>
+        ORDER BY CODE
+        ) IOS ON IOS.SOURCE_CODE = IWTP.CODE
+        <where>
+            IWR.RECEIVE_TYPE IN ('104', '107')
+            AND IWR.HANDLING_STATUS = 1
+            AND (IWRG.USE_FLAG IS NULL OR IWRG.USE_FLAG <![CDATA[ <> ]]> '0')
+            <if test="startDateStr != null">
+                AND IWR.HANDLED_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWR.HANDLED_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        ) T1
+        <!--<where>-->
+            <!--<if test="channelOfTransferCodes != null">-->
+                <!--AND T1.SOURCE_CODE IN-->
+                <!--<foreach collection="channelOfTransferCodes" index="index" item="item" open="(" separator="," close=")">-->
+                    <!--#{item}-->
+                <!--</foreach>-->
+            <!--</if>-->
+        <!--</where>-->
+        GROUP BY TO_CHAR(T1.DATETIME, 'YYYY/MM/DD'),
+        T1.SOURCE_CODE,
+        T1.SOURCE_NAME,
+        T1.SKU_CODE,
+        T1.SKU_NAME,
+        T1.CAT_NAME,
+        T1.MATERIAL_CODE,
+        T1.MEASURE_UNIT,
+        T1.BIZ_TYPE
+        UNION ALL
+        SELECT TO_CHAR(T2.DATETIME, 'YYYY/MM/DD') "DATETIME",
+        T2.SOURCE_CODE,
+        T2.SOURCE_NAME,
+        T2.SKU_CODE,
+        T2.SKU_NAME,
+        T2.CAT_NAME,
+        T2.MATERIAL_CODE,
+        T2.MEASURE_UNIT,
+        DECODE(T2.BIZ_TYPE,
+        '销售发货',
+        -SUM(T2.QUANTITY),
+        '换货发货',
+        -SUM(T2.QUANTITY),
+        0) "FH",
+        DECODE(T2.BIZ_TYPE, '销售退货', SUM(T2.QUANTITY), 0) "TH",
+        DECODE(T2.BIZ_TYPE, '销售换货退回', SUM(T2.QUANTITY), 0) "HH",
+        DECODE(T2.BIZ_TYPE, '销售拒收', SUM(T2.QUANTITY), 0) "JS",
+        DECODE(T2.BIZ_TYPE, '刷单入库', SUM(T2.QUANTITY), 0) "SDRK"
+        FROM (SELECT CASE IWSC.BIZ_TYPE
+        WHEN '201' THEN
+        '销售发货'
+        WHEN '203' THEN
+        '换货发货'
+        WHEN '101' THEN
+        '采购进货'
+        WHEN '103' THEN
+        '销售拒收'
+        WHEN '105' THEN
+        '采购退仓入库'
+        WHEN '106' THEN
+        '刷单入库'
+        ELSE
+        IWSC.BIZ_TYPE
+        END "BIZ_TYPE",
+        IWSC.CREATE_TIME "DATETIME",
+        IWSO.ORDER_CODE,
+        IOS.SOURCE_CODE "SOURCE_CODE",
+        IOS.SOURCE_NAME "SOURCE_NAME",
+        IWWH.ID "WAREHOUSE_ID",
+        IWWH.WAREHOUSE_NAME,
+        IWS.SKU_CODE,
+        IWWC.CAT_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT,
+        '' IMEI,
+        SUM(IWSC.QUANTITY) QUANTITY
+        FROM SYN_WMS_STOCK_CHANGE IWSC
+        LEFT JOIN SYN_WMS_STOCK IWSS
+        ON IWSC.STOCK_ID = IWSS.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWSS.WAREHOUSE_ID = IWWH.ID
+        LEFT JOIN SYN_WMS_SALES_ORDER IWSO
+        ON IWSC.ORIGINAL_CODE = IWSO.ORDER_CODE
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWSS.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWS.WARES_ID = IWW.ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY IWWC
+        ON IWW.CAT_ID = IWWC.ID
+        LEFT JOIN (SELECT DISTINCT (WMS_SOURCE_CODE) SOURCE_CODE,
+        WMS_SOURCE_NAME SOURCE_NAME
+        FROM IUNI_ORDER_SOURCE
+        ORDER BY WMS_SOURCE_CODE) IOS
+        ON IOS.SOURCE_CODE = IWSO.ORDER_SOURCE
+        <where>
+            IWSC.BIZ_TYPE IN ('201', '203', '103')
+            AND IWSC.STOCK_TYPE = '4'
+            <if test="startDateStr != null">
+                AND IWSC.CREATE_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWSC.CREATE_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        GROUP BY IWSC.BIZ_TYPE,
+        IWSC.CREATE_TIME,
+        IWSO.ORDER_CODE,
+        IOS.SOURCE_CODE,
+        IOS.SOURCE_NAME,
+        IWWH.ID,
+        IWWH.WAREHOUSE_NAME,
+        IWS.SKU_CODE,
+        IWWC.CAT_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT
+        UNION ALL
+        SELECT '销售退货' "BIZ_TYPE",
+        MAX(IWSC.CREATE_TIME) "DATETIME",
+        IWSO.ORDER_CODE,
+        IOS.SOURCE_CODE "SOURCE_CODE",
+        IOS.SOURCE_NAME "SOURCE_NAME",
+        IWWH.ID "WAREHOUSE_ID",
+        IWWH.WAREHOUSE_NAME,
+        IWS.SKU_CODE,
+        IWWC.CAT_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT,
+        IWBI.INDIV_CODE IMEI,
+        SUM(IWSC.QUANTITY) QUANTITY
+        FROM SYN_WMS_STOCK_CHANGE IWSC
+        LEFT JOIN SYN_WMS_SALES_ORDER IWSO
+        ON IWSC.ORIGINAL_CODE = IWSO.ORDER_CODE
+        LEFT JOIN SYN_WMS_STOCK IWSS
+        ON IWSC.STOCK_ID = IWSS.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWSS.WAREHOUSE_ID = IWWH.ID
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWSS.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWS.WARES_ID = IWW.ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY IWWC
+        ON IWW.CAT_ID = IWWC.ID
+        LEFT JOIN SYN_WMS_BACK IWB
+        ON IWB.ORDER_CODE = IWSO.ORDER_CODE
+        LEFT JOIN SYN_WMS_BACK_INDIV IWBI
+        ON IWB.BACK_CODE = IWBI.BACK_CODE
+        AND IWS.SKU_CODE = IWBI.SKU_CODE
+        LEFT JOIN
+        (
+        SELECT DISTINCT (WMS_SOURCE_CODE) SOURCE_CODE,
+        WMS_SOURCE_NAME SOURCE_NAME
+        FROM IUNI_ORDER_SOURCE
+        ORDER BY WMS_SOURCE_CODE
+        ) IOS ON IOS.SOURCE_CODE = IWSO.ORDER_SOURCE
+        <where>
+            IWSC.BIZ_TYPE IN ('102')
+            AND IWSC.STOCK_TYPE = 4
+            AND IWB.BACK_STATUS IN ('2', '4', '5')
+            <if test="startDateStr != null">
+                AND IWSC.CREATE_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWSC.CREATE_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        GROUP BY IWSO.ORDER_CODE,
+        IOS.SOURCE_CODE,
+        IOS.SOURCE_NAME,
+        IWWH.ID,
+        IWWH.WAREHOUSE_NAME,
+        IWS.SKU_CODE,
+        IWWC.CAT_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT,
+        IWBI.INDIV_CODE
+        UNION ALL
+        SELECT '销售换货退回' "BIZ_TYPE"， MAX(IWSC.CREATE_TIME) "DATETIME",
+        IWSO.ORDER_CODE,
+        IOS.SOURCE_CODE "SOURCE_CODE",
+        IOS.SOURCE_NAME "SOURCE_NAME",
+        IWWH.ID "WAREHOUSE_ID",
+        IWWH.WAREHOUSE_NAME,
+        IWS.SKU_CODE,
+        IWWC.CAT_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT,
+        '' IMEI,
+        SUM(IWSC.QUANTITY) QUANTITY
+        FROM SYN_WMS_STOCK_CHANGE IWSC
+        LEFT JOIN SYN_WMS_SALES_ORDER IWSO
+        ON IWSC.ORIGINAL_CODE = IWSO.ORDER_CODE
+        LEFT JOIN SYN_WMS_STOCK IWSS
+        ON IWSC.STOCK_ID = IWSS.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWSS.WAREHOUSE_ID = IWWH.ID
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWSS.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWS.WARES_ID = IWW.ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY IWWC
+        ON IWW.CAT_ID = IWWC.ID
+        LEFT JOIN
+        (
+        SELECT DISTINCT (WMS_SOURCE_CODE) SOURCE_CODE,
+        WMS_SOURCE_NAME SOURCE_NAME
+        FROM IUNI_ORDER_SOURCE
+        ORDER BY WMS_SOURCE_CODE
+        ) IOS ON IOS.SOURCE_CODE = IWSO.ORDER_SOURCE
+        <where>
+            IWSC.BIZ_TYPE IN ('102', '108')
+            <if test="startDateStr != null">
+                AND IWSC.CREATE_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWSC.CREATE_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+            AND IWSC.STOCK_TYPE = 4
+            AND EXISTS
+            (
+            SELECT 1
+            FROM SYN_WMS_EXCHANGE_INFO IWEI
+            <where>
+                IWEI.ORDER_CODE = IWSC.ORIGINAL_CODE
+            </where>
+            )
+        </where>
+        GROUP BY IWSO.ORDER_CODE,
+        IOS.SOURCE_CODE,
+        IOS.SOURCE_NAME,
+        IWWH.ID,
+        IWWH.WAREHOUSE_NAME,
+        IWS.SKU_CODE,
+        IWWC.CAT_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT) T2
+        <!--<where>-->
+            <!--<if test="channelOfTransferCodes != null">-->
+                <!--AND T2.SOURCE_CODE IN-->
+                <!--<foreach collection="channelOfTransferCodes" index="index" item="item" open="(" separator="," close=")">-->
+                    <!--#{item}-->
+                <!--</foreach>-->
+            <!--</if>-->
+        <!--</where>-->
+        GROUP BY TO_CHAR(T2.DATETIME, 'YYYY/MM/DD'),
+        T2.SOURCE_CODE,
+        T2.SOURCE_NAME,
+        T2.SKU_CODE,
+        T2.SKU_NAME,
+        T2.CAT_NAME,
+        T2.MATERIAL_CODE,
+        T2.MEASURE_UNIT,
+        T2.BIZ_TYPE
+        ) T
+        GROUP BY T.DATETIME,
+        T.SOURCE_NAME,
+        T.SKU_CODE,
+        T.SKU_NAME,
+        T.CAT_NAME,
+        T.MATERIAL_CODE,
+        T.MEASURE_UNIT
+        ORDER BY T.DATETIME,
+        T.SOURCE_NAME,
+        T.SKU_CODE,
+        T.SKU_NAME,
+        T.CAT_NAME,
+        T.MATERIAL_CODE,
+        T.MEASURE_UNIT
+    </select>
+
+    <!-- 仓库出入库来源汇总结果 -->
+    <resultMap id="stockBySourceResult" type="com.iuni.data.persist.model.distribution.StockBySourceTableDto">
+        <result property="date" column="DATETIME"/>
+        <result property="wareHouseName" column="WAREHOUSE_NAME"/>
+        <result property="sourceName" column="SOURCE_NAME"/>
+        <result property="bizType" column="BIZ_TYPE"/>
+        <result property="code" column="SKU_CODE"/>
+        <result property="name" column="CAT_NAME"/>
+        <result property="name" column="SKU_NAME"/>
+        <result property="materialCode" column="MATERIAL_CODE"/>
+        <result property="measureUnit" column="MEASURE_UNIT"/>
+        <result property="quantity" column="QUANTITY"/>
+    </resultMap>
+    <!-- 仓库出入库来源汇总报表 - 每天 -->
+    <select id="selectStockBySourceOfDay" parameterType="com.iuni.data.persist.model.distribution.StockBySourceQueryDto" resultMap="stockBySourceResult">
+        SELECT TO_CHAR(DATETIME, 'YYYY/MM/DD') "DATETIME",
+        WAREHOUSE_NAME,
+        SOURCE_NAME,
+        BIZ_TYPE,
+        SKU_CODE,
+        CAT_NAME,
+        SKU_NAME,
+        MATERIAL_CODE,
+        MEASURE_UNIT,
+        SUM(QUANTITY) QUANTITY
+        FROM
+        (
+        <include refid="selectStockBySource"/>
+        )
+        GROUP BY TO_CHAR(DATETIME, 'YYYY/MM/DD'),
+        WAREHOUSE_NAME,
+        SOURCE_NAME,
+        BIZ_TYPE,
+        SKU_CODE,
+        CAT_NAME,
+        SKU_NAME,
+        MATERIAL_CODE,
+        MEASURE_UNIT
+    </select>
+    <!-- 仓库出入库来源汇总报表 - 时间段 -->
+    <select id="selectStockBySourceOfRange" parameterType="com.iuni.data.persist.model.distribution.StockBySourceQueryDto" resultMap="stockBySourceResult">
+        SELECT #{startDateStr} || '~' || #{endDateStr} "DATETIME",
+        WAREHOUSE_NAME,
+        SOURCE_NAME,
+        BIZ_TYPE,
+        SKU_CODE,
+        CAT_NAME,
+        SKU_NAME,
+        MATERIAL_CODE,
+        MEASURE_UNIT,
+        SUM(QUANTITY) QUANTITY
+        FROM
+        (
+        <include refid="selectStockBySource"/>
+        )
+        GROUP BY
+        WAREHOUSE_NAME,
+        SOURCE_NAME,
+        BIZ_TYPE,
+        SKU_CODE,
+        CAT_NAME,
+        SKU_NAME,
+        MATERIAL_CODE,
+        MEASURE_UNIT
+    </select>
+    <!-- 仓库出入库来源汇总查询 -->
+    <sql id="selectStockBySource">
+        SELECT * FROM (
+        SELECT IBT.WMS_BIZ_NAME "BIZ_TYPE",
+        IWSC.CREATE_TIME "DATETIME",
+        CASE
+        WHEN IWSO.ORDER_CODE IS NOT NULL THEN
+        IWSO.ORDER_CODE
+        WHEN IWT. ID IS NOT NULL THEN
+        IWT. ID
+        WHEN IWR.RECEIVE_CODE IS NOT NULL THEN
+        IWR.RECEIVE_CODE
+        ELSE
+        ''
+        END "ORDER_CODE",
+        CASE
+        WHEN IWSO.ORDER_CODE IS NOT NULL THEN
+        IWSO.ORDER_SOURCE
+        WHEN IWLO.COMPANY_NAME IS NOT NULL THEN
+        IWLO.COMPANY_NAME
+        WHEN IWR.TRANSFER_PARTNER_ID IS NOT NULL THEN
+        IWR.TRANSFER_PARTNER_ID
+        ELSE
+        ''
+        END "SOURCE_CODE",
+        CASE
+        WHEN IWSO.ORDER_CODE IS NOT NULL THEN
+        IOS.WMS_SOURCE_NAME
+        WHEN IWLO.COMPANY_NAME IS NOT NULL THEN
+        IWLO.COMPANY_NAME
+        WHEN IWR.TRANSFER_PARTNER_NAME IS NOT NULL THEN
+        IWR.TRANSFER_PARTNER_NAME
+        ELSE
+        ''
+        END "SOURCE_NAME",
+        IWWH.ID "WAREHOUSE_ID",
+        IWWH.WAREHOUSE_NAME,
+        IWS.SKU_CODE,
+        IWWC.CAT_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT,
+        SUM(IWSC.QUANTITY) QUANTITY
+        FROM SYN_WMS_STOCK_CHANGE IWSC
+        LEFT JOIN SYN_WMS_STOCK IWSS ON IWSC.STOCK_ID = IWSS. ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH ON IWSS.WAREHOUSE_ID = IWWH. ID
+        LEFT JOIN SYN_WMS_SALES_ORDER IWSO ON IWSC.ORIGINAL_CODE = IWSO.ORDER_CODE
+        LEFT JOIN SYN_WMS_TRANSFER IWT ON IWT. ID = IWSC.ORIGINAL_CODE
+        LEFT JOIN SYN_WMS_RECEIVE IWR ON IWSC.ORIGINAL_BIZ_CODE = IWR.RECEIVE_CODE
+        LEFT JOIN SYN_WMS_LARGE_ORDER IWLO ON IWLO.ORDER_CODE = IWT.ORDER_CODE
+        LEFT JOIN SYN_WMS_SKU IWS ON IWSS.SKU_ID = IWS. ID
+        LEFT JOIN SYN_WMS_WARES IWW ON IWS.WARES_ID = IWW. ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY IWWC ON IWW.CAT_ID = IWWC. ID
+        LEFT JOIN IUNI_BIZ_TYPE IBT ON IBT.WMS_BIZ_CODE = IWSC.BIZ_TYPE
+        LEFT JOIN (
+        SELECT DISTINCT
+        (WMS_SOURCE_CODE),
+        WMS_SOURCE_NAME
+        FROM
+        IUNI_ORDER_SOURCE
+        ) IOS ON IOS.WMS_SOURCE_CODE = IWSO.ORDER_SOURCE
+        WHERE IWSC.STOCK_TYPE = '4'
+        <if test="startDateStr != null">
+            AND IWSC.CREATE_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+        </if>
+        <if test="endDateStr != null">
+            AND IWSC.CREATE_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+        </if>
+        GROUP BY IBT.WMS_BIZ_NAME,
+        IWSC.CREATE_TIME,
+        IWSO.ORDER_CODE,
+        IWT. ID,
+        IWR.RECEIVE_CODE,
+        IWSO.ORDER_SOURCE,
+        IWLO.COMPANY_NAME,
+        IWR.TRANSFER_PARTNER_ID,
+        IOS.WMS_SOURCE_NAME,
+        IWR.TRANSFER_PARTNER_NAME,
+        IWWH. ID,
+        IWWH.WAREHOUSE_NAME,
+        IWS.SKU_CODE,
+        IWWC.CAT_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT,
+        IWSO.INVOICE_CODE,
+        IWSO.INVOICE_TCODE,
+        IWSO.INVOICE_AMOUNT
+        UNION ALL
+        SELECT '遗失' "BIZ_TYPE",
+        IWSO.HANDLED_TIME "DATETIME",
+        IWSO.ORDER_CODE,
+        IWSO.ORDER_SOURCE "SOURCE_CODE",
+        IOS.WMS_SOURCE_NAME "SOURCE_NAME",
+        IWWH.ID "WAREHOUSE_ID",
+        IWWH.WAREHOUSE_NAME,
+        IWS.SKU_CODE,
+        IWWC.CAT_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT,
+        IWSOG.QUANTITY
+        FROM SYN_WMS_SALES_ORDER IWSO
+        LEFT JOIN SYN_WMS_SALES_ORDER_GOODS IWSOG
+        ON IWSOG.ORDER_ID = IWSO.ID
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWSOG.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_STOCK IWSS
+        ON IWSS.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWSS.WAREHOUSE_ID = IWWH.ID
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWS.WARES_ID = IWW.ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY IWWC
+        ON IWW.CAT_ID = IWWC.ID
+        LEFT JOIN (SELECT DISTINCT (WMS_SOURCE_CODE), WMS_SOURCE_NAME
+        FROM IUNI_ORDER_SOURCE) IOS
+        ON IOS.WMS_SOURCE_CODE = IWSO.ORDER_SOURCE
+        WHERE 1 = 1
+        AND IWSO.ORDER_STATUS = '12'
+        AND (IWSO.ORDER_MERGER_TYPE IS NULL OR IWSO.ORDER_MERGER_TYPE = 2)
+        <if test="startDateStr != null">
+            AND IWSO.HANDLED_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+        </if>
+        <if test="endDateStr != null">
+            AND IWSO.HANDLED_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD')
+        </if>
+        ) WHERE "QUANTITY" <![CDATA[ <> ]]> 0
+    </sql>
+
+    <!-- 仓库出入库数量结果 -->
+    <resultMap id="stockResult" type="com.iuni.data.persist.model.distribution.StockTableDto">
+        <result property="time" column="DATETIME"/>
+        <result property="wareHouse" column="WAREHOUSE"/>
+        <result property="code" column="SKUCODE"/>
+        <result property="goodsName" column="GOODSNAME"/>
+        <result property="name" column="SKUNAME"/>
+        <result property="materialCode" column="MATERIALCODE"/>
+        <result property="measureUnit" column="MEASUREUNIT"/>
+        <result property="inStockQty" column="INSTOCKQTY"/>
+        <result property="outStockQty" column="OUTSTOCKQTY"/>
+        <result property="endStockQty" column="ENDSTOCKQTY"/>
+        <result property="endNonDefeQty" column="ENDNONDEFEQTY"/>
+        <result property="endDefeQty" column="ENDDEFEQTY"/>
+        <result property="occupyStockQty" column="OCCUPYSTOCKQTY"/>
+        <result property="procurementIn" column="CGRK"/>
+    </resultMap>
+    <!-- 仓库出入库数量汇总报表 - 每天 -->
+    <select id="selectStockOfDay" parameterType="com.iuni.data.persist.model.distribution.StockQueryDto" resultMap="stockResult">
+        SELECT DATETIME,
+        WAREHOUSECODE,
+        WAREHOUSE,
+        SKUCODE,
+        GOODSNAME,
+        SKUNAME,
+        MATERIALCODE,
+        MEASUREUNIT,
+        SUM(INSTOCKQTY) "INSTOCKQTY",
+        SUM(INDEFEQTY) "INDEFEQTY",
+        SUM(INNONDEFEQTY) "INNONDEFEQTY",
+        SUM(CGRK) "CGRK",
+        SUM(OUTSTOCKQTY) "OUTSTOCKQTY",
+        SUM(OUTDEFEQTY) "OUTDEFEQTY",
+        SUM(OUTNONDEFEQTY) "OUTNONDEFEQTY",
+        SUM(ENDSTOCKQTY) "ENDSTOCKQTY",
+        SUM(ENDNONDEFEQTY) "ENDNONDEFEQTY",
+        SUM(ENDDEFEQTY) "ENDDEFEQTY",
+        SUM(OCCUPYSTOCKQTY) "OCCUPYSTOCKQTY"
+        FROM (
+        SELECT IWSD.DATETIME "DATETIME",
+        IWWH.WAREHOUSE_CODE "WAREHOUSECODE",
+        IWWH.WAREHOUSE_NAME "WAREHOUSE",
+        IWSD.SKU_CODE "SKUCODE",
+        IWW.WARES_NAME "GOODSNAME",
+        IWS.SKU_NAME "SKUNAME",
+        IWS.MATERIAL_CODE "MATERIALCODE",
+        IWW.MEASURE_UNIT "MEASUREUNIT",
+        SUM(IWSD.INSTOCKQTY) "INSTOCKQTY",
+        SUM(IWSD.INDEFEQTY) "INDEFEQTY",
+        SUM(IWSD.INNONDEFEQTY) "INNONDEFEQTY",
+        0 "CGRK",
+        SUM(IWSD.OUTSTOCKQTY) "OUTSTOCKQTY",
+        SUM(IWSD.OUTDEFEQTY) "OUTDEFEQTY",
+        SUM(IWSD.OUTNONDEFEQTY) "OUTNONDEFEQTY",
+        0 "ENDSTOCKQTY",
+        0 "ENDNONDEFEQTY",
+        0 "ENDDEFEQTY",
+        0 "OCCUPYSTOCKQTY"
+        FROM (SELECT TO_CHAR(REPORT_DATE, #{dateStyle}) "DATETIME", X.*
+        FROM SYN_WMS_STOCK_DAILYSTOCK X) IWSD
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWSD.SKU_CODE = IWS.SKU_CODE
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWW.ID = IWS.WARES_ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWWH.WAREHOUSE_CODE = (CASE
+        WHEN IWSD.STOCK_ID IS NULL THEN
+        '0769'
+        ELSE
+        IWSD.STOCK_ID
+        END)
+        <where>
+            <if test="startDateStr != null">
+                AND IWSD.REPORT_DATE <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWSD.REPORT_DATE <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        GROUP BY IWSD.DATETIME,
+        IWWH.WAREHOUSE_CODE,
+        IWWH.WAREHOUSE_NAME,
+        IWSD.SKU_CODE,
+        IWW.WARES_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT
+        UNION ALL
+        SELECT IWSD.DATETIME "DATETIME",
+        IWWH.WAREHOUSE_CODE "WAREHOUSECODE",
+        IWWH.WAREHOUSE_NAME "WAREHOUSE",
+        IWSD.SKU_CODE "SKUCODE",
+        IWW.WARES_NAME "GOODSNAME",
+        IWS.SKU_NAME "SKUNAME",
+        IWS.MATERIAL_CODE "MATERIALCODE",
+        IWW.MEASURE_UNIT "MEASUREUNIT",
+        0 "INSTOCKQTY",
+        0 "INDEFEQTY",
+        0 "INNONDEFEQTY",
+        0 "CGRK",
+        0 "OUTSTOCKQTY",
+        0 "OUTDEFEQTY",
+        0 "OUTNONDEFEQTY",
+        IWSD.ENDSTOCKQTY "ENDSTOCKQTY",
+        IWSD.ENDNONDEFEQTY "ENDNONDEFEQTY",
+        IWSD.ENDDEFEQTY "ENDDEFEQTY",
+        IWSD.OCCUPYSTOCKQTY "OCCUPYSTOCKQTY"
+        FROM (SELECT SKU_CODE,
+        CASE
+        WHEN MAX(REPORT_DATE) >= TO_DATE(#{endDateStr}, 'YYYY/MM/DD') THEN TO_DATE(#{endDateStr}, 'YYYY/MM/DD')
+        ELSE
+        MAX(REPORT_DATE)
+        END LAST_REPORT_DATE
+        FROM SYN_WMS_STOCK_DAILYSTOCK
+        <where>
+            <if test="startDateStr != null">
+                AND REPORT_DATE <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND REPORT_DATE <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        GROUP BY TO_CHAR(REPORT_DATE, #{dateStyle}), SKU_CODE) LD
+        LEFT JOIN (SELECT TO_CHAR(REPORT_DATE, #{dateStyle}) "DATETIME",
+        X.*
+        FROM SYN_WMS_STOCK_DAILYSTOCK X) IWSD
+        ON LD.SKU_CODE = IWSD.SKU_CODE
+        AND LD.LAST_REPORT_DATE = IWSD.REPORT_DATE
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWSD.SKU_CODE = IWS.SKU_CODE
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWW.ID = IWS.WARES_ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWWH.WAREHOUSE_CODE = (CASE
+        WHEN IWSD.STOCK_ID IS NULL THEN
+        '0769'
+        ELSE
+        IWSD.STOCK_ID
+        END)
+        <where>
+            <if test="startDateStr != null">
+                AND IWSD.REPORT_DATE <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWSD.REPORT_DATE <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        UNION ALL
+        SELECT SWSC.DATETIME "DATETIME",
+        SWW.WAREHOUSE_CODE "WAREHOUSECODE",
+        SWW.WAREHOUSE_NAME "WAREHOUSE",
+        SWSS.SKU_CODE "SKUCODE",
+        SWWW.WARES_NAME "GOODSNAME",
+        SWSS.SKU_NAME "SKUNAME",
+        SWSS.MATERIAL_CODE "MATERIALCODE",
+        SWWW.MEASURE_UNIT "MEASUREUNIT",
+        0 "INSTOCKQTY",
+        0 "INDEFEQTY",
+        0 "INNONDEFEQTY",
+        SUM(SWSC.QUANTITY) "CGRK",
+        0 "OUTSTOCKQTY",
+        0 "OUTDEFEQTY",
+        0 "OUTNONDEFEQTY",
+        0 "ENDSTOCKQTY",
+        0 "ENDNONDEFEQTY",
+        0 "ENDDEFEQTY",
+        0 "OCCUPYSTOCKQTY"
+        FROM (SELECT TO_CHAR(CREATE_TIME, #{dateStyle}) "DATETIME", X.*
+        FROM SYN_WMS_STOCK_CHANGE X) SWSC
+        LEFT JOIN SYN_WMS_STOCK SWS
+        ON SWSC.STOCK_ID = SWS.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE SWW
+        ON SWS.WAREHOUSE_ID = SWW.ID
+        LEFT JOIN SYN_WMS_SKU SWSS
+        ON SWS.SKU_ID = SWSS.ID
+        LEFT JOIN SYN_WMS_WARES SWWW
+        ON SWSS.WARES_ID = SWWW.ID
+        <where>
+            SWSC.STOCK_TYPE = '4'
+            AND BIZ_TYPE = '101'
+            <if test="startDateStr != null">
+                AND SWSC.CREATE_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND SWSC.CREATE_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        GROUP BY SWSC.DATETIME,
+        SWW.WAREHOUSE_CODE,
+        SWW.WAREHOUSE_NAME,
+        SWSS.SKU_CODE,
+        SWSS.SKU_NAME,
+        SWWW.WARES_NAME,
+        SWSS.MATERIAL_CODE,
+        SWWW.MEASURE_UNIT
+        )
+        <!--<where>-->
+            <!--<if test="endDateStr != null">-->
+                <!--AND SKUCODE IN-->
+                <!--<foreach collection="skuCodes" item="item" index="index" open="(" separator="," close=")">-->
+                    <!--#{item}-->
+                <!--</foreach>-->
+            <!--</if>-->
+            <!--<if test="warehouseCode != null">-->
+                <!--WAREHOUSECODE = #warehouseCode#-->
+            <!--</if>-->
+        <!--</where>-->
+        GROUP BY DATETIME,
+        WAREHOUSECODE,
+        WAREHOUSE,
+        SKUCODE,
+        GOODSNAME,
+        SKUNAME,
+        MATERIALCODE,
+        MEASUREUNIT
+        ORDER BY DATETIME, WAREHOUSECODE, SKUCODE
+    </select>
+    <!-- 仓库出入库数量汇总报表 - 时间段 -->
+    <select id="selectStockOfRange" parameterType="com.iuni.data.persist.model.distribution.StockQueryDto" resultMap="stockResult">
+        SELECT DATETIME,
+        WAREHOUSECODE,
+        WAREHOUSE,
+        SKUCODE,
+        GOODSNAME,
+        SKUNAME,
+        MATERIALCODE,
+        MEASUREUNIT,
+        SUM(INSTOCKQTY) "INSTOCKQTY",
+        SUM(INDEFEQTY) "INDEFEQTY",
+        SUM(INNONDEFEQTY) "INNONDEFEQTY",
+        SUM(CGRK) "CGRK",
+        SUM(OUTSTOCKQTY) "OUTSTOCKQTY",
+        SUM(OUTDEFEQTY) "OUTDEFEQTY",
+        SUM(OUTNONDEFEQTY) "OUTNONDEFEQTY",
+        SUM(ENDSTOCKQTY) "ENDSTOCKQTY",
+        SUM(ENDNONDEFEQTY) "ENDNONDEFEQTY",
+        SUM(ENDDEFEQTY) "ENDDEFEQTY",
+        SUM(OCCUPYSTOCKQTY) "OCCUPYSTOCKQTY"
+        FROM (
+        SELECT #{startDateStr} || '~' || #{endDateStr} "DATETIME",
+        IWWH.WAREHOUSE_CODE "WAREHOUSECODE",
+        IWWH.WAREHOUSE_NAME "WAREHOUSE",
+        IWSD.SKU_CODE "SKUCODE",
+        IWW.WARES_NAME "GOODSNAME",
+        IWS.SKU_NAME "SKUNAME",
+        IWS.MATERIAL_CODE "MATERIALCODE",
+        IWW.MEASURE_UNIT "MEASUREUNIT",
+        SUM(IWSD.INSTOCKQTY) "INSTOCKQTY",
+        SUM(IWSD.INDEFEQTY) "INDEFEQTY",
+        SUM(IWSD.INNONDEFEQTY) "INNONDEFEQTY",
+        0 "CGRK",
+        SUM(IWSD.OUTSTOCKQTY) "OUTSTOCKQTY",
+        SUM(IWSD.OUTDEFEQTY) "OUTDEFEQTY",
+        SUM(IWSD.OUTNONDEFEQTY) "OUTNONDEFEQTY",
+        0 "ENDSTOCKQTY",
+        0 "ENDNONDEFEQTY",
+        0 "ENDDEFEQTY",
+        0 "OCCUPYSTOCKQTY"
+        FROM SYN_WMS_STOCK_DAILYSTOCK IWSD
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWSD.SKU_CODE = IWS.SKU_CODE
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWW.ID = IWS.WARES_ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWWH.WAREHOUSE_CODE = (CASE
+        WHEN IWSD.STOCK_ID IS NULL THEN
+        '0769'
+        ELSE
+        IWSD.STOCK_ID
+        END)
+        <where>
+            <if test="startDateStr != null">
+                AND IWSD.REPORT_DATE <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWSD.REPORT_DATE <![CDATA[ < ]]>  TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        GROUP BY IWWH.WAREHOUSE_CODE,
+        IWWH.WAREHOUSE_NAME,
+        IWSD.SKU_CODE,
+        IWW.WARES_NAME,
+        IWS.SKU_NAME,
+        IWS.MATERIAL_CODE,
+        IWW.MEASURE_UNIT
+        UNION ALL
+        SELECT #{startDateStr} || '~' || #{endDateStr} "DATETIME",
+        IWWH.WAREHOUSE_CODE "WAREHOUSECODE",
+        IWWH.WAREHOUSE_NAME "WAREHOUSE",
+        IWSD.SKU_CODE "SKUCODE",
+        IWW.WARES_NAME "GOODSNAME",
+        IWS.SKU_NAME "SKUNAME",
+        IWS.MATERIAL_CODE "MATERIALCODE",
+        IWW.MEASURE_UNIT "MEASUREUNIT",
+        0 "INSTOCKQTY",
+        0 "INDEFEQTY",
+        0 "INNONDEFEQTY",
+        0 "CGRK",
+        0 "OUTSTOCKQTY",
+        0 "OUTDEFEQTY",
+        0 "OUTNONDEFEQTY",
+        IWSD.ENDSTOCKQTY "ENDSTOCKQTY",
+        IWSD.ENDNONDEFEQTY "ENDNONDEFEQTY",
+        IWSD.ENDDEFEQTY "ENDDEFEQTY",
+        IWSD.OCCUPYSTOCKQTY "OCCUPYSTOCKQTY"
+        FROM (SELECT SKU_CODE,
+        CASE
+        WHEN MAX(REPORT_DATE) <![CDATA[ >= ]]>
+        TO_DATE(#{endDateStr}, 'YYYY/MM/DD') THEN
+        TO_DATE(#{endDateStr}, 'YYYY/MM/DD')
+        ELSE
+        MAX(REPORT_DATE)
+        END LAST_REPORT_DATE
+        FROM SYN_WMS_STOCK_DAILYSTOCK
+        <where>
+            <if test="startDateStr != null">
+                REPORT_DATE <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND REPORT_DATE <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        GROUP BY SKU_CODE) LD
+        LEFT JOIN SYN_WMS_STOCK_DAILYSTOCK IWSD
+        ON LD.SKU_CODE = IWSD.SKU_CODE
+        AND LD.LAST_REPORT_DATE = IWSD.REPORT_DATE
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWSD.SKU_CODE = IWS.SKU_CODE
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWW.ID = IWS.WARES_ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWWH.WAREHOUSE_CODE = (CASE
+        WHEN IWSD.STOCK_ID IS NULL THEN
+        '0769'
+        ELSE
+        IWSD.STOCK_ID
+        END)
+        <where>
+            <if test="startDateStr != null">
+                AND IWSD.REPORT_DATE <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWSD.REPORT_DATE <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        UNION ALL
+        SELECT #{startDateStr} || '~' || #{endDateStr} "DATETIME",
+        SWW.WAREHOUSE_CODE "WAREHOUSECODE",
+        SWW.WAREHOUSE_NAME "WAREHOUSE",
+        SWSS.SKU_CODE "SKUCODE",
+        SWWW.WARES_NAME "GOODSNAME",
+        SWSS.SKU_NAME "SKUNAME",
+        SWSS.MATERIAL_CODE "MATERIALCODE",
+        SWWW.MEASURE_UNIT "MEASUREUNIT",
+        0 "INSTOCKQTY",
+        0 "INDEFEQTY",
+        0 "INNONDEFEQTY",
+        SUM(SWSC.QUANTITY) "CGRK",
+        0 "OUTSTOCKQTY",
+        0 "OUTDEFEQTY",
+        0 "OUTNONDEFEQTY",
+        0 "ENDSTOCKQTY",
+        0 "ENDNONDEFEQTY",
+        0 "ENDDEFEQTY",
+        0 "OCCUPYSTOCKQTY"
+        FROM SYN_WMS_STOCK_CHANGE SWSC
+        LEFT JOIN SYN_WMS_STOCK SWS
+        ON SWSC.STOCK_ID = SWS.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE SWW
+        ON SWS.WAREHOUSE_ID = SWW.ID
+        LEFT JOIN SYN_WMS_SKU SWSS
+        ON SWS.SKU_ID = SWSS.ID
+        LEFT JOIN SYN_WMS_WARES SWWW
+        ON SWSS.WARES_ID = SWWW.ID
+        <where>
+            SWSC.STOCK_TYPE = '4'
+            AND BIZ_TYPE = '101'
+            <if test="startDateStr != null">
+                AND SWSC.CREATE_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND SWSC.CREATE_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        GROUP BY
+        SWW.WAREHOUSE_CODE,
+        SWW.WAREHOUSE_NAME,
+        SWSS.SKU_CODE,
+        SWSS.SKU_NAME,
+        SWWW.WARES_NAME,
+        SWSS.MATERIAL_CODE,
+        SWWW.MEASURE_UNIT
+        )
+        <!--<where>-->
+            <!--<if test="skuCodes != null">-->
+                <!--AND SKUCODE IN-->
+                <!--<foreach collection="skuCodes" index="index" item="item" open="(" separator="," close=")">-->
+                    <!--#{item}-->
+                <!--</foreach>-->
+            <!--</if>-->
+            <!--<if test="warehouseCode != null">-->
+                <!--WAREHOUSECODE = #warehouseCode#-->
+            <!--</if>-->
+        <!--</where>-->
+        GROUP BY DATETIME,
+        WAREHOUSECODE,
+        WAREHOUSE,
+        SKUCODE,
+        GOODSNAME,
+        SKUNAME,
+        MATERIALCODE,
+        MEASUREUNIT
+        ORDER BY DATETIME, WAREHOUSECODE, SKUCODE
+    </select>
+
+</mapper>
+
+
+

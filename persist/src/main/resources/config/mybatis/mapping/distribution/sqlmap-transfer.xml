@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.distribution.TransferMapper">
+
+    <!-- 调拔明细结果 - 调出 -->
+    <resultMap id="transferDetailsResult" type="com.iuni.data.persist.model.distribution.TransferDetailsOfOutTableDto">
+        <result property="shippingTime" column="shippingTime"/>
+        <result property="billType" column="billType"/>
+        <result property="transferName" column="transferName"/>
+        <result property="wareHouse" column="wareHouse"/>
+        <result property="transferType" column="transferType"/>
+        <result property="transferId" column="transferId"/>
+        <result property="quantity" column="quantity"/>
+        <result property="sku" column="sku"/>
+        <result property="name" column="name"/>
+        <result property="materialCode" column="materialCode"/>
+        <result property="outOrderCode" column="outOrderCode"/>
+    </resultMap>
+    <!-- =======调拨明细统计报表（物流） —— 调出====== -->
+    <select id="selectTransferDetailsOfOut" parameterType="com.iuni.data.persist.model.distribution.TransferDetailsQueryDto" resultMap="transferDetailsResult">
+        SELECT IWT.SHIPPING_TIME "shippingTime",
+        ITT.WMS_TRANSFER_NAME "billType",
+        CASE
+        WHEN IWT.ORDER_CODE IS NOT NULL THEN
+        SWLO.COMPANY_NAME
+        ELSE
+        SWTP.NAME
+        END "transferName",
+        SWW.WAREHOUSE_NAME "wareHouse",
+        CASE IWT.TRANS_TYPE
+        WHEN '0' THEN
+        '良品'
+        WHEN '1' THEN
+        '次品'
+        ELSE
+        IWT.TRANS_TYPE
+        END "transferType",
+        IWTG.TRANSFER_ID "transferId",
+        IWTG.QUANTITY "quantity",
+        IWS.SKU_CODE "sku",
+        IWS.SKU_NAME "name",
+        IWS.MATERIAL_CODE "materialCode",
+        IWT.PO "outOrderCode"
+        FROM SYN_WMS_TRANSFER IWT
+        LEFT JOIN SYN_WMS_TRANSFER_GOODS IWTG
+        ON IWTG.TRANSFER_ID = IWT.ID
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWTG.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE SWW
+        ON IWT.WAREHOUSE_ID = SWW.ID
+        LEFT JOIN SYN_WMS_TRANSFER_PARTNER SWTP
+        ON SWTP.ID = IWT.TRANSFER_SALE
+        LEFT JOIN SYN_WMS_LARGE_ORDER SWLO
+        ON SWLO.ORDER_CODE = IWT.ORDER_CODE
+        LEFT JOIN IUNI_TRANSFER_TYPE ITT
+        ON ITT.WMS_TRANSFER_CODE = IWT.BILL_TYPE
+        <where>
+            AND IWT.STATUS = '2'
+            <if test="startDateStr != null">
+                AND IWT.SHIPPING_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWT.SHIPPING_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+        ORDER BY IWT.SHIPPING_TIME, IWTG.TRANSFER_ID, IWS.SKU_CODE
+    </select>
+    <!-- 调拔明细结果 - 调入 -->
+    <resultMap id="transferDetailsOfInResult" type="com.iuni.data.persist.model.distribution.TransferDetailsOfInTableDto">
+        <result property="handledTime" column="handledTime"/>
+        <result property="receiveType" column="receiveType"/>
+        <result property="wareHouse" column="wareHouse"/>
+        <result property="transferPartnerName" column="transferPartnerName"/>
+        <result property="receiveCode" column="receiveCode"/>
+        <result property="sku" column="sku"/>
+        <result property="materialCode" column="materialCode"/>
+        <result property="name" column="name"/>
+        <result property="quantity" column="quantity"/>
+        <result property="wareStatus" column="wareStatus"/>
+    </resultMap>
+    <!-- =======调拨明细统计报表（物流） —— 调入====== -->
+    <select id="selectTransferDetailsOfIn" parameterType="com.iuni.data.persist.model.distribution.TransferDetailsQueryDto" resultMap="transferDetailsOfInResult">
+        SELECT SWR.HANDLED_TIME "handledTime",
+        CASE SWR.RECEIVE_TYPE
+        WHEN '104' THEN
+        '调拨退货'
+        WHEN '107' THEN
+        '调拨换货退回'
+        ELSE
+        SWR.RECEIVE_TYPE
+        END "receiveType",
+        SWR.WAREHOUSE_NAME "wareHouse",
+        SWR.TRANSFER_PARTNER_NAME "transferPartnerName",
+        SWR.RECEIVE_CODE "receiveCode",
+        SWRG.QUANTITY "quantity",
+        CASE SWRG.WARES_STATUS
+        WHEN '0' THEN
+        '良品'
+        WHEN '1' THEN
+        '次品'
+        ELSE
+        SWRG.WARES_STATUS
+        END "wareStatus",
+        SWS.SKU_CODE "sku",
+        SWS.SKU_NAME "name",
+        SWS.MATERIAL_CODE "materialCode"
+        FROM SYN_WMS_RECEIVE SWR
+        LEFT JOIN SYN_WMS_RECEIVE_GOODS SWRG
+        ON SWR.ID = SWRG.RECEIVE_ID
+        LEFT JOIN SYN_WMS_SKU SWS
+        ON SWRG.SKU_ID = SWS.ID
+        <where>
+            SWR.RECEIVE_TYPE IN ('104', '107')
+            AND SWR.HANDLING_STATUS = '1'
+            AND (SWRG.USE_FLAG IS NULL OR SWRG.USE_FLAG <![CDATA[ <> ]]> '0')
+            <if test="startDateStr != null">
+                AND SWR.HANDLED_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND SWR.HANDLED_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD')+1
+            </if>
+        </where>
+        ORDER BY SWR.HANDLED_TIME,
+        SWR.WAREHOUSE_ID,
+        SWR.RECEIVE_CODE,
+        SWRG.SKU_CODE,
+        SWRG.WARES_STATUS
+    </select>
+
+</mapper>

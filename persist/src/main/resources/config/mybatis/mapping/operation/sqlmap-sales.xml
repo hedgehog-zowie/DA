@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.operation.SalesMapper">
+
+    <resultMap id="salesResult" type="com.iuni.data.persist.model.operation.SalesTableDto">
+        <result property="range" column="range"></result>
+        <result property="payTime" column="paytime"></result>
+        <result property="orderSource" column="orderSource"></result>
+        <result property="goodsName" column="goodsName"></result>
+        <result property="wareName" column="wareName"></result>
+        <result property="sku" column="sku"></result>
+        <result property="num" column="num" javaType="long"></result>
+        <result property="salePrice" column="salePrice" javaType="double"></result>
+    </resultMap>
+    <!-- 商品销售报表 -->
+    <select id="selectSales" resultMap="salesResult"
+            parameterType="com.iuni.data.persist.model.operation.SalesQueryDto">
+        SELECT
+        TMP."range",
+        <choose>
+            <when test="dateStyle != null and dateStyle == 'YYYY/MM/DD'">
+                TO_CHAR(TMP."paytime", 'YYYY/MM/DD') "paytime",
+            </when>
+            <when test="dateStyle != null and dateStyle == 'YYYY/MM'">
+                TO_CHAR(TMP."paytime", 'YYYY/MM') "paytime",
+            </when>
+            <when test="dateStyle != null and dateStyle == 'YYYY/IW'">
+                TO_CHAR(TMP."paytime", 'YYYY/IW') "paytime",
+            </when>
+        </choose>
+        TMP."orderSource", TMP."goodsName", TMP."wareName", TMP."sku", SUM(TMP.GOODSNUMBER) "num", SUM(TMP.SALEPRICE)
+        "salePrice" FROM
+        (
+        SELECT
+        <choose>
+            <when test="dateStyle != null and dateStyle == 'YYYY/MM/DD'">
+                TO_CHAR(unix_to_oracle(IOI.PAY_TIME), 'YYYY/MM/DD')
+                || '~' ||
+                TO_CHAR(unix_to_oracle(IOI.PAY_TIME), 'YYYY/MM/DD')
+                "range",
+            </when>
+            <when test="dateStyle != null and dateStyle == 'YYYY/MM'">
+                CASE
+                WHEN TRUNC(unix_to_oracle(IOI.PAY_TIME),'MM') <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+                THEN
+                TO_CHAR(TRUNC(unix_to_oracle(IOI.PAY_TIME),'MM'), 'YYYY/MM/DD')
+                ELSE
+                #{startDateStr}
+                END
+                || '~' ||
+                CASE
+                WHEN TRUNC(ADD_MONTHS(unix_to_oracle(IOI.PAY_TIME), 1),'MM') <![CDATA[ < ]]> TO_DATE(#{endDateStr},
+                'YYYY/MM/DD')
+                THEN
+                TO_CHAR(TRUNC(ADD_MONTHS(unix_to_oracle(IOI.PAY_TIME), 1),'MM'), 'YYYY/MM/DD')
+                ELSE
+                #{endDateStr}
+                END "range",
+            </when>
+            <when test="dateStyle != null and dateStyle == 'YYYY/IW'">
+                CASE
+                WHEN TRUNC(unix_to_oracle(IOI.PAY_TIME),'IW') <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+                THEN
+                TO_CHAR(TRUNC(unix_to_oracle(IOI.PAY_TIME),'IW'), 'YYYY/MM/DD')
+                ELSE
+                #{startDateStr}
+                END
+                || '~' ||
+                CASE
+                WHEN TRUNC(unix_to_oracle(IOI.PAY_TIME),'IW') + 6 <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD')
+                THEN
+                TO_CHAR(TRUNC(unix_to_oracle(IOI.PAY_TIME),'IW') + 6, 'YYYY/MM/DD')
+                ELSE
+                #{endDateStr}
+                END "range",
+            </when>
+        </choose>
+        unix_to_oracle(IOI.PAY_TIME) "paytime",
+        IOS.SOURCE_NAME "orderSource",
+        SWS.SKU_NAME "goodsName",
+        SWWC.CAT_NAME "catName",
+        SWW.WARES_CODE "code",
+        SWW.WARES_NAME "wareName",
+        IOG.SKU "sku",
+        IOG.GOODS_NUMBER "GOODSNUMBER",
+        IOG.GOODS_PRICE * IOG.GOODS_NUMBER - DECODE(IOG.DISCOUNT, NULL, 0, IOG.DISCOUNT) "SALEPRICE",
+        IOI.PAY_STATUS "payStatus",
+        IOI.ORDER_STATUS "ordrStatus",
+        IOI.SHIPPING_STATUS "shippingStatus"
+        FROM IUNI_ORDER_INFO IOI
+        LEFT JOIN IUNI_ORDER_GOODS IOG
+        ON IOG.ORDER_ID = IOI.ORDER_SN
+        LEFT JOIN SYN_WMS_SKU SWS
+        ON SWS.SKU_CODE = IOG.SKU
+        LEFT JOIN SYN_WMS_WARES SWW
+        ON SWS.WARES_ID = SWW.ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY SWWC
+        ON SWW.CAT_ID = SWWC.ID
+        LEFT JOIN
+        (
+        SELECT DISTINCT (ORDER_SOURCE_CODE) SOURCE_CODE,
+        ORDER_SOURCE_NAME SOURCE_NAME
+        FROM IUNI_ORDER_SOURCE
+        <where>
+            ORDER_SOURCE_CODE IS NOT NULL
+        </where>
+        ) IOS
+        ON IOS.SOURCE_CODE = IOI.REFERER
+        <where>
+            <if test="startDateStr != null">
+                unix_to_oracle(IOI.PAY_TIME) <![CDATA[ >= ]]> to_date(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND unix_to_oracle(IOI.PAY_TIME) <![CDATA[ < ]]> to_date(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+            <if test="orderSources != null">
+                AND IOS.SOURCE_CODE IN
+                <foreach collection="orderSources" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="skus != null">
+                AND IOG.SKU IN
+                <foreach collection="skus" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="type != null and type != ''">
+                AND (SWWC.ID = ${type} OR SWW.ID = ${type})
+            </if>
+            <if test="model != null and model != ''">
+                AND (SWW.ID = ${model} OR SWS.ID = ${model})
+            </if>
+            AND ((IOI.SHIPPING_STATUS <![CDATA[ <> ]]> 'unshipped' AND IOI.SHIPPING_STATUS <![CDATA[ <> ]]> 'preparing') OR
+            (IOI.SHIPPING_STATUS = 'unshipped' AND IOI.PAY_STATUS = 'paid' AND IOI.ORDER_STATUS = 'processed') OR
+            (IOI.SHIPPING_STATUS = 'preparing' AND IOI.PAY_STATUS <![CDATA[ <> ]]> 'refunded' AND IOI.PAY_STATUS <![CDATA[ <> ]]> 'refund'))
+            AND IOG.GOODSTYPE IN ('0', '5', '101')
+            AND (SUBSTR(IOI.TAG, 2, 1) <![CDATA[ <> ]]> 1 OR IOI.TAG = 0 OR IOI.TAG IS NULL)
+            AND IOI.REFERER <![CDATA[ <> ]]> 'IUNI_INSIDE'
+        </where>
+        ) TMP
+        GROUP BY
+        <choose>
+            <when test="dateStyle != null and dateStyle == 'YYYY/MM/DD'">
+                TO_CHAR(TMP."paytime", 'YYYY/MM/DD'),
+            </when>
+            <when test="dateStyle != null and dateStyle == 'YYYY/MM'">
+                TO_CHAR(TMP."paytime", 'YYYY/MM'),
+            </when>
+            <when test="dateStyle != null and dateStyle == 'YYYY/IW'">
+                TO_CHAR(TMP."paytime", 'YYYY/IW'),
+            </when>
+        </choose>
+        TMP."range", TMP."orderSource",TMP."goodsName",TMP."wareName",TMP."sku"
+    </select>
+
+</mapper>

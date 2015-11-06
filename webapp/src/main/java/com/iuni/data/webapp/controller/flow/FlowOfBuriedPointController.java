@@ -1,5 +1,6 @@
 package com.iuni.data.webapp.controller.flow;
 
+import com.iuni.data.persist.model.financial.StockMoveDetailsTableDto;
 import com.iuni.data.persist.model.flow.FlowOfBuriedPointForQueryDto;
 import com.iuni.data.persist.model.flow.FlowOfBuriedPointForTableDto;
 import com.iuni.data.utils.DateUtils;
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -53,8 +55,7 @@ public class FlowOfBuriedPointController {
     public ModelAndView queryTable(@ModelAttribute("queryParam") FlowOfBuriedPointForQueryDto queryParam) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.flow_buried_point.getPath());
-        StringUtils.parseDateRangeString(queryParam);
-//        List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPointsFromOracle(queryParam);
+        queryParam.parseDateRangeString();
         List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPointsFromHbase(queryParam);
         modelAndView.addObject("resultList", resultList);
         modelAndView.addObject("queryParam", queryParam);
@@ -76,10 +77,12 @@ public class FlowOfBuriedPointController {
             String fileName = new String(("埋点流量统计(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
             response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
 
-            StringUtils.parseDateRangeString(queryParam);
+            queryParam.parseDateRangeString();
             List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPointsFromHbase(queryParam);
 
-            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(FlowOfBuriedPointForTableDto.generateTableHeader(), FlowOfBuriedPointForTableDto.generateTableData(resultList));
+            List<ExcelUtils.SheetData> sheetDataList = new ArrayList<>();
+            sheetDataList.add(new ExcelUtils.SheetData("埋点流量统计", FlowOfBuriedPointForTableDto.generateTableHeader(), FlowOfBuriedPointForTableDto.generateTableData(resultList)));
+            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(sheetDataList);
             wb.write(response.getOutputStream());
 
             response.getOutputStream().flush();
@@ -128,7 +131,9 @@ public class FlowOfBuriedPointController {
 
             List<FlowOfBuriedPointForTableDto> resultList = flowOfBuriedPointService.selectFlowOfBuriedPointsFromHbase(generateTodayParams());
 
-            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(FlowOfBuriedPointForTableDto.generateTableHeader(), FlowOfBuriedPointForTableDto.generateTableData(resultList));
+            List<ExcelUtils.SheetData> sheetDataList = new ArrayList<>();
+            sheetDataList.add(new ExcelUtils.SheetData("埋点流量日实时统计", FlowOfBuriedPointForTableDto.generateTableHeader(), FlowOfBuriedPointForTableDto.generateTableData(resultList)));
+            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(sheetDataList);
             wb.write(response.getOutputStream());
 
             response.getOutputStream().flush();

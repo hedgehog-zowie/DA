@@ -94,15 +94,15 @@ public class NoInvoiceSalesDetailsTableDto extends AbstractTableDto {
 
     public static Map<String, String> generateTableHeader() {
         Map<String, String> tableHeader = new LinkedHashMap<>();
-        tableHeader.put("收款日期", "orderSource");
-        tableHeader.put("付款人名称", "stockChangeTime");
-        tableHeader.put("维修单编号", "orderCode");
-        tableHeader.put("客户名称", "outerOrderCode");
-        tableHeader.put("客户电话", "skuCode");
-        tableHeader.put("IEMI号", "materialCode");
-        tableHeader.put("物料编码", "skuName");
-        tableHeader.put("物料名称", "quantity");
-        tableHeader.put("数量", "invoiceAmount");
+        tableHeader.put("销售渠道/类型", "orderSource");
+        tableHeader.put("日期", "stockChangeTime");
+        tableHeader.put("订单号", "orderCode");
+        tableHeader.put("外部订单号", "outerOrderCode");
+        tableHeader.put("SKU", "skuCode");
+        tableHeader.put("物料编码", "materialCode");
+        tableHeader.put("规格型号", "skuName");
+        tableHeader.put("数量", "quantity");
+        tableHeader.put("发票金额", "invoiceAmount");
         return tableHeader;
     }
 

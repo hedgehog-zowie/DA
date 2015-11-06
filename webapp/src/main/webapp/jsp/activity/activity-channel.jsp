@@ -67,9 +67,9 @@
                                         <label class="control-label col-md-3">渠道类型</label>
 
                                         <div class="col-md-6">
-                                            <form:select class="form-control" path="channel.channelType"
-                                                         id="channelType"
-                                                         value="${queryParam.channel.channelType}">
+                                            <form:select class="form-control" path="channelTypeId"
+                                                         id="channelTypeId"
+                                                         value="${queryParam.channelTypeId}">
                                                 <form:option value="" label="--全部--"/>
                                                 <form:options items="${channelTypes}" itemLabel="name" itemValue="id"/>
                                             </form:select>
@@ -82,8 +82,8 @@
 
                                         <div class="col-md-6">
                                             <form:input type="text" class="form-control" id="channelCode"
-                                                        path="channel.code"
-                                                        value="${queryParam.channel.code}"
+                                                        path="channelCode"
+                                                        value="${queryParam.channelCode}"
                                                         placeholder="输入渠道AD"/>
                                         </div>
                                     </div>
@@ -153,7 +153,7 @@
                             <tbody>
                             <c:forEach items="${resultList}" var="result">
                                 <tr class="odd gradeX">
-                                    <td><fmt:formatDate value="${result.time}" pattern="yyyy-MM-dd"/></td>
+                                    <td><fmt:formatDate value="${result.time}" pattern="yyyy/MM/dd"/></td>
                                     <td>${result.channelName}</td>
                                     <td>${result.channelUrl}</td>
                                     <td>${result.pv}</td>

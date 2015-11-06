@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.system.SystemConstantsMapper">
+
+    <!-- 订单来源结果 -->
+    <resultMap id="orderSourceResult" type="com.iuni.data.persist.model.system.OrderSourceDto">
+        <result property="sourceCode" column="VALUE"></result>
+        <result property="sourceName" column="EXPLAIN"></result>
+    </resultMap>
+    <!-- 所有仓储管理系统订单来源 -->
+    <select id="selectAllWMSOrderSource" resultMap="orderSourceResult">
+        SELECT VALUE, EXPLAIN
+        FROM IUNI_DA_SYSTEM_CONSTANTS_VALUE IDSCV
+        LEFT JOIN IUNI_DA_SYSTEM_CONSTANTS IDSC
+        ON IDSCV.CONSTANT_ID = IDSC.ID
+        WHERE IDSC.CODE = 'WMS.ORDER_SOURCE'
+    </select>
+    <!-- 所有订单系统订单来源 -->
+    <select id="selectAllOMOrderSource" resultMap="orderSourceResult">
+        SELECT VALUE, EXPLAIN
+        FROM IUNI_DA_SYSTEM_CONSTANTS_VALUE IDSCV
+        LEFT JOIN IUNI_DA_SYSTEM_CONSTANTS IDSC
+        ON IDSCV.CONSTANT_ID = IDSC.ID
+        WHERE IDSC.CODE = 'OM.ORDER_SOURCE'
+    </select>
+
+</mapper>

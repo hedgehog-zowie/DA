@@ -25,7 +25,7 @@
     <jsp:include page="../common/menu.jsp" flush="true"/>
 
     <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
+    <div class="content-wrapper" style="text-align: center; background: #F2F5FA">
         <img src="/resources/images/welcome.jpg">
     </div>
 

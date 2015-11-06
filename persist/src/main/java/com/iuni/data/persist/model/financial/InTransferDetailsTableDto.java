@@ -12,8 +12,8 @@ public class InTransferDetailsTableDto extends AbstractTableDto {
 
     private Date shippingTime;
     private String transferCode;
-    private String warehouseName;
-    private String transferSale;
+    private String outWarehouseName;
+    private String inWarehouseName;
     private String skuCode;
     private String materialCode;
     private String skuName;
@@ -35,20 +35,20 @@ public class InTransferDetailsTableDto extends AbstractTableDto {
         this.transferCode = transferCode;
     }
 
-    public String getWarehouseName() {
-        return warehouseName;
+    public String getOutWarehouseName() {
+        return outWarehouseName;
     }
 
-    public void setWarehouseName(String warehouseName) {
-        this.warehouseName = warehouseName;
+    public void setOutWarehouseName(String outWarehouseName) {
+        this.outWarehouseName = outWarehouseName;
     }
 
-    public String getTransferSale() {
-        return transferSale;
+    public String getInWarehouseName() {
+        return inWarehouseName;
     }
 
-    public void setTransferSale(String transferSale) {
-        this.transferSale = transferSale;
+    public void setInWarehouseName(String inWarehouseName) {
+        this.inWarehouseName = inWarehouseName;
     }
 
     public String getSkuCode() {
@@ -87,8 +87,8 @@ public class InTransferDetailsTableDto extends AbstractTableDto {
         Map<String, String> tableHeader = new LinkedHashMap<>();
         tableHeader.put("日期", "shippingTime");
         tableHeader.put("调拔单号", "transferCode");
-        tableHeader.put("调出仓位", "warehouseName");
-        tableHeader.put("调入仓位", "transferSale");
+        tableHeader.put("调出仓位", "outWarehouseName");
+        tableHeader.put("调入仓位", "inWarehouseName");
         tableHeader.put("SKU", "skuCode");
         tableHeader.put("物料编码", "materialCode");
         tableHeader.put("规格型号", "skuName");
@@ -102,8 +102,8 @@ public class InTransferDetailsTableDto extends AbstractTableDto {
             Map<String, Object> rowData = new HashMap<>();
             rowData.put("shippingTime", inTransferDetailsTableDto.getShippingTime());
             rowData.put("transferCode", inTransferDetailsTableDto.getTransferCode());
-            rowData.put("warehouseName", inTransferDetailsTableDto.getWarehouseName());
-            rowData.put("transferSale", inTransferDetailsTableDto.getTransferSale());
+            rowData.put("outWarehouseName", inTransferDetailsTableDto.getOutWarehouseName());
+            rowData.put("inWarehouseName", inTransferDetailsTableDto.getInWarehouseName());
             rowData.put("skuCode", inTransferDetailsTableDto.getSkuCode());
             rowData.put("materialCode", inTransferDetailsTableDto.getMaterialCode());
             rowData.put("skuName", inTransferDetailsTableDto.getSkuName());

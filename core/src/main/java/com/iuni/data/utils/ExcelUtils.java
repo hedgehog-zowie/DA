@@ -176,48 +176,149 @@ public class ExcelUtils {
         }
     }
 
-    public static SXSSFWorkbook generateExcelWorkBook(Map<String, String> tableHeader, List<Map<String, Object>> tableData) {
+    /**
+     * 单sheet表
+     *
+     * @param tableHeader
+     * @param tableData
+     * @return
+     */
+//    public static SXSSFWorkbook generateExcelWorkBook(Map<String, String> tableHeader, List<Map<String, Object>> tableData) {
+//        SXSSFWorkbook wb = new SXSSFWorkbook();
+//        Map<String, CellStyle> styleMap = genStyle(wb);
+//
+//        Sheet sheet = wb.createSheet();
+//
+//        Set<Map.Entry<String, String>> tableHeaderEntrySet = tableHeader.entrySet();
+//        // 构建表头
+//        Row headRow = sheet.createRow(0);
+//        int i = 0;
+//        for (Map.Entry<String, String> entry : tableHeaderEntrySet) {
+//            Cell cell = headRow.createCell(i);
+//            cell.setCellStyle(styleMap.get(STYLE_NAME_HEAD));
+//            cell.setCellValue(entry.getKey());
+//            i++;
+//        }
+//
+//        // 构建表体数据
+//        if (tableData != null && tableData.size() > 0) {
+//            int j = 0;
+//            for (Map<String, Object> rowData : tableData) {
+//                Row bodyRow = sheet.createRow(j + 1);
+//                int k = 0;
+//                for (Map.Entry<String, String> entry : tableHeaderEntrySet) {
+//                    Cell cell = bodyRow.createCell(k);
+//                    setCellData(cell, rowData.get(entry.getValue()) == null ? "" : rowData.get(entry.getValue()), styleMap);
+//                    k++;
+//                }
+//                j++;
+//            }
+//        }
+//
+//        // 设置列宽
+//        for (int cn = 0; cn < tableHeaderEntrySet.size(); cn++) {
+//            sheet.autoSizeColumn(cn, true);
+//            int width = sheet.getColumnWidth(cn) + 1024;
+//            int maxWidth = 10000;
+//            if (width > maxWidth)
+//                width = maxWidth;
+//            sheet.setColumnWidth(cn, width);
+//            cn++;
+//        }
+//
+//        return wb;
+//    }
+
+    /**
+     * 导出包含多个sheet的表
+     *
+     * @param sheetDataList
+     * @return
+     */
+    public static SXSSFWorkbook generateExcelWorkBook(List<SheetData> sheetDataList) {
         SXSSFWorkbook wb = new SXSSFWorkbook();
-        Sheet sheet = wb.createSheet();
         Map<String, CellStyle> styleMap = genStyle(wb);
 
-        Set<Map.Entry<String, String>> tableHeaderEntrySet = tableHeader.entrySet();
-        // 构建表头
-        Row headRow = sheet.createRow(0);
-        int i = 0;
-        for (Map.Entry<String, String> entry : tableHeaderEntrySet) {
-            Cell cell = headRow.createCell(i);
-            cell.setCellStyle(styleMap.get(STYLE_NAME_HEAD));
-            cell.setCellValue(entry.getKey());
-            i++;
-        }
+        for (SheetData sheetData : sheetDataList) {
+            String sheetName = sheetData.getName();
+            Sheet sheet = wb.createSheet(sheetName);
+            // 冻结第一行
+            sheet.createFreezePane( 0, 1, 0, 1 );
+            Map<String, String> tableHeader = sheetData.getTableHeader();
+            Set<Map.Entry<String, String>> tableHeaderEntrySet = tableHeader.entrySet();
+            // 构建表头
+            Row headRow = sheet.createRow(0);
+            int i = 0;
+            for (Map.Entry<String, String> entry : tableHeaderEntrySet) {
+                Cell cell = headRow.createCell(i);
+                cell.setCellStyle(styleMap.get(STYLE_NAME_HEAD));
+                cell.setCellValue(entry.getKey());
+                i++;
+            }
 
-        // 构建表体数据
-        if (tableData != null && tableData.size() > 0) {
-            int j = 0;
-            for (Map<String, Object> rowData : tableData) {
-                Row bodyRow = sheet.createRow(j + 1);
-                int k = 0;
-                for (Map.Entry<String, String> entry : tableHeaderEntrySet) {
-                    Cell cell = bodyRow.createCell(k);
-                    setCellData(cell, rowData.get(entry.getValue()) == null ? "" : rowData.get(entry.getValue()), styleMap);
-                    k++;
+            List<Map<String, Object>> tableData = sheetData.getTableData();
+            // 构建表体数据
+            if (tableData != null && tableData.size() > 0) {
+                int j = 0;
+                for (Map<String, Object> rowData : tableData) {
+                    Row bodyRow = sheet.createRow(j + 1);
+                    int k = 0;
+                    for (Map.Entry<String, String> entry : tableHeaderEntrySet) {
+                        Cell cell = bodyRow.createCell(k);
+                        setCellData(cell, rowData.get(entry.getValue()) == null ? "" : rowData.get(entry.getValue()), styleMap);
+                        k++;
+                    }
+                    j++;
                 }
-                j++;
+            }
+
+            // 设置列宽
+            int cn = 0;
+            for (Map.Entry<String, String> entry : tableHeaderEntrySet) {
+                String columnName = entry.getKey();
+//                sheet.autoSizeColumn(cn, true);
+                sheet.setColumnWidth(cn, columnName.getBytes().length * 256 + 1024);
+                cn++;
             }
         }
 
-        // 设置列宽
-        for (int cn = 0; cn < tableHeaderEntrySet.size(); cn++) {
-            sheet.autoSizeColumn(cn, true);
-            int width = sheet.getColumnWidth(cn) + 1024;
-            int maxWidth = 10000;
-            if (width > maxWidth)
-                width = maxWidth;
-            sheet.setColumnWidth(cn, width);
-            cn++;
-        }
         return wb;
+    }
+
+    public static class SheetData {
+        private String name;
+        private Map<String, String> tableHeader;
+        private List<Map<String, Object>> tableData;
+
+        public SheetData(String name, Map<String, String> tableHeader, List<Map<String, Object>> tableData) {
+            this.name = name;
+            this.tableHeader = tableHeader;
+            this.tableData = tableData;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Map<String, String> getTableHeader() {
+            return tableHeader;
+        }
+
+        public void setTableHeader(Map<String, String> tableHeader) {
+            this.tableHeader = tableHeader;
+        }
+
+        public List<Map<String, Object>> getTableData() {
+            return tableData;
+        }
+
+        public void setTableData(List<Map<String, Object>> tableData) {
+            this.tableData = tableData;
+        }
     }
 
 }

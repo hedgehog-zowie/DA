@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.financial.StockMapper">
+
+    <!-- 库存明细 -->
+    <resultMap id="stockDetailsResult" type="com.iuni.data.persist.model.financial.StockDetailsTableDto">
+        <result property="date" column="date"/>
+        <result property="wareHouse" column="wareHouse"/>
+        <result property="code" column="code"/>
+        <result property="materialCode" column="materialCode"/>
+        <result property="name" column="name"/>
+        <result property="measureUnit" column="measureUnit"/>
+        <result property="acceptedGoods" column="acceptedGoods"/>
+        <result property="defectiveGoods" column="defectiveGoods"/>
+        <result property="totalGoods" column="totalGoods"/>
+    </resultMap>
+    <!-- 库存明细报表查询 -->
+    <!--<select id="selectStockOfDay" parameterType="com.iuni.data.persist.model.financial.StockDetailsQueryDto" resultMap="stockDetailsResult">-->
+    <!--select IWSK.SKU_CODE "code",-->
+    <!--IWSK.MATERIAL_CODE "materialCode",-->
+    <!--IWSK.SKU_NAME "name",-->
+    <!--IWWR.WARES_NAME "goodsName",-->
+    <!--IWWR.MEASURE_UNIT "measureUnit",-->
+    <!--IWS.SALES_QUANTITY + IWS.OCCUPY_QUANTITY "acceptedGoods",-->
+    <!--IWS.UNSALES_QUANTITY "defectiveGoods",-->
+    <!--IWS.TOTAL_QUANTITY "totalGoods"-->
+    <!--from SYN_WMS_STOCK IWS-->
+    <!--left join SYN_WMS_WAREHOUSE IWW-->
+    <!--on IWW.ID = IWS.WAREHOUSE_ID-->
+    <!--left join SYN_WMS_SKU IWSK-->
+    <!--on IWSK.ID = IWS.SKU_ID-->
+    <!--left join SYN_WMS_WARES IWWR-->
+    <!--on IWWR.ID = IWSK.WARES_ID-->
+    <!--<where>-->
+    <!--IWW.WAREHOUSE_CODE = '0769'-->
+    <!--<if test="startDateStr != null">-->
+    <!--AND IWSK.CREATE_TIME <![CDATA[ >= ]]> to_date(#{startDateStr},'YYYY/MM/DD')-->
+    <!--</if>-->
+    <!--<if test="endDateStr != null">-->
+    <!--AND IWSK.CREATE_TIME <![CDATA[ < ]]> to_date(#{endDateStr},'YYYY/MM/DD')+1-->
+    <!--</if>-->
+    <!--</where>-->
+    <!--order by IWSK.SKU_CODE-->
+    <!--</select>-->
+    <select id="selectStockDetails" parameterType="com.iuni.data.persist.model.financial.StockDetailsQueryDto"
+            resultMap="stockDetailsResult">
+        select IWSD.REPORT_DATE "date",
+        IWWH.WAREHOUSE_CODE "warehouseCode",
+        IWWH.WAREHOUSE_NAME "wareHouse",
+        IWSD.SKU_CODE "code",
+        IWS.Material_Code "materialCode",
+        IWW.Wares_Name "goodsName",
+        IWS.Sku_Name "name",
+        IWW.MEASURE_UNIT "measureUnit",
+        SUM(IWSD.ENDNONDEFEQTY) "acceptedGoods",
+        SUM(IWSD.ENDDEFEQTY) "defectiveGoods",
+        SUM(IWSD.ENDSTOCKQTY) "totalGoods"
+        from SYN_WMS_STOCK_DAILYSTOCK IWSD
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWSD.SKU_CODE = IWS.SKU_CODE
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWW.Id = IWS.WARES_ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWWH.ID = (CASE
+        WHEN IWSD.STOCK_ID IS NULL THEN
+        '1083672'
+        ELSE
+        IWSD.STOCK_ID
+        END)
+        <where>
+            <if test="startDateStr != null">
+                AND IWSD.REPORT_DATE <![CDATA[ >= ]]> to_date(#{startDateStr},'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWSD.REPORT_DATE <![CDATA[ < ]]> to_date(#{endDateStr},'YYYY/MM/DD')+1
+            </if>
+        </where>
+        GROUP BY IWSD.REPORT_DATE, IWWH.WAREHOUSE_CODE, IWWH.WAREHOUSE_NAME, IWSD.SKU_CODE, IWW.Wares_Name,
+        IWS.Sku_Name, IWW.MEASURE_UNIT,
+        IWS.Material_Code
+    </select>
+
+    <!-- 销售出库明细结果 -->
+    <resultMap id="stockMoveDetailsResult" type="com.iuni.data.persist.model.financial.StockMoveDetailsTableDto">
+        <result property="orderSource" column="orderSource"/>
+        <result property="payName" column="payName"/>
+        <result property="warehouseName" column="warehouseName"/>
+        <result property="stockChangeTime" column="stockChangeTime"/>
+        <result property="orderCode" column="orderCode"/>
+        <result property="outerOrderCode" column="outerOrderCode"/>
+        <result property="code" column="code"/>
+        <result property="materialCode" column="materialCode"/>
+        <result property="name" column="name"/>
+        <result property="quantity" column="quantity"/>
+        <result property="invoiceTCode" column="invoiceTCode"/>
+        <result property="invoiceCode" column="invoiceCode"/>
+        <result property="invoiceAmount" column="invoiceAmount"/>
+        <result property="logisticsCost" column="logisticsCost"/>
+        <result property="isScalper" column="isScalper"/>
+    </resultMap>
+    <!-- 销售出库明细报表查询SQL,包括销售和调拔的出库与退货，不包括换货数据 -->
+    <select id="selectStockMoveDetails" parameterType="com.iuni.data.persist.model.financial.StockMoveDetailsQueryDto"
+            resultMap="stockMoveDetailsResult">
+        SELECT IOS.WMS_SOURCE_NAME "orderSource",
+        IOI.PAY_NAME "payName",
+        CASE WHEN SWW.WAREHOUSE_CODE IS NULL THEN '0769' ELSE SWW.WAREHOUSE_CODE END "warehouseCode",
+        CASE WHEN SWW.WAREHOUSE_NAME IS NULL THEN 'DG总仓' ELSE SWW.WAREHOUSE_NAME END "warehouseName",
+        IWSC.CREATE_TIME "stockChangeTime",
+        IWSO.ORDER_CODE "orderCode",
+        IWSO.OUTER_ORDER_CODE "outerOrderCode",
+        IWSO.DELIVERY_CODE "deliveryCode",
+        -IWSC.QUANTITY "quantity",
+        CASE
+        WHEN IWSO.INVOICE_TCODE IS NOT NULL AND
+        IWSO.INVOICE_CODE IS NOT NULL THEN
+        IWSO.INVOICE_AMOUNT
+        ELSE
+        0
+        END "invoiceAmount",
+        IWS.SKU_CODE "code",
+        IWS.MATERIAL_CODE "materialCode",
+        IWS.SKU_NAME "name",
+        IWW.WARES_NAME "goodsName",
+        IWSO.INVOICE_TCODE "invoiceTcode",
+        IWSO.INVOICE_CODE "invoiceCode" ,
+        CASE WHEN IWSO.LOGISTICS_COST IS NULL THEN 0 ELSE IWSO.LOGISTICS_COST END "logisticsCost",
+        CASE SUBSTR(IOI.TAG,2,1) WHEN '1' THEN '是' ELSE '否' END "isScalper"
+        FROM SYN_WMS_STOCK_CHANGE IWSC
+        LEFT JOIN SYN_WMS_STOCK IWSS
+        ON IWSC.STOCK_ID = IWSS.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWSS.WAREHOUSE_ID = IWWH.ID
+        LEFT JOIN SYN_WMS_SALES_ORDER IWSO
+        ON IWSC.ORIGINAL_CODE = IWSO.ORDER_CODE
+        AND IWSO.ORDER_SOURCE <![CDATA[ <> ]]> '9'
+        LEFT JOIN SYN_WMS_WAREHOUSE SWW
+        ON SWW.WAREHOUSE_CODE = IWSO.WAREHOUSE
+        LEFT JOIN IUNI_ORDER_INFO IOI
+        ON IWSO.ORDER_CODE = IOI.ORDER_SN
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWSS.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWS.WARES_ID = IWW.ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY IWWC
+        ON IWW.CAT_ID = IWWC.ID
+        LEFT JOIN
+        (
+        SELECT DISTINCT (WMS_SOURCE_CODE), WMS_SOURCE_NAME
+        FROM IUNI_ORDER_SOURCE
+        ) IOS
+        ON IOS.WMS_SOURCE_CODE = IWSO.ORDER_SOURCE
+        <where>
+            IWSC.BIZ_TYPE IN ('201', '103')
+            AND IWSC.STOCK_TYPE = '4'
+            <if test="startDateStr != null">
+                AND IWSC.CREATE_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWSC.CREATE_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        UNION ALL
+        SELECT IOS.WMS_SOURCE_NAME "orderSource",
+        IOI.PAY_NAME "payName",
+        '0769' "warehouseCode",
+        'DG总仓' "warehouseName",
+        MAX(IWSC.CREATE_TIME) "stockChangeTime",
+        IWSO.ORDER_CODE "orderCode",
+        IWSO.OUTER_ORDER_CODE "outerOrderCode",
+        IWSO.DELIVERY_CODE "deliveryCode",
+        -SUM(IWSC.QUANTITY) "quantity",
+        CASE
+        WHEN IWSO.INVOICE_TCODE IS NOT NULL AND
+        IWSO.INVOICE_CODE IS NOT NULL THEN
+        IWSO.INVOICE_AMOUNT
+        ELSE
+        0
+        END "invoiceAmount",
+        IWS.SKU_CODE "code",
+        IWS.MATERIAL_CODE "materialCode",
+        IWS.SKU_NAME "name",
+        IWW.WARES_NAME "goodsName",
+        IWSO.INVOICE_TCODE "invoiceTcode",
+        IWSO.INVOICE_CODE "invoiceCode",
+        CASE WHEN IWSO.LOGISTICS_COST IS NULL THEN 0 ELSE IWSO.LOGISTICS_COST END "logisticsCost",
+        CASE SUBSTR(IOI.TAG,2,1) WHEN '1' THEN '是' ELSE '否' END "isScalper"
+        FROM SYN_WMS_STOCK_CHANGE IWSC
+        LEFT JOIN SYN_WMS_SALES_ORDER IWSO
+        ON IWSC.ORIGINAL_CODE = IWSO.ORDER_CODE
+        AND IWSO.ORDER_SOURCE <![CDATA[ <> ]]> '9'
+        LEFT JOIN IUNI_ORDER_INFO IOI
+        ON IWSO.ORDER_CODE = IOI.ORDER_SN
+        LEFT JOIN SYN_WMS_STOCK IWSS
+        ON IWSC.STOCK_ID = IWSS.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWSS.WAREHOUSE_ID = IWWH.ID
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWSS.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWS.WARES_ID = IWW.ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY IWWC
+        ON IWW.CAT_ID = IWWC.ID
+        LEFT JOIN (SELECT DISTINCT (WMS_SOURCE_CODE), WMS_SOURCE_NAME
+        FROM IUNI_ORDER_SOURCE) IOS
+        ON IOS.WMS_SOURCE_CODE = IWSO.ORDER_SOURCE
+        <where>
+            IWSC.BIZ_TYPE IN ('102')
+            <if test="startDateStr != null">
+                AND IWSC.CREATE_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="startDateStr != null">
+                AND IWSC.CREATE_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+            AND IWSC.STOCK_TYPE = 4
+            AND EXISTS
+            (SELECT 1
+            FROM SYN_WMS_BACK IWB
+            <where>
+                IWB.ORDER_CODE = IWSC.ORIGINAL_CODE
+            </where>)
+        </where>
+        GROUP BY
+        IOS.WMS_SOURCE_NAME,
+        IOI.PAY_NAME,
+        IWSO.ORDER_CODE,
+        IWSO.OUTER_ORDER_CODE,
+        IWSO.DELIVERY_CODE,
+        IWSO.INVOICE_AMOUNT,
+        IWS.SKU_CODE,
+        IWS.MATERIAL_CODE,
+        IWS.SKU_NAME,
+        IWW.WARES_NAME,
+        IWSO.INVOICE_TCODE,
+        IWSO.INVOICE_CODE,
+        IWSO.LOGISTICS_COST,
+        IOI.TAG
+        UNION ALL
+        SELECT IWLO.COMPANY_NAME "orderSource",
+        '' "payName",
+        '0769' "warehouseCode",
+        'DG总仓' "warehouseName",
+        IWT.SHIPPING_TIME "stockChangeTime",
+        IWT.ID "orderCode",
+        '' "outerOrderCode",
+        '' "deliveryCode",
+        IWTG.QUANTITY "quantity",
+        0 "invoiceAmount",
+        IWS.SKU_CODE "code",
+        IWS.MATERIAL_CODE "materialCode",
+        IWS.SKU_NAME "name",
+        IWW.WARES_NAME "goodsName",
+        '' "invoiceTcode",
+        '' "invoiceCode",
+        0 "logisticsCost",
+        '否' "isScalper"
+        FROM SYN_WMS_TRANSFER IWT
+        LEFT JOIN SYN_WMS_TRANSFER_GOODS IWTG
+        ON IWTG.TRANSFER_ID = IWT.ID
+        LEFT JOIN SYN_WMS_LARGE_ORDER IWLO
+        ON IWLO.ORDER_CODE = IWT.ORDER_CODE
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWTG.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWS.WARES_ID = IWW.ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY IWWC
+        ON IWW.CAT_ID = IWWC.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWT.WAREHOUSE_ID = IWWH.ID
+        <where>
+            IWT.STATUS = 2
+            AND IWT.BILL_TYPE <![CDATA[ <> ]]> '1'
+            AND IWT.BILL_TYPE <![CDATA[ <> ]]> '3'
+            <if test="startDateStr != null">
+                AND IWT.SHIPPING_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWT.SHIPPING_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        UNION ALL
+        SELECT IWR.TRANSFER_PARTNER_NAME "orderSource",
+        '' "payName",
+        '0769' "warehouseCode",
+        'DG总仓' "warehouseName",
+        IWR.HANDLED_TIME "stockChangeTime",
+        IWR.RECEIVE_CODE "orderCode",
+        IWR.ORIGINAL_CODE "outerOrderCode",
+        '' "deliveryCode",
+        -IWRG.QUANTITY "quantity",
+        0 "invoiceAmount",
+        IWS.SKU_CODE "code",
+        IWS.MATERIAL_CODE "materialCode",
+        IWS.SKU_NAME "name",
+        IWW.WARES_NAME "goodsName",
+        '' "invoiceTcode",
+        '' "invoiceCode",
+        0 "logisticsCost"，
+        '否' "isScalper"
+        FROM SYN_WMS_RECEIVE IWR
+        LEFT JOIN SYN_WMS_TRANSFER_PARTNER IWWP
+        ON IWR.TRANSFER_PARTNER_ID = IWWP.ID
+        LEFT JOIN SYN_WMS_RECEIVE_GOODS IWRG
+        ON IWRG.RECEIVE_ID = IWR.ID
+        LEFT JOIN SYN_WMS_SKU IWS
+        ON IWRG.SKU_ID = IWS.ID
+        LEFT JOIN SYN_WMS_WARES IWW
+        ON IWS.WARES_ID = IWW.ID
+        LEFT JOIN SYN_WMS_WARES_CATEGORY IWWC
+        ON IWW.CAT_ID = IWWC.ID
+        LEFT JOIN SYN_WMS_WAREHOUSE IWWH
+        ON IWR.WAREHOUSE_ID = IWWH.ID
+        <where>
+            IWR.RECEIVE_TYPE IN ('104')
+            AND IWR.HANDLING_STATUS = 1
+            AND (IWRG.USE_FLAG IS NULL OR IWRG.USE_FLAG <![CDATA[ <> ]]> '0')
+            AND IWR.TRANS_BACK_TYPE <![CDATA[ <> ]]> 1
+            <if test="startDateStr != null">
+                AND IWR.HANDLED_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND IWR.HANDLED_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+    </select>
+
+    <!-- 入库明细结果 -->
+    <resultMap id="procurementDetailsResult" type="com.iuni.data.persist.model.financial.ProcurementDetailsTableDto">
+        <result property="time" column="time"/>
+        <result property="supplierName" column="supplierName"/>
+        <result property="billType" column="billType"/>
+        <result property="procurementSn" column="originalCode"/>
+        <result property="receiveCode" column="receiveCode"/>
+        <result property="sku" column="sku"/>
+        <result property="materialCode" column="materialCode"/>
+        <result property="name" column="name"/>
+        <result property="quantity" column="quantity"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+    <select id="selectProcurementDetails"
+            parameterType="com.iuni.data.persist.model.financial.ProcurementDetailsQueryDto"
+            resultMap="procurementDetailsResult">
+        SELECT SWR.HANDLED_TIME "time",
+        SWR.SUPPLIER_NAME "supplierName",
+        CASE SWR.RECEIVE_TYPE
+        WHEN '101' THEN
+        '采购进货'
+        WHEN '102' THEN
+        '退换货'
+        WHEN '103' THEN
+        '拒收'
+        WHEN '104' THEN
+        '调拨退货'
+        WHEN '105' THEN
+        '采购退仓入库'
+        WHEN '106' THEN
+        '刷单入库'
+        WHEN '107' THEN
+        '调拨换货'
+        WHEN '109' THEN
+        '调拨入库'
+        ELSE
+        SWR.RECEIVE_TYPE
+        END "billType",
+        SWR.ORIGINAL_CODE "originalCode",
+        SWR.RECEIVE_CODE "receiveCode",
+        SWRG.QUANTITY "quantity",
+        SWR.REMARK "remark",
+        SWS.SKU_CODE "sku",
+        SWS.MATERIAL_CODE "materialCode",
+        SWS.SKU_NAME "name",
+        SWW.WARES_NAME "name"
+        FROM SYN_WMS_RECEIVE SWR
+        LEFT JOIN SYN_WMS_RECEIVE_GOODS SWRG
+        ON SWRG.RECEIVE_ID = SWR.ID
+        LEFT JOIN SYN_WMS_SKU SWS
+        ON SWRG.SKU_ID = SWS.ID
+        LEFT JOIN SYN_WMS_WARES SWW
+        ON SWS.WARES_ID = SWW.ID
+        <where>
+            (SWRG.USE_FLAG IS NULL OR SWRG.USE_FLAG <![CDATA[ <> ]]> '0')
+            AND SWR.RECEIVE_TYPE IN ('101','105','106','109')
+            <if test="startDateStr != null">
+                AND SWR.HANDLED_TIME <![CDATA[ >= ]]> TO_DATE(#{startDateStr}, 'YYYY/MM/DD')
+            </if>
+            <if test="endDateStr != null">
+                AND SWR.HANDLED_TIME <![CDATA[ < ]]> TO_DATE(#{endDateStr}, 'YYYY/MM/DD') + 1
+            </if>
+        </where>
+        ORDER BY SWR.HANDLED_TIME
+    </select>
+</mapper>

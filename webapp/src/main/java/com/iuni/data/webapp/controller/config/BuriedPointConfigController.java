@@ -18,7 +18,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Nicholas
@@ -152,7 +153,9 @@ public class BuriedPointConfigController {
             buriedPoint.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
             buriedPointList = buriedPointService.listBuriedPoint(buriedPoint);
 
-            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(BuriedPoint.generateTableHeader(), BuriedPoint.generateTableData(buriedPointList));
+            List<ExcelUtils.SheetData> sheetDataList = new ArrayList<>();
+            sheetDataList.add(new ExcelUtils.SheetData("埋点列表", BuriedPoint.generateTableHeader(), BuriedPoint.generateTableData(buriedPointList)));
+            SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(sheetDataList);
             wb.write(response.getOutputStream());
 
             response.getOutputStream().flush();

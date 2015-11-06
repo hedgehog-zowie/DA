@@ -10,21 +10,27 @@ import java.util.*;
  */
 public class StockMoveDetailsTableDto extends AbstractTableDto {
 
+    private Date time;
     private String orderSource;
-    private String payName;
-    private String warehouseName;
-    private Date stockChangeTime;
+    private String orderType;
+    private String sku;
+    private String waresName;
+    private String skuName;
+    private String materialCode;
     private String orderCode;
     private String outerOrderCode;
-    private String skuCode;
-    private String materialCode;
-    private String skuName;
+    private String payNo;
+    private String deliveryCode;
+    private String price;
     private String quantity;
-    private String invoiceTCode;
-    private String invoiceCode;
-    private String invoiceAmount;
-    private String logisticsCost;
-    private String isScalper;
+
+    public Date getTime() {
+        return time;
+    }
+
+    public void setTime(Date time) {
+        this.time = time;
+    }
 
     public String getOrderSource() {
         return orderSource;
@@ -34,28 +40,44 @@ public class StockMoveDetailsTableDto extends AbstractTableDto {
         this.orderSource = orderSource;
     }
 
-    public String getPayName() {
-        return payName;
+    public String getOrderType() {
+        return orderType;
     }
 
-    public void setPayName(String payName) {
-        this.payName = payName;
+    public void setOrderType(String orderType) {
+        this.orderType = orderType;
     }
 
-    public String getWarehouseName() {
-        return warehouseName;
+    public String getSku() {
+        return sku;
     }
 
-    public void setWarehouseName(String warehouseName) {
-        this.warehouseName = warehouseName;
+    public void setSku(String sku) {
+        this.sku = sku;
     }
 
-    public Date getStockChangeTime() {
-        return stockChangeTime;
+    public String getWaresName() {
+        return waresName;
     }
 
-    public void setStockChangeTime(Date stockChangeTime) {
-        this.stockChangeTime = stockChangeTime;
+    public void setWaresName(String waresName) {
+        this.waresName = waresName;
+    }
+
+    public String getSkuName() {
+        return skuName;
+    }
+
+    public void setSkuName(String skuName) {
+        this.skuName = skuName;
+    }
+
+    public String getMaterialCode() {
+        return materialCode;
+    }
+
+    public void setMaterialCode(String materialCode) {
+        this.materialCode = materialCode;
     }
 
     public String getOrderCode() {
@@ -74,28 +96,28 @@ public class StockMoveDetailsTableDto extends AbstractTableDto {
         this.outerOrderCode = outerOrderCode;
     }
 
-    public String getSkuCode() {
-        return skuCode;
+    public String getPayNo() {
+        return payNo;
     }
 
-    public void setSkuCode(String skuCode) {
-        this.skuCode = skuCode;
+    public void setPayNo(String payNo) {
+        this.payNo = payNo;
     }
 
-    public String getMaterialCode() {
-        return materialCode;
+    public String getDeliveryCode() {
+        return deliveryCode;
     }
 
-    public void setMaterialCode(String materialCode) {
-        this.materialCode = materialCode;
+    public void setDeliveryCode(String deliveryCode) {
+        this.deliveryCode = deliveryCode;
     }
 
-    public String getSkuName() {
-        return skuName;
+    public String getPrice() {
+        return price;
     }
 
-    public void setSkuName(String skuName) {
-        this.skuName = skuName;
+    public void setPrice(String price) {
+        this.price = price;
     }
 
     public String getQuantity() {
@@ -106,63 +128,21 @@ public class StockMoveDetailsTableDto extends AbstractTableDto {
         this.quantity = quantity;
     }
 
-    public String getInvoiceTCode() {
-        return invoiceTCode;
-    }
-
-    public void setInvoiceTCode(String invoiceTCode) {
-        this.invoiceTCode = invoiceTCode;
-    }
-
-    public String getInvoiceCode() {
-        return invoiceCode;
-    }
-
-    public void setInvoiceCode(String invoiceCode) {
-        this.invoiceCode = invoiceCode;
-    }
-
-    public String getInvoiceAmount() {
-        return invoiceAmount;
-    }
-
-    public void setInvoiceAmount(String invoiceAmount) {
-        this.invoiceAmount = invoiceAmount;
-    }
-
-    public String getLogisticsCost() {
-        return logisticsCost;
-    }
-
-    public void setLogisticsCost(String logisticsCost) {
-        this.logisticsCost = logisticsCost;
-    }
-
-    public String getIsScalper() {
-        return isScalper;
-    }
-
-    public void setIsScalper(String isScalper) {
-        this.isScalper = isScalper;
-    }
-
     public static Map<String, String> generateTableHeader() {
         Map<String, String> tableHeader = new LinkedHashMap<>();
+        tableHeader.put("日期", "time");
         tableHeader.put("销售渠道/类型", "orderSource");
-        tableHeader.put("收款类型", "payName");
-        tableHeader.put("仓库", "warehouseName");
-        tableHeader.put("日期", "stockChangeTime");
+        tableHeader.put("订单类型", "orderType");
+        tableHeader.put("SKU", "sku");
+        tableHeader.put("商品类型", "waresName");
+        tableHeader.put("名称规格", "skuName");
+        tableHeader.put("物料编码", "materialCode");
         tableHeader.put("订单号", "orderCode");
         tableHeader.put("外部订单号", "outerOrderCode");
-        tableHeader.put("SKU", "skuCode");
-        tableHeader.put("物料编码", "materialCode");
-        tableHeader.put("规格型号", "skuName");
+        tableHeader.put("支付流水号", "payNo");
+        tableHeader.put("出库单号", "deliveryCode");
+        tableHeader.put("单价", "price");
         tableHeader.put("数量", "quantity");
-        tableHeader.put("发票代码", "invoiceTCode");
-        tableHeader.put("发票号码", "invoiceCode");
-        tableHeader.put("发票金额", "invoiceAmount");
-        tableHeader.put("价外费", "logisticsCost");
-        tableHeader.put("是否刷单", "isScalper");
         return tableHeader;
     }
 
@@ -170,21 +150,19 @@ public class StockMoveDetailsTableDto extends AbstractTableDto {
         List<Map<String, Object>> tableData = new ArrayList<>();
         for (StockMoveDetailsTableDto stockMoveDetailsTableDto : stockMoveDetailsTableDtoList) {
             Map<String, Object> rowData = new HashMap<>();
+            rowData.put("time", stockMoveDetailsTableDto.getTime());
             rowData.put("orderSource", stockMoveDetailsTableDto.getOrderSource());
-            rowData.put("payName", stockMoveDetailsTableDto.getPayName());
-            rowData.put("warehouseName", stockMoveDetailsTableDto.getWarehouseName());
-            rowData.put("stockChangeTime", stockMoveDetailsTableDto.getStockChangeTime());
+            rowData.put("orderType", stockMoveDetailsTableDto.getOrderType());
+            rowData.put("sku", stockMoveDetailsTableDto.getSku());
+            rowData.put("waresName", stockMoveDetailsTableDto.getWaresName());
+            rowData.put("skuName", stockMoveDetailsTableDto.getSkuName());
+            rowData.put("materialCode", stockMoveDetailsTableDto.getMaterialCode());
             rowData.put("orderCode", stockMoveDetailsTableDto.getOrderCode());
             rowData.put("outerOrderCode", stockMoveDetailsTableDto.getOuterOrderCode());
-            rowData.put("skuCode", stockMoveDetailsTableDto.getSkuCode());
-            rowData.put("materialCode", stockMoveDetailsTableDto.getMaterialCode());
-            rowData.put("skuName", stockMoveDetailsTableDto.getSkuName());
+            rowData.put("payNo", stockMoveDetailsTableDto.getPayNo());
+            rowData.put("deliveryCode", stockMoveDetailsTableDto.getDeliveryCode());
+            rowData.put("price", stockMoveDetailsTableDto.getPrice());
             rowData.put("quantity", stockMoveDetailsTableDto.getQuantity());
-            rowData.put("invoiceTCode", stockMoveDetailsTableDto.getInvoiceTCode());
-            rowData.put("invoiceCode", stockMoveDetailsTableDto.getInvoiceCode());
-            rowData.put("invoiceAmount", stockMoveDetailsTableDto.getInvoiceAmount());
-            rowData.put("logisticsCost", stockMoveDetailsTableDto.getLogisticsCost());
-            rowData.put("isScalper", stockMoveDetailsTableDto.getIsScalper());
             tableData.add(rowData);
         }
         return tableData;

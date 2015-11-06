@@ -1,6 +1,8 @@
 package com.iuni.data.webapp.service.financial.impl;
 
 import com.iuni.data.persist.mapper.financial.TransferMapper;
+import com.iuni.data.persist.model.financial.InTransferDetailsQueryDto;
+import com.iuni.data.persist.model.financial.InTransferDetailsTableDto;
 import com.iuni.data.persist.model.financial.TransferDetailsQueryDto;
 import com.iuni.data.persist.model.financial.TransferDetailsTableDto;
 import com.iuni.data.webapp.service.financial.TransferService;
@@ -13,7 +15,7 @@ import java.util.List;
  * @author Nicholas
  *         Email:   nicholas.chen@iuni.com
  */
-@Service("transferService")
+@Service("transferServiceOfFinancial")
 public class TransferServiceImpl implements TransferService {
 
     @Autowired
@@ -22,6 +24,11 @@ public class TransferServiceImpl implements TransferService {
     @Override
     public List<TransferDetailsTableDto> selectTransferDetails(TransferDetailsQueryDto queryDto) {
         return transferMapper.selectTransferDetails(queryDto);
+    }
+
+    @Override
+    public List<InTransferDetailsTableDto> selectInTransferDetails(InTransferDetailsQueryDto queryDto) {
+        return transferMapper.selectInTransferDetails(queryDto);
     }
 
 }

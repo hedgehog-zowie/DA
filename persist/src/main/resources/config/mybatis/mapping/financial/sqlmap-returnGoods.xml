@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.financial.ReturnGoodsMapper">
+
+    <!-- 订单退款明细结果 -->
+    <resultMap id="refundDetailsResult" type="com.iuni.data.persist.model.financial.RefundDetailsTableDto">
+        <result property="orderCode" column="orderCode"/>
+        <result property="outerOrderCode" column="outerOrderCode"/>
+        <result property="addTime" column="addTime"/>
+        <result property="logTime" column="logTime"/>
+        <result property="code" column="code"/>
+        <result property="materialCode" column="materialCode"/>
+        <result property="goodsName" column="goodsName"/>
+        <result property="goodsNum" column="goodsNum"/>
+        <result property="goodsAttr" column="goodsAttr"/>
+        <result property="goodsPrice" column="goodsPrice"/>
+        <result property="goodsAmount" column="goodsAmount"/>
+        <result property="orderStatus" column="orderStatus"/>
+        <result property="payName" column="payName"/>
+        <result property="bonus" column="bonus"/>
+        <result property="orderSource" column="orderSource"/>
+    </resultMap>
+    <!-- 订单退款明细报表 -->
+    <select id="selectRefundDetails" parameterType="com.iuni.data.persist.model.financial.RefundDetailsQueryDto"
+            resultMap="refundDetailsResult">
+        select T1."orderCode",
+        T1."addTime" "addTime",
+        T1."goodsNum",
+        T1."goodsAttr",
+        T1."goodsName",
+        T1."goodsPrice",
+        T1."goodsAmount",
+        T1."sku",
+        T2."logTime" "logTime",
+        T1."materialCode" "materialCode",
+        T1."osn" "osn",
+        T1."orderSource" "orderSource",
+        T1."payName" "payName",
+        T1."boundsId" "boundsId",
+        T1."orderStatus" "orderStatus"
+        from (select T0.*,
+        case
+        when IOI.BONUS is null then
+        0
+        when T0."goodsAmount" is null and IOI.BONUS is not null then
+        IOI.BONUS
+        else
+        ROUND((T0."goodsAmount" / IOI.GOODS_AMOUNT) * IOI.BONUS, 2)
+        end "bonus",
+        IOI.PAY_NAME "payName",
+        IOS.WMS_SOURCE_NAME "orderSource",
+        IWSO.OUTER_ORDER_CODE "outerOrderCode",
+        case
+        when IOI.ORDER_STATUS = 'recede' then
+        '退货'
+        when IOI.ORDER_STATUS = 'processed' then
+        '已确认'
+        else
+        IOI.ORDER_STATUS
+        end "orderStatus",
+        IWSK.SKU_CODE "code",
+        IWSK.MATERIAL_CODE "materialCode",
+        IOI.OSN "osn",
+        IOI.BOUNDSID "boundsId"
+        from (select IRI.ORDER_SN "orderCode",
+        IRI.ADD_TIME "addTime",
+        IRIT.GOODS_NUM "goodsNum",
+        IRIT.GOODS_ATTR "goodsAttr",
+        IRIT.GOODS_NAME "goodsName",
+        IRIT.GOODS_PRICE "goodsPrice",
+        IRIT.GOODS_NUM * IRIT.GOODS_PRICE "goodsAmount",
+        IRIT.SKU "sku"
+        from IUNI_RETURNGOODS_INFO IRI
+        left join IUNI_RETURNGOODS_ITEM IRIT
+        on IRIT.DELIVERY_SN = IRI.DELIVERY_SN
+        where IRI.STATUS <![CDATA[ <> ]]> 'cancelled'
+        union all
+        select IBO.ORDER_SN "orderCode",
+        MILLISEC_TO_DATE2(IBO.ADD_TIME) "addTime",
+        IBOG.GOODS_NUMBER "goodsNum",
+        IBOG.GOODS_ATTR "goodsAttr",
+        IBOG.GOODS_NAME "goodsName",
+        IBOG.GOODS_PRICE "goodsPrice",
+        IBOG.GOODS_NUMBER * IBOG.GOODS_PRICE "goodsAmount",
+        IBOG.SKU "sku"
+        from IUNI_BACK_ORDER IBO
+        left join IUNI_BACK_ORDER_GOODS IBOG
+        on IBOG.DELIVERY_SN = IBO.DELIVERY_SN
+        where IBO.STATUS <![CDATA[ <> ]]> 'cancelled') T0
+        left join IUNI_ORDER_INFO IOI
+        on IOI.ORDER_SN = T0."orderCode"
+        left join SYN_WMS_SALES_ORDER IWSO
+        on IWSO.ORDER_CODE = T0."orderCode"
+        left join SYN_WMS_SKU IWSK
+        on IWSK.SKU_CODE = T0."sku"
+        left join (SELECT DISTINCT (WMS_SOURCE_CODE), WMS_SOURCE_NAME FROM IUNI_ORDER_SOURCE) IOS
+        ON IOS.WMS_SOURCE_CODE = IWSO.ORDER_SOURCE) T1
+        left join (select IRL.ORDER_SN "orderCode", IRL.OP_TIME "logTime"
+        from IUNI_RETURNGOODS_LOG IRL
+        where IRL.RETURN_STATUS = 'completed'
+        union all
+        select IOA.ORDER_ID "orderCode", IOA.LOG_TIME "logTime"
+        from IUNI_ORDER_ACTION IOA
+        where IOA.ORDER_STATUS = 'recede'
+        and IOA.SHIPPING_STATUS = 'receipted'
+        and IOA.PAY_STATUS = 'refunded') T2
+        on T2."orderCode" = T1."orderCode"
+        <where>
+            <if test="startDateStr != null">
+                AND T1."addTime" <![CDATA[ >= ]]> to_date(#{startDateStr},'yyyy/mm/dd')
+            </if>
+            <if test="endDateStr != null">
+                AND T1."addTime" <![CDATA[ < ]]> to_date(#{endDateStr},'yyyy/mm/dd')+1
+            </if>
+        </where>
+    </select>
+</mapper>

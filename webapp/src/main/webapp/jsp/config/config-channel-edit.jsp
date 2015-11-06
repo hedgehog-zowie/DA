@@ -98,7 +98,7 @@
                                         </name>
 
                                         <div class="col-md-2">
-                                            <form:select class="form-control select2me" id="channelType"
+                                            <form:select class="form-control select2me" id="channelTypeId"
                                                          name="channelType.id" value="${channel.channelType.id}"
                                                          path="channelType.id"
                                                          items="${channelTypes}" itemLabel="name" itemValue="id"/>

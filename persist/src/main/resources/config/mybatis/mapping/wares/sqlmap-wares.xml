@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.wares.WareMapper">
+
+    <!-- 商品类型结果 -->
+    <resultMap id="categoryResult" type="com.iuni.data.persist.model.wares.CategoryDto">
+        <result property="id" column="ID"></result>
+        <result property="name" column="CAT_NAME"></result>
+    </resultMap>
+    <!-- 除手机外的所有商品类型 -->
+    <select id="selectCategoryExceptPhone" resultMap="categoryResult">
+        SELECT ID, CAT_NAME FROM SYN_WMS_WARES_CATEGORY WHERE CAT_NAME <![CDATA[ <> ]]> '手机'
+    </select>
+    <!-- 商品结果 -->
+    <resultMap id="wareResult" type="com.iuni.data.persist.model.wares.WareDto">
+        <result property="id" column="ID"></result>
+        <result property="code" column="WARES_CODE"></result>
+        <result property="name" column="WARES_NAME"></result>
+    </resultMap>
+    <!-- 通过类型查询商品 -->
+    <select id="selectWareByCategory" resultMap="wareResult" parameterType="java.lang.String">
+        SELECT ID, WARES_CODE, WARES_NAME FROM SYN_WMS_WARES
+        <where>
+            <if test="_parameter != null">
+                CAT_ID = #{categoryId, jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+    <!-- 规格型号结果 -->
+    <resultMap id="skuResult" type="com.iuni.data.persist.model.wares.SkuDto">
+        <result property="id" column="ID"></result>
+        <result property="code" column="SKU_CODE"></result>
+        <result property="name" column="SKU_NAME"></result>
+    </resultMap>
+    <!-- 通过商品查询型号 -->
+    <select id="selectSkuByWare" resultMap="skuResult" parameterType="java.lang.String">
+        SELECT ID, SKU_CODE, SKU_NAME FROM SYN_WMS_SKU
+        <where>
+            <if test="_parameter != null">
+                WARES_ID = #{wareId, jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+</mapper>

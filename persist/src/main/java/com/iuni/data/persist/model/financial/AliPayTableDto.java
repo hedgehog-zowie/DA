@@ -13,6 +13,7 @@ public class AliPayTableDto extends AbstractTableDto {
     private String aliPayOrderNo;
     private String merchantOrderNo;
     private String createTime;
+    private String logonId;
     private String oppositeName;
     private String osn;
     private String orderCode;
@@ -44,6 +45,14 @@ public class AliPayTableDto extends AbstractTableDto {
 
     public void setCreateTime(String createTime) {
         this.createTime = createTime;
+    }
+
+    public String getLogonId() {
+        return logonId;
+    }
+
+    public void setLogonId(String logonId) {
+        this.logonId = logonId;
     }
 
     public String getOppositeName() {
