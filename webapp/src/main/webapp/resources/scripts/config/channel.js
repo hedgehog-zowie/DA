@@ -97,7 +97,11 @@ var ChannelTable = function () {
                     ids += $(this).val() + ",";
                 return ids;
             });
-            location.href = "/config/channel/delete?ids=" + ids.substring(0, ids.length - 1);
+            if (ids == undefined || ids == null || ids == "")
+                swal("请勾选需要删除的数据！", "", "info");
+            else
+                deleteData("/config/channel/delete", {ids: ids}, "/config/channel");
+            //location.href = "/config/channel/delete?ids=" + ids.substring(0, ids.length - 1);
         });
 
         $('#table_channel_export').click(function (e) {
@@ -112,17 +116,20 @@ var ChannelTable = function () {
 
         channelTable.on('click', '.delete', function (e) {
             e.preventDefault();
-            location.href = "/config/channel/delete?ids=" + $(this).attr("id").substring(7);
+            deleteData("/config/channel/delete", {ids: $(this).attr("id").substring(7)}, "/config/channel");
+            //location.href = "/config/channel/delete?ids=" + $(this).attr("id").substring(7);
         });
 
         channelTable.on('click', '.enable', function (e) {
             e.preventDefault();
-            location.href = "/config/channel/enable?ids=" + $(this).attr("id").substring(7);
+            enableData("/config/channel/enable", {ids: $(this).attr("id").substring(7)}, "/config/channel");
+            //location.href = "/config/channel/enable?ids=" + $(this).attr("id").substring(7);
         });
 
         channelTable.on('click', '.disable', function (e) {
             e.preventDefault();
-            location.href = "/config/channel/disable?ids=" + $(this).attr("id").substring(8);
+            disableData("/config/channel/disable", {ids: $(this).attr("id").substring(8)}, "/config/channel");
+            //location.href = "/config/channel/disable?ids=" + $(this).attr("id").substring(8);
         });
 
     }
@@ -131,14 +138,7 @@ var ChannelTable = function () {
 
         //main function to initiate the module
         init: function () {
-            activeMenu();
-
-            // set right height
-            $(".content-wrapper, .right-side").css('min-height', 516);
-
-            if (!jQuery().dataTable) {
-                return;
-            }
+            activeMenu('/config/channel');
             initTable();
         }
 
@@ -296,7 +296,8 @@ var ChannelFormValidation = function () {
             submitHandler: function (form) {
                 channelSuccess.show();
                 channelError.hide();
-                form.submit(); // submit the form
+                saveData("/config/channel/save", channelForm.serialize(), "/config/channel");
+                //form.submit(); // submit the form
             }
         });
 
@@ -378,16 +379,10 @@ var ChannelFormValidation = function () {
     return {
         //main function to initiate the module
         init: function () {
-            activeMenu();
+            activeMenu('/config/channel');
             handleValidation();
         }
 
     };
 
 }();
-
-var activeMenu = function () {
-    $(".treeview-menu [href='/config/channel']").parents("li:eq(0)").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/config/channel']").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/config/channel']").parents("li:eq(0)").addClass("active");
-}

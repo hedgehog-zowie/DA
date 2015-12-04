@@ -5,7 +5,7 @@
 <Workspace>
 	<Local Expanded="Yes">
 		<Model Expanded="Yes" ID="{5F790F0D-12E3-45CE-8957-3DBE56289C6A}" Name="iunida" Selected="Yes" Type="{CDE44E21-9669-11D1-9914-006097355D9B}" URL="iunida.pdm"/>
-		<Model Expanded="Yes" ID="{CF44029F-5610-4226-A164-4E2B923C0A8E}" Loaded="No" Name="iuniReport" Type="{CDE44E21-9669-11D1-9914-006097355D9B}" URL="/public/数据报表/数据库设计/数据报表系统.pdm"/>
+		<Model Expanded="Yes" ID="{CF44029F-5610-4226-A164-4E2B923C0A8E}" Name="iuniReport" Type="{CDE44E21-9669-11D1-9914-006097355D9B}" URL="/public/数据报表/数据库设计/数据报表系统.pdm"/>
 	</Local>
 	<BrowserModule Name="Repository"/>
 </Workspace>

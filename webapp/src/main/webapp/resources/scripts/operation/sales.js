@@ -20,7 +20,10 @@ var SalesOfOperation = function () {
     var initSelect = function () {
         var orderSourceStr = $("#orderSourceStr").val();
         var orderSources = orderSourceStr.split(",");
-        $("#select2OfOrderSource").select2();
+        $("#select2OfOrderSource").select2({
+            closeOnSelect: false,
+            language: "zh-CN"
+        });
         $("#select2OfOrderSource").select2("val", orderSources);
 
         function BindSelect(selectId, url1, url2, t) {
@@ -44,6 +47,7 @@ var SalesOfOperation = function () {
             //设置Select2的处理
             select.select2({
                 allowClear: true,
+                language: "zh-CN"
             });
             // 赋值
             select.select2("val", t);
@@ -129,37 +133,34 @@ var SalesOfOperation = function () {
             e.preventDefault();
             var dateRangeString = $("#daterangepicker").val();
             var dateStyle = $("#dateStyle").val();
+            var orderSources = $("#select2OfOrderSource").val();
+            var type = $("#typeSelect").val();
+            var model = $("#modelSelect").val();
+            var skuStr = $("#skuStr").val();
             var queryParams = {
                 "dateRangeString": dateRangeString,
-                "dateStyle": dateStyle
+                "dateStyle": dateStyle,
+                "orderSources": orderSources,
+                "type": type,
+                "model": model,
+                "skuStr": skuStr,
             }
             location.href = "/operation/sales/exportExcel?queryParamStr=" + JSON.stringify(queryParams);
         });
-    }
-
-    var activeMenu = function () {
-        $(".treeview-menu [href='/operation/sales']").parents("li:eq(0)").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-        $(".treeview-menu [href='/operation/sales']").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-        $(".treeview-menu [href='/operation/sales']").parents("li:eq(0)").addClass("active");
     }
 
     return {
 
         //main function to initiate the module
         init: function () {
-            // set right height
-            $(".content-wrapper, .right-side").css('min-height', 516);
-
-            if (!jQuery().dataTable) {
-                return;
-            }
-            activeMenu();
-            initTable();
+            activeMenu('/operation/sales');
             initSku();
             initSelect();
+            initTable();
         }
 
     };
 
 }();
+
 

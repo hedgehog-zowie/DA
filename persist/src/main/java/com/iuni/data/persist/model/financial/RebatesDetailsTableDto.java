@@ -142,7 +142,6 @@ public class RebatesDetailsTableDto extends AbstractTableDto {
         tableHeader.put("销售渠道/类型", "orderSource");
         tableHeader.put("日期", "stockChangeTime");
         tableHeader.put("订单号", "orderCode");
-        tableHeader.put("外部订单号", "outerOrderCode");
         tableHeader.put("出库单号", "deliveryCode");
         tableHeader.put("SKU", "skuCode");
         tableHeader.put("物料编码", "materialCode");
@@ -163,7 +162,6 @@ public class RebatesDetailsTableDto extends AbstractTableDto {
             rowData.put("orderSource", rebatesDetailsTableDto.getOrderSource());
             rowData.put("stockChangeTime", rebatesDetailsTableDto.getStockChangeTime());
             rowData.put("orderCode", rebatesDetailsTableDto.getOrderCode());
-            rowData.put("outerOrderCode", rebatesDetailsTableDto.getOuterOrderCode());
             rowData.put("deliveryCode", rebatesDetailsTableDto.getDeliveryCode());
             rowData.put("skuCode", rebatesDetailsTableDto.getSkuCode());
             rowData.put("materialCode", rebatesDetailsTableDto.getMaterialCode());

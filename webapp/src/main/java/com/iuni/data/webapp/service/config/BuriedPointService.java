@@ -14,13 +14,14 @@ public interface BuriedPointService {
 
     List<BuriedPoint> listBuriedPoint(final BuriedPoint buriedPoint);
 
-    boolean addBuriedPoint(BuriedPoint buriedPoint);
+    void addBuriedPoint(BuriedPoint buriedPoint) throws Exception;
 
-    boolean updateBuriedPoint(BuriedPoint buriedPoint);
+    void updateBuriedPoint(BuriedPoint buriedPoint) throws Exception;
 
-    boolean deleteBuriedPoint(String ids);
+    void deleteBuriedPoint(String ids) throws Exception;
 
-    boolean enableBuriedPoint(String ids);
+    void enableBuriedPoint(String ids) throws Exception;
 
-    boolean disableBuriedPoint(String ids);
+    void disableBuriedPoint(String ids) throws Exception;
+
 }

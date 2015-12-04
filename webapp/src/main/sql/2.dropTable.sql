@@ -53,3 +53,10 @@ drop table IUNI_DA_USER_CHAIN cascade constraints;
 alter table IUNI_DA_SYSTEM_CONSTANTS_VALUE drop constraint FK_SYSTEM_CONSTANTS_VALUE_CID;
 drop table IUNI_DA_SYSTEM_CONSTANTS_VALUE cascade constraints;
 drop table IUNI_DA_SYSTEM_CONSTANTS cascade constraints;
+
+-- buried point
+alter table IUNI_DA_BURIED_POINT_RELATION drop constraint FK_BURIED_POINT_RELATION;
+alter table IUNI_DA_BURIED_POINT_RELATION drop constraint FK_BURIED_GROUP_RELATION;
+drop table IUNI_DA_BURIED_POINT_RELATION cascade constraints;
+drop table IUNI_DA_BURIED_POINT cascade constraints;
+drop table IUNI_DA_BURIED_GROUP cascade constraints;

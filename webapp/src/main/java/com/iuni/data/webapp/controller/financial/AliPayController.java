@@ -60,8 +60,8 @@ public class AliPayController {
         AliPayQueryDto queryParam = JsonUtils.fromJson(queryParamStr, AliPayQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
-            String fileName = new String(("支付宝统计报表(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
+            String fileName = new String(("支付宝统计报表(" + queryParam.getDateRangeString() + ")").getBytes(), "ISO8859-1");
+            response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + ".xlsx\"");
 
             queryParam.parseDateRangeString();
             List<AliPayTableDto> resultList = aliPayService.selectAliPay(queryParam);

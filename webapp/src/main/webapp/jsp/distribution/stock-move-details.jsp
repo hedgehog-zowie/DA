@@ -75,6 +75,9 @@
                                 </div>
                                 <div class="col-md-0 pull-right">
                                     <button id="query-button" type="submit" class="btn green">查询</button>
+                                    <button id="distribution-stock-move-details-table-export" class="btn green">
+                                        导出 <i class="fa fa-file"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -88,11 +91,6 @@
 
                 <!-- Tabs within a box -->
                 <ul class="nav nav-tabs pull-right" id="distribution-stock-move-details-tab">
-                    <li>
-                        <button id="distribution-stock-move-details-table-export" class="btn green">
-                            导出 <i class="fa fa-file"></i>
-                        </button>
-                    </li>
                     <li class="pull-left header"><i class="fa fa-inbox"></i> 销售出库明细</li>
                 </ul>
                 <div class="tab-content no-padding">
@@ -124,8 +122,8 @@
                                     <td>${result.orderSource}</td>
                                     <td>${result.orderType}</td>
                                     <td>${result.sku}</td>
-                                    <td>${result.name}</td>
-                                    <td>${result.name}</td>
+                                    <td>${result.waresName}</td>
+                                    <td>${result.skuName}</td>
                                     <td>${result.materialCode}</td>
                                     <td>${result.orderCode}</td>
                                     <td>${result.outerOrderCode}</td>
@@ -171,6 +169,7 @@
 <script src="/resources/plugins/datatables/media/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/resources/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.js" type="text/javascript"></script>
 
+<script src="/resources/scripts/common/common.js" type="text/javascript"></script>
 <script src="/resources/scripts/distribution/stock-move-details.js" type="text/javascript"></script>
 <script>
     jQuery(document).ready(function () {

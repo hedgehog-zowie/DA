@@ -56,8 +56,8 @@ public class RebatesDetailsController {
         RebatesDetailsQueryDto queryParam = JsonUtils.fromJson(queryParamStr, RebatesDetailsQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
-            String fileName = new String(("返利明细报表(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
+            String fileName = new String(("返利明细报表(" + queryParam.getDateRangeString() + ")").getBytes(), "ISO8859-1");
+            response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + ".xlsx\"");
 
             queryParam.parseDateRangeString();
             List<RebatesDetailsTableDto> resultList = salesOrderService.selectRebatesDetails(queryParam);

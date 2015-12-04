@@ -21,7 +21,7 @@
 
     <link href="/resources/plugins/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css"/>
 
-    <link href="/resources/plugins/select2/select2.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/resources/plugins/select2/select2.css" rel="stylesheet" type="text/css"/>
 
     <link href="/resources/plugins/echarts/css/carousel.css" rel="stylesheet" type="text/css">
     <link href="/resources/plugins/echarts/css/echartsHome.css" rel="stylesheet" type="text/css">
@@ -75,8 +75,8 @@
                                         <div class="col-md-11">
                                             <form:select id="select2OfOrderSource" class="form-control select2"
                                                          multiple="multiple"
-                                                         data-placeholder="请选择订单来源"
-                                                         path="orderSourceStr" value="${queryParam.orderSourceStr}">
+                                                         data-placeholder="请选择订单来源（不选默认为全部）"
+                                                         path="orderSourceStr" value="${queryParam.orderSources}">
                                                 <form:options items="${orderSources}" itemLabel="sourceName"
                                                               itemValue="sourceCode"/>
                                             </form:select>
@@ -225,7 +225,8 @@
 <!-- Bootstrap 3.3.2 JS -->
 <script src="/resources/plugins/bootstrap/scripts/bootstrap.js" type="text/javascript"></script>
 <!-- Select2 -->
-<script src="/resources/plugins/select2/select2.full.min.js" type="text/javascript"></script>
+<script src="/resources/plugins/select2/select2.full.js" type="text/javascript"></script>
+<script src="/resources/plugins/select2/i18n/zh-CN.js" type="text/javascript"></script>
 <!-- FastClick -->
 <script src="/resources/plugins/fastclick/fastclick.js" type="text/javascript"></script>
 <!-- AdminLTE App -->
@@ -239,6 +240,7 @@
 <script src="/resources/plugins/datatables/media/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/resources/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.js" type="text/javascript"></script>
 
+<script src="/resources/scripts/common/common.js" type="text/javascript"></script>
 <script src="/resources/scripts/operation/sales.js" type="text/javascript"></script>
 <script>
     jQuery(document).ready(function () {

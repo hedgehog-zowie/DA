@@ -7,6 +7,7 @@ import com.mysema.query.types.path.*;
 import com.mysema.query.types.PathMetadata;
 import javax.annotation.Generated;
 import com.mysema.query.types.Path;
+import com.mysema.query.types.path.PathInits;
 
 
 /**
@@ -20,6 +21,8 @@ public class QBuriedPoint extends EntityPathBase<BuriedPoint> {
     public static final QBuriedPoint buriedPoint = new QBuriedPoint("buriedPoint");
 
     public final QAbstractConfig _super = new QAbstractConfig(this);
+
+    public final ListPath<BuriedRelation, QBuriedRelation> buriedRelations = this.<BuriedRelation, QBuriedRelation>createList("buriedRelations", BuriedRelation.class, QBuriedRelation.class, PathInits.DIRECT2);
 
     //inherited
     public final NumberPath<Integer> cancelFlag = _super.cancelFlag;

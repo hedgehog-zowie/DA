@@ -53,7 +53,7 @@
                 WHEN TRUNC(ADD_MONTHS(unix_to_oracle(IOI.PAY_TIME), 1),'MM') <![CDATA[ < ]]> TO_DATE(#{endDateStr},
                 'YYYY/MM/DD')
                 THEN
-                TO_CHAR(TRUNC(ADD_MONTHS(unix_to_oracle(IOI.PAY_TIME), 1),'MM'), 'YYYY/MM/DD')
+                TO_CHAR(TRUNC(ADD_MONTHS(unix_to_oracle(IOI.PAY_TIME), 1),'MM') - 1, 'YYYY/MM/DD')
                 ELSE
                 #{endDateStr}
                 END "range",
@@ -121,9 +121,11 @@
                 </foreach>
             </if>
             <if test="skus != null">
-                AND IOG.SKU IN
-                <foreach collection="skus" index="index" item="item" open="(" separator="," close=")">
-                    #{item}
+                AND
+                <foreach collection="skus" index="index" item="item" open="(" separator="OR" close=")">
+                    <if test="item != ''">
+                        IOG.SKU LIKE '%' || #{item} || '%'
+                    </if>
                 </foreach>
             </if>
             <if test="type != null and type != ''">
@@ -154,5 +156,7 @@
         </choose>
         TMP."range", TMP."orderSource",TMP."goodsName",TMP."wareName",TMP."sku"
     </select>
+
+    <cache eviction="LRU" flushInterval="60000" size="512" readOnly="true"/>
 
 </mapper>

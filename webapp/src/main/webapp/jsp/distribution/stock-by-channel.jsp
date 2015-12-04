@@ -75,6 +75,9 @@
                                 </div>
                                 <div class="col-md-0 pull-right">
                                     <button id="query-button" type="submit" class="btn green">查询</button>
+                                    <button id="distribution-stock-by-channel-table-export" class="btn green">
+                                        导出 <i class="fa fa-file"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -88,11 +91,6 @@
 
                 <!-- Tabs within a box -->
                 <ul class="nav nav-tabs pull-right" id="distribution-stock-by-channel-tab">
-                    <li>
-                        <button id="distribution-stock-by-channel-table-export" class="btn green">
-                            导出 <i class="fa fa-file"></i>
-                        </button>
-                    </li>
                     <li class="pull-left header"><i class="fa fa-inbox"></i> 各渠道进退换数量汇总</li>
                 </ul>
                 <div class="tab-content no-padding">
@@ -121,9 +119,9 @@
                                 <tr class="odd gradeX">
                                     <td>${result.date}</td>
                                     <td>${result.sourceName}</td>
-                                    <td>${result.code}</td>
-                                    <td>${result.name}</td>
-                                    <td>${result.name}</td>
+                                    <td>${result.skuCode}</td>
+                                    <td>${result.catName}</td>
+                                    <td>${result.skuName}</td>
                                     <td>${result.materialCode}</td>
                                     <td>${result.measureUnit}</td>
                                     <td>${result.send}</td>
@@ -169,6 +167,7 @@
 <script src="/resources/plugins/datatables/media/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/resources/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.js" type="text/javascript"></script>
 
+<script src="/resources/scripts/common/common.js" type="text/javascript"></script>
 <script src="/resources/scripts/distribution/stock-by-channel.js" type="text/javascript"></script>
 <script>
     jQuery(document).ready(function () {

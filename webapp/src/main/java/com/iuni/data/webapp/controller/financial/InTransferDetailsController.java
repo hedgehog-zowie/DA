@@ -56,8 +56,8 @@ public class InTransferDetailsController {
         InTransferDetailsQueryDto queryParam = JsonUtils.fromJson(queryParamStr, InTransferDetailsQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
-            String fileName = new String(("内部调拔明细报表(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
+            String fileName = new String(("内部调拔明细报表(" + queryParam.getDateRangeString() + ")").getBytes(), "ISO8859-1");
+            response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + ".xlsx\"");
 
             queryParam.parseDateRangeString();
             List<InTransferDetailsTableDto> resultList = transferService.selectInTransferDetails(queryParam);

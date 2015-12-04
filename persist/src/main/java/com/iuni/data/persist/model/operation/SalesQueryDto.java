@@ -3,6 +3,10 @@ package com.iuni.data.persist.model.operation;
 import com.iuni.data.persist.model.AbstractQueryDto;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Nicholas
  *         Email:   nicholas.chen@iuni.com
@@ -101,26 +105,32 @@ public class SalesQueryDto extends AbstractQueryDto {
      * 解析订单来源
      */
     public void parseOrderSource() {
-        if (!StringUtils.isEmpty(orderSourceStr))
-            orderSources = orderSourceStr.split(splitterOfOrderSource);
-        int i = 0;
-        while (i < orderSources.length) {
-            orderSources[i] = orderSources[i].trim();
-            i++;
-        }
+        if (StringUtils.isEmpty(orderSourceStr))
+            return;
+        String[] tmpSources = orderSourceStr.split(splitterOfOrderSource);
+        List<String> tmpSourceList = Arrays.asList(tmpSources);
+        for (String source : tmpSourceList)
+            if (StringUtils.isEmpty(source.trim()))
+                tmpSourceList.remove(source);
+        orderSources = new String[tmpSourceList.size()];
+        for (int i = 0; i < orderSources.length; i++)
+            orderSources[i] = tmpSourceList.get(i).trim();
     }
 
     /**
      * 解析SKU编码
      */
     public void parseSku() {
-        if (!StringUtils.isEmpty(skuStr))
-            skus = skuStr.split(splitterOfSku);
-        int i = 0;
-        while (i < skus.length) {
-            skus[i] = skus[i].trim();
-            i++;
-        }
+        if (StringUtils.isEmpty(skuStr))
+            return;
+        String[] tmpSkus = skuStr.split(splitterOfSku);
+        List<String> tmpSkuList = Arrays.asList(tmpSkus);
+        for (String sku : tmpSkuList)
+            if (StringUtils.isEmpty(sku.trim()))
+                tmpSkuList.remove(sku);
+        skus = new String[tmpSkuList.size()];
+        for (int i = 0; i < skus.length; i++)
+            skus[i] = tmpSkuList.get(i).trim();
     }
 
 }

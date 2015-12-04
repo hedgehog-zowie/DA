@@ -10,7 +10,7 @@
     </resultMap>
     <!-- 除手机外的所有商品类型 -->
     <select id="selectCategoryExceptPhone" resultMap="categoryResult">
-        SELECT ID, CAT_NAME FROM SYN_WMS_WARES_CATEGORY WHERE CAT_NAME <![CDATA[ <> ]]> '手机'
+        SELECT ID, CAT_NAME FROM SYN_WMS_WARES_CATEGORY WHERE CAT_NAME <![CDATA[ <> ]]> '手机' ORDER BY CAT_NAME
     </select>
     <!-- 商品结果 -->
     <resultMap id="wareResult" type="com.iuni.data.persist.model.wares.WareDto">
@@ -26,6 +26,7 @@
                 CAT_ID = #{categoryId, jdbcType=VARCHAR}
             </if>
         </where>
+        ORDER BY WARES_NAME
     </select>
     <!-- 规格型号结果 -->
     <resultMap id="skuResult" type="com.iuni.data.persist.model.wares.SkuDto">
@@ -41,5 +42,6 @@
                 WARES_ID = #{wareId, jdbcType=VARCHAR}
             </if>
         </where>
+        ORDER BY SKU_NAME
     </select>
 </mapper>

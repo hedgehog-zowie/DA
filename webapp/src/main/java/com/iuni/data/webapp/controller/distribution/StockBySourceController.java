@@ -59,8 +59,8 @@ public class StockBySourceController {
         StockBySourceQueryDto queryParam = JsonUtils.fromJson(queryParamStr, StockBySourceQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
-            String fileName = new String(("仓库出入库来源汇总报表(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
+            String fileName = new String(("仓库出入库来源汇总报表(" + queryParam.getDateRangeString() + ")").getBytes(), "ISO8859-1");
+            response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + ".xlsx\"");
 
             queryParam.parseDateRangeString();
             List<StockBySourceTableDto> resultListOfDay = stockService.selectStockBySourceOfDay(queryParam);

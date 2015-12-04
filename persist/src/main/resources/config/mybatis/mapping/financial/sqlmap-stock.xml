@@ -7,9 +7,9 @@
     <resultMap id="stockDetailsResult" type="com.iuni.data.persist.model.financial.StockDetailsTableDto">
         <result property="date" column="date"/>
         <result property="wareHouse" column="wareHouse"/>
-        <result property="code" column="code"/>
+        <result property="skuCode" column="skuCode"/>
         <result property="materialCode" column="materialCode"/>
-        <result property="name" column="name"/>
+        <result property="skuName" column="skuName"/>
         <result property="measureUnit" column="measureUnit"/>
         <result property="acceptedGoods" column="acceptedGoods"/>
         <result property="defectiveGoods" column="defectiveGoods"/>
@@ -17,9 +17,9 @@
     </resultMap>
     <!-- 库存明细报表查询 -->
     <!--<select id="selectStockOfDay" parameterType="com.iuni.data.persist.model.financial.StockDetailsQueryDto" resultMap="stockDetailsResult">-->
-    <!--select IWSK.SKU_CODE "code",-->
+    <!--select IWSK.SKU_CODE "skuCode",-->
     <!--IWSK.MATERIAL_CODE "materialCode",-->
-    <!--IWSK.SKU_NAME "name",-->
+    <!--IWSK.SKU_NAME "skuName",-->
     <!--IWWR.WARES_NAME "goodsName",-->
     <!--IWWR.MEASURE_UNIT "measureUnit",-->
     <!--IWS.SALES_QUANTITY + IWS.OCCUPY_QUANTITY "acceptedGoods",-->
@@ -48,10 +48,10 @@
         select IWSD.REPORT_DATE "date",
         IWWH.WAREHOUSE_CODE "warehouseCode",
         IWWH.WAREHOUSE_NAME "wareHouse",
-        IWSD.SKU_CODE "code",
+        IWSD.SKU_CODE "skuCode",
         IWS.Material_Code "materialCode",
         IWW.Wares_Name "goodsName",
-        IWS.Sku_Name "name",
+        IWS.Sku_Name "skuName",
         IWW.MEASURE_UNIT "measureUnit",
         SUM(IWSD.ENDNONDEFEQTY) "acceptedGoods",
         SUM(IWSD.ENDDEFEQTY) "defectiveGoods",
@@ -89,9 +89,9 @@
         <result property="stockChangeTime" column="stockChangeTime"/>
         <result property="orderCode" column="orderCode"/>
         <result property="outerOrderCode" column="outerOrderCode"/>
-        <result property="code" column="code"/>
+        <result property="skuCode" column="skuCode"/>
         <result property="materialCode" column="materialCode"/>
-        <result property="name" column="name"/>
+        <result property="skuName" column="skuName"/>
         <result property="quantity" column="quantity"/>
         <result property="invoiceTCode" column="invoiceTCode"/>
         <result property="invoiceCode" column="invoiceCode"/>
@@ -118,9 +118,9 @@
         ELSE
         0
         END "invoiceAmount",
-        IWS.SKU_CODE "code",
+        IWS.SKU_CODE "skuCode",
         IWS.MATERIAL_CODE "materialCode",
-        IWS.SKU_NAME "name",
+        IWS.SKU_NAME "skuName",
         IWW.WARES_NAME "goodsName",
         IWSO.INVOICE_TCODE "invoiceTcode",
         IWSO.INVOICE_CODE "invoiceCode" ,
@@ -177,9 +177,9 @@
         ELSE
         0
         END "invoiceAmount",
-        IWS.SKU_CODE "code",
+        IWS.SKU_CODE "skuCode",
         IWS.MATERIAL_CODE "materialCode",
-        IWS.SKU_NAME "name",
+        IWS.SKU_NAME "skuName",
         IWW.WARES_NAME "goodsName",
         IWSO.INVOICE_TCODE "invoiceTcode",
         IWSO.INVOICE_CODE "invoiceCode",
@@ -246,9 +246,9 @@
         '' "deliveryCode",
         IWTG.QUANTITY "quantity",
         0 "invoiceAmount",
-        IWS.SKU_CODE "code",
+        IWS.SKU_CODE "skuCode",
         IWS.MATERIAL_CODE "materialCode",
-        IWS.SKU_NAME "name",
+        IWS.SKU_NAME "skuName",
         IWW.WARES_NAME "goodsName",
         '' "invoiceTcode",
         '' "invoiceCode",
@@ -289,9 +289,9 @@
         '' "deliveryCode",
         -IWRG.QUANTITY "quantity",
         0 "invoiceAmount",
-        IWS.SKU_CODE "code",
+        IWS.SKU_CODE "skuCode",
         IWS.MATERIAL_CODE "materialCode",
-        IWS.SKU_NAME "name",
+        IWS.SKU_NAME "skuName",
         IWW.WARES_NAME "goodsName",
         '' "invoiceTcode",
         '' "invoiceCode",
@@ -328,12 +328,12 @@
     <resultMap id="procurementDetailsResult" type="com.iuni.data.persist.model.financial.ProcurementDetailsTableDto">
         <result property="time" column="time"/>
         <result property="supplierName" column="supplierName"/>
-        <result property="billType" column="billType"/>
+        <result property="receiveType" column="receiveType"/>
         <result property="procurementSn" column="originalCode"/>
         <result property="receiveCode" column="receiveCode"/>
         <result property="sku" column="sku"/>
         <result property="materialCode" column="materialCode"/>
-        <result property="name" column="name"/>
+        <result property="skuName" column="skuName"/>
         <result property="quantity" column="quantity"/>
         <result property="remark" column="remark"/>
     </resultMap>
@@ -361,15 +361,15 @@
         '调拨入库'
         ELSE
         SWR.RECEIVE_TYPE
-        END "billType",
+        END "receiveType",
         SWR.ORIGINAL_CODE "originalCode",
         SWR.RECEIVE_CODE "receiveCode",
         SWRG.QUANTITY "quantity",
         SWR.REMARK "remark",
         SWS.SKU_CODE "sku",
         SWS.MATERIAL_CODE "materialCode",
-        SWS.SKU_NAME "name",
-        SWW.WARES_NAME "name"
+        SWS.SKU_NAME "skuName",
+        SWW.WARES_NAME "waresName"
         FROM SYN_WMS_RECEIVE SWR
         LEFT JOIN SYN_WMS_RECEIVE_GOODS SWRG
         ON SWRG.RECEIVE_ID = SWR.ID

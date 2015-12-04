@@ -3,10 +3,12 @@ package com.iuni.data.webapp.service.flow.impl;
 import com.iuni.data.common.DataType;
 import com.iuni.data.common.TType;
 import com.iuni.data.hbase.HBaseOperator;
+import com.iuni.data.persist.domain.config.BuriedGroup;
 import com.iuni.data.persist.domain.config.BuriedPoint;
-import com.iuni.data.persist.mapper.flow.FlowOfBuriedPointMapper;
+import com.iuni.data.persist.domain.config.BuriedRelation;
 import com.iuni.data.persist.model.flow.FlowOfBuriedPointForQueryDto;
 import com.iuni.data.persist.model.flow.FlowOfBuriedPointForTableDto;
+import com.iuni.data.persist.repository.config.BuriedGroupRepository;
 import com.iuni.data.persist.repository.config.BuriedPointRepository;
 import com.iuni.data.utils.DateUtils;
 import com.iuni.data.webapp.service.flow.FlowOfBuriedPointService;
@@ -29,16 +31,11 @@ public class FlowOfBuriedPointServiceImpl implements FlowOfBuriedPointService {
     private static final Logger logger = LoggerFactory.getLogger(FlowOfBuriedPointService.class);
 
     @Autowired
-    private FlowOfBuriedPointMapper flowOfBuriedPointMapper;
-    @Autowired
     private BuriedPointRepository buriedPointRepository;
     @Autowired
+    private BuriedGroupRepository buriedGroupRepository;
+    @Autowired
     private HBaseOperator hBaseOperator;
-
-    @Override
-    public List<FlowOfBuriedPointForTableDto> selectFlowOfBuriedPointsFromOracle(FlowOfBuriedPointForQueryDto buriedPointQueryDto) {
-        return flowOfBuriedPointMapper.selectFlowOfBuriedPoints(buriedPointQueryDto);
-    }
 
     @Override
     public List<FlowOfBuriedPointForTableDto> selectFlowOfBuriedPointsFromHbase(FlowOfBuriedPointForQueryDto buriedPointForQueryDto) {
@@ -46,15 +43,30 @@ public class FlowOfBuriedPointServiceImpl implements FlowOfBuriedPointService {
                 DateUtils.computeStartDate(DateUtils.simpleDateStrToDate(buriedPointForQueryDto.getEndDateStr(), "yyyy/MM/dd"), 1), TType.DAY);
 
         Set<String> rowKeySet = new HashSet<>();
-        for(Map.Entry<Date,Date> entry: timeRange.entrySet())
+        for (Map.Entry<Date, Date> entry : timeRange.entrySet())
             rowKeySet.add(DateUtils.dateToSimpleDateStr(entry.getKey(), "yyyyMMdd"));
         Map<String, Result> resultMap = hBaseOperator.getRow(rowKeySet);
 
-        List<BuriedPoint> buriedPointList = buriedPointRepository.findByStatusAndCancelFlag(1, 0);
+        List<BuriedPoint> buriedPointList;
+        if (buriedPointForQueryDto.getBuriedGroupId() == null || buriedPointForQueryDto.getBuriedGroupId() == 0)
+            buriedPointList = buriedPointRepository.findByStatusAndCancelFlag(1, 0);
+        else {
+            buriedPointList = new ArrayList<>();
+            BuriedGroup buriedGroup = buriedGroupRepository.findOne(buriedPointForQueryDto.getBuriedGroupId());
+            List<BuriedRelation> buriedRelationList = new ArrayList<>();
+            for (BuriedRelation buriedRelation : buriedGroup.getBuriedRelations()) {
+                if (buriedRelation.getCancelFlag() == 1 || buriedRelation.getStatus() == 0)
+                    continue;
+                buriedRelationList.add(buriedRelation);
+                Collections.sort(buriedRelationList);
+            }
+            for (BuriedRelation buriedRelation : buriedRelationList)
+                buriedPointList.add(buriedRelation.getBuriedPoint());
+        }
 
         byte[] familyClick = Bytes.toBytes(DataType.CLICK.getName());
         List<FlowOfBuriedPointForTableDto> resultList = new ArrayList<>();
-        for (Map.Entry<String, Result> entry:resultMap.entrySet()) {
+        for (Map.Entry<String, Result> entry : resultMap.entrySet()) {
             String dateStr = entry.getKey();
             Result result = entry.getValue();
             if (result.isEmpty())
@@ -62,10 +74,6 @@ public class FlowOfBuriedPointServiceImpl implements FlowOfBuriedPointService {
             Map<byte[], byte[]> familyMap = result.getFamilyMap(familyClick);
             for (BuriedPoint buriedPoint : buriedPointList) {
                 String qualifier = buriedPoint.getPointFlag().trim();
-//                byte[] pv_value =  result.getValue(familyClick, Bytes.toBytes("pv-" + qualifier));
-//                byte[] uv_value = result.getValue(familyClick, Bytes.toBytes("uv-" + qualifier));
-//                byte[] vv_value = result.getValue(familyClick, Bytes.toBytes("vv-" + qualifier));
-//                byte[] ip_value = result.getValue(familyClick, Bytes.toBytes("ip-" + qualifier));
                 byte[] pv_value = familyMap.get(Bytes.toBytes("pv-" + qualifier));
                 byte[] uv_value = familyMap.get(Bytes.toBytes("uv-" + qualifier));
                 byte[] vv_value = familyMap.get(Bytes.toBytes("vv-" + qualifier));

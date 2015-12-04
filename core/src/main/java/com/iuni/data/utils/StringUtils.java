@@ -55,6 +55,12 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
         return DateUtils.dateToSimpleDateStr(DateUtils.computeStartDate(date, -7), "yyyy/MM/dd") + dateRangeToStr + DateUtils.dateToSimpleDateStr(DateUtils.computeStartDate(date, -1), "yyyy/MM/dd");
     }
 
+    public static String getTodayRangeString() {
+        Date date = new Date();
+        String todayStr = DateUtils.dateToSimpleDateStr(date, "yyyy/MM/dd");
+        return todayStr + dateRangeToStr + todayStr;
+    }
+
 //    public static void parseDateRangeString(AbstractQueryDto queryDto) {
 //        String[] strs = queryDto.getDateRangeString().split(dateRangeToStr);
 //        queryDto.setStartDateStr(strs[0].trim());

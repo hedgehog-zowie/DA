@@ -75,6 +75,9 @@
                                 </div>
                                 <div class="col-md-0 pull-right">
                                     <button id="query-button" type="submit" class="btn green">查询</button>
+                                    <button id="financial-stock-move-details-table-export" class="btn green">
+                                        导出 <i class="fa fa-file"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -88,11 +91,6 @@
 
                 <!-- Tabs within a box -->
                 <ul class="nav nav-tabs pull-right" id="financial-stock-move-details-tab">
-                    <li>
-                        <button id="financial-stock-move-details-table-export" class="btn green">
-                            导出 <i class="fa fa-file"></i>
-                        </button>
-                    </li>
                     <li class="pull-left header"><i class="fa fa-inbox"></i> 销售出库明细</li>
                 </ul>
                 <div class="tab-content no-padding">
@@ -128,9 +126,9 @@
                                     <td><fmt:formatDate value="${result.stockChangeTime}" pattern="yyyy/MM/dd"/></td>
                                     <td>${result.orderCode}</td>
                                     <td>${result.outerOrderCode}</td>
-                                    <td>${result.code}</td>
+                                    <td>${result.skuCode}</td>
                                     <td>${result.materialCode}</td>
-                                    <td>${result.name}</td>
+                                    <td>${result.skuName}</td>
                                     <td>${result.quantity}</td>
                                     <td>${result.invoiceTCode}</td>
                                     <td>${result.invoiceCode}</td>
@@ -175,6 +173,7 @@
 <script src="/resources/plugins/datatables/media/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/resources/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.js" type="text/javascript"></script>
 
+<script src="/resources/scripts/common/common.js" type="text/javascript"></script>
 <script src="/resources/scripts/financial/stock-move-details.js" type="text/javascript"></script>
 <script>
     jQuery(document).ready(function () {

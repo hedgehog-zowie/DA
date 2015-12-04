@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -55,17 +56,18 @@ public class BuriedPointServiceImpl implements BuriedPointService {
             BuriedPoint nBuriedPoint = iterator.next();
             buriedPointList.add(nBuriedPoint);
         }
+        Collections.sort(buriedPointList);
         return buriedPointList;
     }
 
     @Override
-    public boolean addBuriedPoint(BuriedPoint buriedPoint) {
+    public void addBuriedPoint(BuriedPoint buriedPoint) throws Exception {
         buriedPoint.setBasicInfoForCreate(accountService.getCurrentUser().getLoginName());
-        return saveBuriedPoint(buriedPoint);
+        saveBuriedPoint(buriedPoint);
     }
 
     @Override
-    public boolean updateBuriedPoint(BuriedPoint buriedPoint) {
+    public void updateBuriedPoint(BuriedPoint buriedPoint) throws Exception {
         BuriedPoint oldBuriedPoint = getById(buriedPoint.getId());
         if (oldBuriedPoint != null) {
             buriedPoint.setCreateBy(oldBuriedPoint.getCreateBy());
@@ -73,11 +75,11 @@ public class BuriedPointServiceImpl implements BuriedPointService {
             buriedPoint.setStatus(oldBuriedPoint.getStatus());
             buriedPoint.setBasicInfoForUpdate(accountService.getCurrentUser().getLoginName());
         }
-        return saveBuriedPoint(buriedPoint);
+        saveBuriedPoint(buriedPoint);
     }
 
     @Override
-    public boolean deleteBuriedPoint(String ids) {
+    public void deleteBuriedPoint(String ids) throws Exception {
         List<BuriedPoint> buriedPointList = new ArrayList<>();
         try {
             String[] idArray = ids.split(",");
@@ -90,15 +92,15 @@ public class BuriedPointServiceImpl implements BuriedPointService {
                     buriedPointList.add(buriedPoint);
                 }
             }
+            buriedPointRepository.save(buriedPointList);
         } catch (Exception e) {
             logger.error("logic delete buriedPoint error. msg: {}", e.getLocalizedMessage());
-            return false;
+            throw new Exception(e);
         }
-        return saveBuriedPoint(buriedPointList);
     }
 
     @Override
-    public boolean enableBuriedPoint(String ids){
+    public void enableBuriedPoint(String ids) throws Exception {
         List<BuriedPoint> buriedPointList = new ArrayList<>();
         try {
             String[] idArray = ids.split(",");
@@ -107,20 +109,19 @@ public class BuriedPointServiceImpl implements BuriedPointService {
                     continue;
                 BuriedPoint buriedPoint = getById(Long.parseLong(id));
                 if (buriedPoint != null) {
-                    buriedPoint.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
                     buriedPoint.setBasicInfoForUpdate(accountService.getCurrentUser().getLoginName());
                     buriedPointList.add(buriedPoint);
                 }
             }
+            saveBuriedPoint(buriedPointList);
         } catch (Exception e) {
             logger.error("enable buriedPoint error. msg: {}", e.getLocalizedMessage());
-            return false;
+            throw new Exception(e);
         }
-        return saveBuriedPoint(buriedPointList);
     }
 
     @Override
-    public boolean disableBuriedPoint(String ids){
+    public void disableBuriedPoint(String ids) throws Exception {
         List<BuriedPoint> buriedPointList = new ArrayList<>();
         try {
             String[] idArray = ids.split(",");
@@ -129,36 +130,34 @@ public class BuriedPointServiceImpl implements BuriedPointService {
                     continue;
                 BuriedPoint buriedPoint = getById(Long.parseLong(id));
                 if (buriedPoint != null) {
+                    buriedPoint.setBasicInfoForUpdate(accountService.getCurrentUser().getLoginName());
                     buriedPoint.setStatus(ConfigConstants.STATUS_FLAG_INVALID);
-                    buriedPoint.setBasicInfoForUpdate(accountService.getCurrentUser().getLoginName());
                     buriedPointList.add(buriedPoint);
                 }
             }
+            buriedPointRepository.save(buriedPointList);
         } catch (Exception e) {
             logger.error("enable buriedPoint error. msg: {}", e.getLocalizedMessage());
-            return false;
+            throw new Exception(e);
         }
-        return saveBuriedPoint(buriedPointList);
     }
 
-    private boolean saveBuriedPoint(BuriedPoint buriedPoint) {
+    private void saveBuriedPoint(BuriedPoint buriedPoint) throws Exception {
         try {
             buriedPointRepository.save(buriedPoint);
         } catch (Exception e) {
-            logger.error(e.getLocalizedMessage());
-            return false;
+            logger.error("save buriedPoint error, msg: ", e.getLocalizedMessage());
+            throw new Exception(e);
         }
-        return true;
     }
 
-    private boolean saveBuriedPoint(List<BuriedPoint> buriedPointList) {
+    private void saveBuriedPoint(List<BuriedPoint> buriedPointList) throws Exception {
         try {
             buriedPointRepository.save(buriedPointList);
         } catch (Exception e) {
-            logger.error(e.getLocalizedMessage());
-            return false;
+            logger.error("save buriedPointList error, msg: ", e.getLocalizedMessage());
+            throw new Exception(e);
         }
-        return true;
     }
 
     /**
@@ -200,4 +199,5 @@ public class BuriedPointServiceImpl implements BuriedPointService {
         }
         return booleanExpression;
     }
+
 }

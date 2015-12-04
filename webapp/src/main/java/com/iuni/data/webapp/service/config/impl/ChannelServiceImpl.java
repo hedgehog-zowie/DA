@@ -152,8 +152,8 @@ public class ChannelServiceImpl implements ChannelService {
                     continue;
                 Channel channel = getById(Long.parseLong(id));
                 if (channel != null) {
-                    channel.setStatus(ConfigConstants.STATUS_FLAG_INVALID);
                     channel.setBasicInfoForUpdate(accountService.getCurrentUser().getLoginName());
+                    channel.setStatus(ConfigConstants.STATUS_FLAG_INVALID);
                     channelList.add(channel);
                 }
             }

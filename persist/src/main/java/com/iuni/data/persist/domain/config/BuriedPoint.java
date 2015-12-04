@@ -2,6 +2,7 @@ package com.iuni.data.persist.domain.config;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.*;
 
@@ -13,7 +14,7 @@ import java.util.*;
  */
 @Entity
 @Table(name = "IUNI_DA_BURIED_POINT")
-public class BuriedPoint extends AbstractConfig {
+public class BuriedPoint extends AbstractConfig implements Comparable<BuriedPoint>{
 
     @Column(name = "WEBSITE_CODE")
     private String websiteCode;
@@ -33,16 +34,20 @@ public class BuriedPoint extends AbstractConfig {
     @Column(name = "POINT_TYPE")
     private Integer pointType;
 
+    @OneToMany(mappedBy = "buriedPoint")
+    private List<BuriedRelation> buriedRelations;
+
     @Override
     public String toString() {
-        return "BuriedPoint{" +
-                "websiteCode='" + websiteCode + '\'' +
-                ", website='" + website + '\'' +
-                ", pageName='" + pageName + '\'' +
-                ", pagePosition='" + pagePosition + '\'' +
-                ", pointFlag='" + pointFlag + '\'' +
-                ", pointType=" + pointType +
-                '}';
+        return websiteCode + ">" + website + ">" + pageName + ">" + pagePosition + ">" + pointFlag;
+//        return "BuriedPoint{" +
+//                "websiteCode='" + websiteCode + '\'' +
+//                ", website='" + website + '\'' +
+//                ", pageName='" + pageName + '\'' +
+//                ", pagePosition='" + pagePosition + '\'' +
+//                ", pointFlag='" + pointFlag + '\'' +
+//                ", pointType=" + pointType +
+//                '}';
     }
 
     public String getWebsiteCode() {
@@ -93,6 +98,14 @@ public class BuriedPoint extends AbstractConfig {
         this.pointType = pointType;
     }
 
+    public List<BuriedRelation> getBuriedRelations() {
+        return buriedRelations;
+    }
+
+    public void setBuriedRelations(List<BuriedRelation> buriedRelations) {
+        this.buriedRelations = buriedRelations;
+    }
+
     public static Map<String, String> generateTableHeader() {
         Map<String, String> tableHeader = new LinkedHashMap<>();
         tableHeader.put("站点编码", "websiteCode");
@@ -119,6 +132,11 @@ public class BuriedPoint extends AbstractConfig {
             tableData.add(rowData);
         }
         return tableData;
+    }
+
+    @Override
+    public int compareTo(BuriedPoint o) {
+        return this.getPointFlag().compareTo(o.getPointFlag());
     }
 
 }

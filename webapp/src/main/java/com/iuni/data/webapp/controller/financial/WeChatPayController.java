@@ -57,8 +57,8 @@ public class WeChatPayController {
         WeChatPayQueryDto queryParam = JsonUtils.fromJson(queryParamStr, WeChatPayQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
-            String fileName = new String(("微信支付对账报表(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
+            String fileName = new String(("微信支付对账报表(" + queryParam.getDateRangeString() + ")").getBytes(), "ISO8859-1");
+            response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + ".xlsx\"");
 
             queryParam.parseDateRangeString();
             List<WeChatPayTableDto> resultList = weChatPayService.selectWeChatPay(queryParam);

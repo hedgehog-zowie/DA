@@ -26,7 +26,7 @@
         <result property="invoiceAmount" column="invoiceAmount"/>
         <result property="orderStatus" column="orderStatus"/>
         <result property="signedTime" column="signedTime"/>
-        <result property="name" column="name"/>
+        <result property="skuName" column="skuName"/>
         <result property="quantity" column="quantity"/>
         <result property="unitPrice" column="unitPrice"/>
         <result property="goodsAmount" column="goodsAmount"/>
@@ -78,7 +78,7 @@
         end "orderStatus",
         IWSO.WEIGHT "weight",
         IWSOL.OP_TIME "signedTime",
-        IWSOG.SKU_NAME "name",
+        IWSOG.SKU_NAME "skuName",
         IWSOG.QUANTITY "quantity",
         IWSOG.UNIT_PRICE "unitPrice",
         IWSOG.SUBTOTAL_PRICE "goodsAmount"
@@ -110,7 +110,7 @@
         <result property="orderCode" column="orderCode"/>
         <result property="outerOrderCode" column="outerOrderCode"/>
         <result property="materialCode" column="materialCode"/>
-        <result property="name" column="name"/>
+        <result property="skuName" column="skuName"/>
         <result property="quantity" column="quantity"/>
         <result property="invoiceAmount" column="invoiceAmount"/>
     </resultMap>
@@ -125,9 +125,9 @@
         IWSO.DELIVERY_CODE "deliveryCode",
         -SUM(IWSC.QUANTITY) "quantity",
         IWSO.INVOICE_AMOUNT "invoiceAmount",
-        IWS.SKU_CODE "code",
+        IWS.SKU_CODE "skuCode",
         IWS.MATERIAL_CODE "materialCode",
-        IWS.SKU_NAME "name",
+        IWS.SKU_NAME "skuName",
         IWW.WARES_NAME "goodsName",
         IWSO.INVOICE_TCODE "invoiceTcode",
         IWSO.INVOICE_CODE "invoiceCode"
@@ -404,10 +404,10 @@
         <result property="orderCode" column="orderCode"/>
         <result property="outerOrderCode" column="outerOrderCode"/>
         <result property="deliveryCode" column="deliveryCode"/>
-        <result property="code" column="code"/>
+        <result property="skuCode" column="skuCode"/>
         <result property="materialCode" column="materialCode"/>
         <result property="goodsName" column="goodsName"/>
-        <result property="name" column="name"/>
+        <result property="skuName" column="skuName"/>
         <result property="quantity" column="quantity"/>
         <result property="invoiceTCode" column="invoiceTCode"/>
         <result property="invoiceCode" column="invoiceCode"/>
@@ -429,9 +429,9 @@
         ELSE
         0
         END "invoiceAmount",
-        IWS.SKU_CODE "code",
+        IWS.SKU_CODE "skuCode",
         IWS.MATERIAL_CODE "materialCode",
-        IWS.SKU_NAME "name",
+        IWS.SKU_NAME "skuName",
         IWW.WARES_NAME "goodsName",
         IWSO.INVOICE_TCODE "invoiceTcode",
         IWSO.INVOICE_CODE "invoiceCode",
@@ -495,8 +495,8 @@
         <result property="addTime" column="ADD_TIME"/>
         <result property="shippingTime" column="SHIPPING_TIME"/>
         <result property="paymentConfirmTime" column="PAYMENT_CONFIRM_TIME"/>
-        <result property="code" column="SKU_CODE"/>
-        <result property="name" column="SKU_NAME"/>
+        <result property="skuCode" column="SKU_CODE"/>
+        <result property="skuName" column="SKU_NAME"/>
         <result property="materialCode" column="MATERIAL_CODE"/>
     </resultMap>
     <select id="selectBigOrderDetails" parameterType="com.iuni.data.persist.model.financial.BigOrderDetailsQueryDto"

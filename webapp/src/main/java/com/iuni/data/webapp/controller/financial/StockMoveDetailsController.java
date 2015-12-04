@@ -58,8 +58,8 @@ public class StockMoveDetailsController {
         StockMoveDetailsQueryDto queryParam = JsonUtils.fromJson(queryParamStr, StockMoveDetailsQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
-            String fileName = new String(("销售出库明细报表(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
+            String fileName = new String(("销售出库明细报表(" + queryParam.getDateRangeString() + ")").getBytes(), "ISO8859-1");
+            response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + ".xlsx\"");
 
             queryParam.parseDateRangeString();
             List<StockMoveDetailsTableDto> resultList = stockService.selectStockMoveDetails(queryParam);

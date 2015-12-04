@@ -75,6 +75,9 @@
                                 </div>
                                 <div class="col-md-0 pull-right">
                                     <button id="query-button" type="submit" class="btn green">查询</button>
+                                    <button id="financial-stock-details-table-export" class="btn green">
+                                        导出 <i class="fa fa-file"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -88,11 +91,6 @@
 
                 <!-- Tabs within a box -->
                 <ul class="nav nav-tabs pull-right" id="financial-stock-details-tab">
-                    <li>
-                        <button id="financial-stock-details-table-export" class="btn green">
-                            导出 <i class="fa fa-file"></i>
-                        </button>
-                    </li>
                     <li class="pull-left header"><i class="fa fa-inbox"></i> 库存明细</li>
                 </ul>
                 <div class="tab-content no-padding">
@@ -118,9 +116,9 @@
                                 <tr class="odd gradeX">
                                     <td><fmt:formatDate value="${result.date}" pattern="yyyy/MM/dd"/></td>
                                     <td>${result.wareHouse}</td>
-                                    <td>${result.code}</td>
+                                    <td>${result.skuCode}</td>
                                     <td>${result.materialCode}</td>
-                                    <td>${result.name}</td>
+                                    <td>${result.skuName}</td>
                                     <td>${result.measureUnit}</td>
                                     <td>${result.acceptedGoods}</td>
                                     <td>${result.defectiveGoods}</td>
@@ -163,6 +161,7 @@
 <script src="/resources/plugins/datatables/media/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/resources/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.js" type="text/javascript"></script>
 
+<script src="/resources/scripts/common/common.js" type="text/javascript"></script>
 <script src="/resources/scripts/financial/stock-details.js" type="text/javascript"></script>
 <script>
     jQuery(document).ready(function () {

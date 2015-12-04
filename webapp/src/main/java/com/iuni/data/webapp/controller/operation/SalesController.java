@@ -77,10 +77,13 @@ public class SalesController {
         SalesQueryDto queryParam = JsonUtils.fromJson(queryParamStr, SalesQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
-            String fileName = new String(("商品销售报表(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
+            String fileName = new String(("商品销售报表(" + queryParam.getDateRangeString() + ")").getBytes(), "ISO8859-1");
+            response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + ".xlsx\"");
 
+            // 解析参数
             queryParam.parseDateRangeString();
+            queryParam.parseOrderSource();
+            queryParam.parseSku();
             List<SalesTableDto> resultList = salesService.selectSales(queryParam);
 
             List<ExcelUtils.SheetData> sheetDataList = new ArrayList<>();

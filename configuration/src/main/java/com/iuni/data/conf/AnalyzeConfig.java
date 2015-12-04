@@ -21,8 +21,8 @@ public class AnalyzeConfig {
     public static final String NEWLINE = System.getProperty("line.separator", "\n");
 
     public AnalyzeConfig(Map<String, String> properties) {
-        agentConfigMap = new HashMap<String, AgentConfiguration>();
-        errors = new LinkedList<ConfigurationError>();
+        agentConfigMap = new HashMap<>();
+        errors = new LinkedList<>();
         for (String name : properties.keySet()) {
             String value = properties.get(name);
 
@@ -112,8 +112,8 @@ public class AnalyzeConfig {
         private AgentConfiguration(String agentName, List<ConfigurationError> errorList) {
             this.agentName = agentName;
             this.errorList = errorList;
-            this.analyzeConfigMap = new HashMap<String, ComponentConfiguration>();
-            this.analyzeContextMap = new HashMap<String, Context>();
+            this.analyzeConfigMap = new HashMap<>();
+            this.analyzeContextMap = new HashMap<>();
         }
 
         public Map<String, ComponentConfiguration> getAnalyzeConfigMap() {

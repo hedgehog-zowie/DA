@@ -29,7 +29,7 @@ var BuriedPointTable = function () {
             },
 
             "bProcessing": true,
-            "bStateSave": true, // save datatable state(pagination, sort, etc) in cookie.
+            "bStateSave": false, // save datatable state(pagination, sort, etc) in cookie.
 
             "lengthMenu": [
                 [5, 15, 30, -1],
@@ -86,7 +86,6 @@ var BuriedPointTable = function () {
 
         $('#table_buried_point_new').click(function (e) {
             e.preventDefault();
-            //postAjax("config/buriedPoint/add");
             location.href = "/config/buriedPoint/add";
         });
 
@@ -98,7 +97,11 @@ var BuriedPointTable = function () {
                     ids += $(this).val() + ",";
                 return ids;
             });
-            location.href = "/config/buriedPoint/delete?ids=" + ids.substring(0, ids.length - 1);
+            if (ids == undefined || ids == null || ids == "")
+                swal("请勾选需要删除的数据！", "", "info");
+            else
+                deleteData("/config/buriedPoint/delete", {ids: ids}, "/config/buriedPoint");
+            //location.href = "/config/buriedPoint/delete?ids=" + ids.substring(0, ids.length - 1);
         });
 
         $('#table_buried_point_export').click(function (e) {
@@ -113,33 +116,28 @@ var BuriedPointTable = function () {
 
         buriedPointTable.on('click', '.delete', function (e) {
             e.preventDefault();
-            location.href = "/config/buriedPoint/delete?ids=" + $(this).attr("id").substring(7);
+            deleteData("/config/buriedPoint/delete", {ids: $(this).attr("id").substring(7)}, "/config/buriedPoint");
+            //location.href = "/config/buriedPoint/delete?ids=" + $(this).attr("id").substring(7);
         });
 
         buriedPointTable.on('click', '.enable', function (e) {
             e.preventDefault();
-            location.href = "/config/buriedPoint/enable?ids=" + $(this).attr("id").substring(7);
+            enableData("/config/buriedPoint/enable", {ids: $(this).attr("id").substring(7)}, "/config/buriedPoint");
+            //location.href = "/config/buriedPoint/enable?ids=" + $(this).attr("id").substring(7);
         });
 
         buriedPointTable.on('click', '.disable', function (e) {
             e.preventDefault();
-            location.href = "/config/buriedPoint/disable?ids=" + $(this).attr("id").substring(8);
+            disableData("/config/buriedPoint/disable", {ids: $(this).attr("id").substring(8)}, "/config/buriedPoint");
+            //location.href = "/config/buriedPoint/disable?ids=" + $(this).attr("id").substring(8);
         });
-
     }
 
     return {
 
         //main function to initiate the module
         init: function () {
-            activeMenu();
-
-            // set right height
-            $(".content-wrapper, .right-side").css('min-height', 516);
-
-            if (!jQuery().dataTable) {
-                return;
-            }
+            activeMenu('/config/buriedPoint');
             initTable();
         }
 
@@ -248,7 +246,8 @@ var BuriedPointFormValidation = function () {
             submitHandler: function (form) {
                 buriedPointSuccess.show();
                 buriedPointError.hide();
-                form.submit(); // submit the form
+                saveData("/config/buriedPoint/save", buriedPointForm.serialize(), "/config/buriedPoint");
+                //form.submit(); // submit the form
             }
         });
 
@@ -266,16 +265,10 @@ var BuriedPointFormValidation = function () {
     return {
         //main function to initiate the module
         init: function () {
-            activeMenu();
+            activeMenu('/config/buriedPoint');
             handleValidation();
         }
 
     };
 
 }();
-
-var activeMenu = function () {
-    $(".treeview-menu [href='/config/buriedPoint']").parents("li:eq(0)").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/config/buriedPoint']").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/config/buriedPoint']").parents("li:eq(0)").addClass("active");
-}

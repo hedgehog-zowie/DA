@@ -6,6 +6,7 @@ import com.iuni.data.persist.domain.config.ChannelType;
 import com.iuni.data.utils.ExcelUtils;
 import com.iuni.data.utils.GenerateShortUrlUtils;
 import com.iuni.data.webapp.common.PageName;
+import com.iuni.data.webapp.common.ResultOfAjax;
 import com.iuni.data.webapp.service.config.ChannelService;
 import com.iuni.data.webapp.service.config.ChannelTypeService;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -48,10 +49,10 @@ public class ChannelConfigController {
     public ModelAndView listChannel() {
         List<Channel> channelList;
         Channel channel = new Channel();
-        // 0 表示有效
+
         channel.setCancelFlag(ConfigConstants.LOGICAL_CANCEL_FLAG_NOT_CANCEL);
-//        channel.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
         channelList = channelService.listChannel(channel);
+
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.config_channel.getPath());
         modelAndView.addObject("channelList", channelList);
@@ -98,16 +99,25 @@ public class ChannelConfigController {
      * @return
      */
     @RequestMapping("/save")
-    public String saveChannel(@ModelAttribute("channel") Channel channel) {
+    @ResponseBody
+    public ResultOfAjax saveChannel(@ModelAttribute("channel") Channel channel) {
         logger.info("save channel: {}", channel.toString());
-        ChannelType channelType =channelTypeService.getById(channel.getChannelType().getId());
+        ChannelType channelType = channelTypeService.getById(channel.getChannelType().getId());
         channel.setCode(String.valueOf(channelType.getCode()) + String.valueOf(channel.getChannelSerial()) + String.valueOf(channel.getActiveDate()));
         channel.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
-        if (channel.getId() == 0)
-            channelService.addChannel(channel);
-        else
-            channelService.updateChannel(channel);
-        return "redirect:/config/channel";
+        ResultOfAjax result = new ResultOfAjax();
+        try {
+            if (channel.getId() == 0)
+                channelService.addChannel(channel);
+            else
+                channelService.updateChannel(channel);
+            result.setCode(ResultOfAjax.CODE_SUCCEED);
+            result.setMsg("成功");
+        } catch (Exception e) {
+            result.setCode(ResultOfAjax.CODE_FAILED);
+            result.setMsg(e.getLocalizedMessage());
+        }
+        return result;
     }
 
     /**
@@ -117,10 +127,19 @@ public class ChannelConfigController {
      * @return
      */
     @RequestMapping("/delete")
-    public String deleteChannel(@RequestParam(value = "ids", required = true) String ids) {
+    @ResponseBody
+    public ResultOfAjax deleteChannel(@RequestParam(value = "ids", required = true) String ids) {
         logger.info("delete channel. ids: {}", ids);
-        channelService.deleteChannel(ids);
-        return "redirect:/config/channel";
+        ResultOfAjax result = new ResultOfAjax();
+        try {
+            channelService.deleteChannel(ids);
+            result.setCode(ResultOfAjax.CODE_SUCCEED);
+            result.setMsg("成功");
+        } catch (Exception e) {
+            result.setCode(ResultOfAjax.CODE_FAILED);
+            result.setMsg(e.getLocalizedMessage());
+        }
+        return result;
     }
 
     /**
@@ -129,10 +148,19 @@ public class ChannelConfigController {
      * @return
      */
     @RequestMapping("/enable")
-    public String enableChannel(@RequestParam(value = "ids", required = true) String ids) {
+    @ResponseBody
+    public ResultOfAjax enableChannel(@RequestParam(value = "ids", required = true) String ids) {
         logger.info("enable channel. ids: {}", ids);
-        channelService.enableChannel(ids);
-        return "redirect:/config/channel";
+        ResultOfAjax result = new ResultOfAjax();
+        try {
+            channelService.enableChannel(ids);
+            result.setCode(ResultOfAjax.CODE_SUCCEED);
+            result.setMsg("成功");
+        } catch (Exception e) {
+            result.setCode(ResultOfAjax.CODE_FAILED);
+            result.setMsg(e.getLocalizedMessage());
+        }
+        return result;
     }
 
     /**
@@ -141,10 +169,19 @@ public class ChannelConfigController {
      * @return
      */
     @RequestMapping("/disable")
-    public String disableChannel(@RequestParam(value = "ids", required = true) String ids) {
+    @ResponseBody
+    public ResultOfAjax disableChannel(@RequestParam(value = "ids", required = true) String ids) {
         logger.info("disable channel. ids: {}", ids);
-        channelService.disableChannel(ids);
-        return "redirect:/config/channel";
+        ResultOfAjax result = new ResultOfAjax();
+        try {
+            channelService.disableChannel(ids);
+            result.setCode(ResultOfAjax.CODE_SUCCEED);
+            result.setMsg("成功");
+        } catch (Exception e) {
+            result.setCode(ResultOfAjax.CODE_FAILED);
+            result.setMsg(e.getLocalizedMessage());
+        }
+        return result;
     }
 
     /**
@@ -207,13 +244,14 @@ public class ChannelConfigController {
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
             String fileName = new String(("渠道列表").getBytes(), "ISO8859-1");
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");// 组装附件名称和格式
+            response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + ".xlsx\"");// 组装附件名称和格式
 
             List<Channel> channelList;
             Channel channel = new Channel();
-            // 0 表示有效
+
             channel.setCancelFlag(ConfigConstants.LOGICAL_CANCEL_FLAG_NOT_CANCEL);
             channel.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
+
             channelList = channelService.listChannel(channel);
 
             List<ExcelUtils.SheetData> sheetDataList = new ArrayList<>();

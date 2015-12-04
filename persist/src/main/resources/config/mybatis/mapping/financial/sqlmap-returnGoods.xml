@@ -9,7 +9,7 @@
         <result property="outerOrderCode" column="outerOrderCode"/>
         <result property="addTime" column="addTime"/>
         <result property="logTime" column="logTime"/>
-        <result property="code" column="code"/>
+        <result property="skuCode" column="skuCode"/>
         <result property="materialCode" column="materialCode"/>
         <result property="goodsName" column="goodsName"/>
         <result property="goodsNum" column="goodsNum"/>
@@ -59,7 +59,7 @@
         else
         IOI.ORDER_STATUS
         end "orderStatus",
-        IWSK.SKU_CODE "code",
+        IWSK.SKU_CODE "skuCode",
         IWSK.MATERIAL_CODE "materialCode",
         IOI.OSN "osn",
         IOI.BOUNDSID "boundsId"

@@ -4,16 +4,14 @@ import com.iuni.data.persist.domain.ConfigConstants;
 import com.iuni.data.persist.domain.config.BuriedPoint;
 import com.iuni.data.utils.ExcelUtils;
 import com.iuni.data.webapp.common.PageName;
+import com.iuni.data.webapp.common.ResultOfAjax;
 import com.iuni.data.webapp.service.config.BuriedPointService;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
@@ -42,11 +40,11 @@ public class BuriedPointConfigController {
     @RequestMapping
     public ModelAndView listBuriedPoint() {
         List<BuriedPoint> buriedPointList;
+
         BuriedPoint buriedPoint = new BuriedPoint();
-        // 0 表示有效
         buriedPoint.setCancelFlag(ConfigConstants.LOGICAL_CANCEL_FLAG_NOT_CANCEL);
-//        buriedPoint.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
         buriedPointList = buriedPointService.listBuriedPoint(buriedPoint);
+
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.config_buriedPoint.getPath());
         modelAndView.addObject("buriedPointList", buriedPointList);
@@ -74,28 +72,36 @@ public class BuriedPointConfigController {
         return addOrEditBuriedPoint(buriedPointService.getById(id));
     }
 
-    private ModelAndView addOrEditBuriedPoint(BuriedPoint buriedPoint){
+    private ModelAndView addOrEditBuriedPoint(BuriedPoint buriedPoint) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName(PageName.config_buriedPoint_edit.getPath());
-
         modelAndView.addObject("buriedPoint", buriedPoint);
         return modelAndView;
     }
 
     /**
-     * 保存渠道
+     * 保存
      *
      * @return
      */
     @RequestMapping(value = "/save", method = RequestMethod.POST)
-    public String saveBuriedPoint(@ModelAttribute("buriedPoint") BuriedPoint buriedPoint) {
+    @ResponseBody
+    public ResultOfAjax saveBuriedPoint(@ModelAttribute("buriedPoint") BuriedPoint buriedPoint) {
         logger.info("save buriedPoint: {}", buriedPoint.toString());
         buriedPoint.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
-        if (buriedPoint.getId() == 0)
-            buriedPointService.addBuriedPoint(buriedPoint);
-        else
-            buriedPointService.updateBuriedPoint(buriedPoint);
-        return "redirect:/config/buriedPoint";
+        ResultOfAjax result = new ResultOfAjax();
+        try {
+            if (buriedPoint.getId() == 0)
+                buriedPointService.addBuriedPoint(buriedPoint);
+            else
+                buriedPointService.updateBuriedPoint(buriedPoint);
+            result.setCode(ResultOfAjax.CODE_SUCCEED);
+            result.setMsg("成功");
+        } catch (Exception e) {
+            result.setCode(ResultOfAjax.CODE_FAILED);
+            result.setMsg(e.getLocalizedMessage());
+        }
+        return result;
     }
 
     /**
@@ -105,32 +111,61 @@ public class BuriedPointConfigController {
      * @return
      */
     @RequestMapping("/delete")
-    public String deleteBuriedPoint(@RequestParam(value = "ids", required = true) String ids) {
+    @ResponseBody
+    public ResultOfAjax deleteBuriedPoint(@RequestParam(value = "ids", required = true) String ids) {
         logger.info("delete buriedPoint. ids: {}", ids);
-        buriedPointService.deleteBuriedPoint(ids);
-        return "redirect:/config/buriedPoint";
+        ResultOfAjax result = new ResultOfAjax();
+        try {
+            buriedPointService.deleteBuriedPoint(ids);
+            result.setCode(ResultOfAjax.CODE_SUCCEED);
+            result.setMsg("成功");
+        } catch (Exception e) {
+            result.setCode(ResultOfAjax.CODE_FAILED);
+            result.setMsg(e.getLocalizedMessage());
+        }
+        return result;
     }
 
     /**
      * 启用
+     *
      * @return
      */
     @RequestMapping("/enable")
-    public String enableBuriedPoint(@RequestParam(value = "ids", required = true) String ids){
+    @ResponseBody
+    public ResultOfAjax enableBuriedPoint(@RequestParam(value = "ids", required = true) String ids) {
         logger.info("enable buriedPoint. ids: {}", ids);
-        buriedPointService.enableBuriedPoint(ids);
-        return "redirect:/config/buriedPoint";
+        ResultOfAjax result = new ResultOfAjax();
+        try {
+            buriedPointService.enableBuriedPoint(ids);
+            result.setCode(ResultOfAjax.CODE_SUCCEED);
+            result.setMsg("成功");
+        } catch (Exception e) {
+            result.setCode(ResultOfAjax.CODE_FAILED);
+            result.setMsg(e.getLocalizedMessage());
+        }
+        return result;
     }
 
     /**
      * 禁用
+     *
      * @return
      */
     @RequestMapping("/disable")
-    public String disableBuriedPoint(@RequestParam(value = "ids", required = true) String ids){
+    @ResponseBody
+    public ResultOfAjax disableBuriedPoint(@RequestParam(value = "ids", required = true) String ids) {
         logger.info("disable buriedPoint. ids: {}", ids);
-        buriedPointService.disableBuriedPoint(ids);
-        return "redirect:/config/buriedPoint";
+        ResultOfAjax result = new ResultOfAjax();
+        try {
+            buriedPointService.disableBuriedPoint(ids);
+            result.setCode(ResultOfAjax.CODE_SUCCEED);
+            result.setMsg("成功");
+        } catch (Exception e) {
+            result.setCode(ResultOfAjax.CODE_FAILED);
+            result.setMsg(e.getLocalizedMessage());
+        }
+        return result;
     }
 
     /**
@@ -144,17 +179,23 @@ public class BuriedPointConfigController {
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
             String fileName = new String(("埋点列表").getBytes(), "ISO8859-1");
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");// 组装附件名称和格式
+            response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + ".xlsx\"");// 组装附件名称和格式
 
             List<BuriedPoint> buriedPointList;
             BuriedPoint buriedPoint = new BuriedPoint();
-            // 0 表示有效
+
             buriedPoint.setCancelFlag(ConfigConstants.LOGICAL_CANCEL_FLAG_NOT_CANCEL);
             buriedPoint.setStatus(ConfigConstants.STATUS_FLAG_EFFECTIVE);
             buriedPointList = buriedPointService.listBuriedPoint(buriedPoint);
 
+            // test 10000
+            List<BuriedPoint> newList = new ArrayList<>(buriedPointList);
+            for (int i = 0; i < 7000; i++) {
+                newList.addAll(buriedPointList);
+            }
+
             List<ExcelUtils.SheetData> sheetDataList = new ArrayList<>();
-            sheetDataList.add(new ExcelUtils.SheetData("埋点列表", BuriedPoint.generateTableHeader(), BuriedPoint.generateTableData(buriedPointList)));
+            sheetDataList.add(new ExcelUtils.SheetData("埋点列表", BuriedPoint.generateTableHeader(), BuriedPoint.generateTableData(newList)));
             SXSSFWorkbook wb = ExcelUtils.generateExcelWorkBook(sheetDataList);
             wb.write(response.getOutputStream());
 

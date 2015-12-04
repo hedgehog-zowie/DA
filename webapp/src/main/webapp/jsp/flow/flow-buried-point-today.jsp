@@ -13,11 +13,6 @@
     <link href="/resources/plugins/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css"/>
     <!-- FontAwesome 4.3.0 -->
     <link href="/resources/plugins/font-awesome/css/font-awesome.css" rel="stylesheet" type="text/css"/>
-    <!-- Theme style -->
-    <link href="/resources/css/AdminLTE.css" rel="stylesheet" type="text/css"/>
-    <!-- AdminLTE Skins. Choose a skin from the css/skins
-         folder instead of downloading all of them to reduce the load. -->
-    <link href="/resources/css/skins/_all-skins.css" rel="stylesheet" type="text/css"/>
 
     <link href="/resources/css/components.css" rel="stylesheet" type="text/css"/>
 
@@ -27,6 +22,12 @@
 
     <link href="/resources/plugins/echarts/css/carousel.css" rel="stylesheet" type="text/css">
     <link href="/resources/plugins/echarts/css/echartsHome.css" rel="stylesheet" type="text/css">
+
+    <!-- Theme style -->
+    <link href="/resources/css/AdminLTE.css" rel="stylesheet" type="text/css"/>
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+    <link href="/resources/css/skins/_all-skins.css" rel="stylesheet" type="text/css"/>
 </head>
 <body class="skin-blue sidebar-mini">
 <div class="wrapper">
@@ -48,15 +49,61 @@
         <!-- Main content -->
         <section class="content">
 
+            <div class="portlet box grey">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-bookmark"></i> 查询条件
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <input hidden id="buriedGroupId" value="${queryParam.buriedGroupId}">
+                    <form:form id="form_activity_channel" class="form-horizontal" action="/flow/buriedPoint/today/query"
+                               method="post"
+                               modelAttribute="queryParam">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">统计日期:</label>
+
+                                        <div class="col-md-9">
+                                            <form:input readonly="true" type="text" class="form-control"
+                                                        id="daterangepicker"
+                                                        value="${queryParam.dateRangeString}" path="dateRangeString"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">埋点组:</label>
+
+                                        <div class="col-md-9">
+                                            <form:select id="selectBuriedGroup" class="form-control select2"
+                                                         path="buriedGroupId"
+                                                         data-placeholder="请选择埋点组，不选默认为全选"
+                                                         value="${queryParam.buriedGroupId}">
+                                                <form:options items="${buriedGroupList}" itemValue="id" itemLabel="name"/>
+                                            </form:select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-0 pull-right">
+                                    <button id="query-button" type="submit" class="btn green">查询</button>
+                                    <button id="flow-buried-point-table-export" class="btn green">
+                                        导出 <i class="fa fa-file"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form:form>
+                </div>
+            </div>
+            <!-- /.form group -->
+
             <!-- Custom tabs (Charts with tabs)-->
             <div class="nav-tabs-custom portlet box grey">
                 <!-- Tabs within a box -->
                 <ul class="nav nav-tabs pull-right" id="flow-buried-point-tab">
-                    <li>
-                        <button id="flow-buried-point-table-export" class="btn green">
-                            导出 <i class="fa fa-file"></i>
-                        </button>
-                    </li>
                     <li class="pull-left header"><i class="fa fa-inbox"></i> 埋点流量日实时统计</li>
                 </ul>
                 <div class="tab-content no-padding">
@@ -109,16 +156,19 @@
 <script src="/resources/scripts/common/jquery.min.js" type="text/javascript"></script>
 <!-- Bootstrap 3.3.2 JS -->
 <script src="/resources/plugins/bootstrap/scripts/bootstrap.js" type="text/javascript"></script>
+<!-- Select2 -->
+<script src="/resources/plugins/select2/select2.full.js" type="text/javascript"></script>
+<script src="/resources/plugins/select2/i18n/zh-CN.js" type="text/javascript"></script>
 <!-- FastClick -->
 <script src="/resources/plugins/fastclick/fastclick.js" type="text/javascript"></script>
 <!-- AdminLTE App -->
 <script src="/resources/scripts/app.js" type="text/javascript"></script>
 
 <!-- dataTable -->
-<script src="/resources/plugins/select2/select2.js" type="text/javascript"></script>
 <script src="/resources/plugins/datatables/media/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/resources/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.js" type="text/javascript"></script>
 
+<script src="/resources/scripts/common/common.js" type="text/javascript"></script>
 <script src="/resources/scripts/flow/flow-buried-point.js" type="text/javascript"></script>
 <!-- ECharts单文件引入 -->
 <script src="/resources/plugins/echarts/echarts.js" type="text/javascript"></script>

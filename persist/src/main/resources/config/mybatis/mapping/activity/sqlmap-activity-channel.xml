@@ -209,7 +209,7 @@
     <select id="selectPVByActivityChannel" resultType="com.iuni.data.persist.model.activity.ActivityChannelChartDto"
             parameterType="com.iuni.data.persist.model.activity.ActivityChannelQueryDto">
         SELECT IDC.NAME "name", SUM(IDW.PV) "value"
-        FROM IUNI_DA_WEBKPI IDW
+        FROM IUNI_DA_WEBKPI_CHANNEL IDW
         LEFT JOIN IUNI_DA_CHANNEL IDC
         ON IDW.CHANNEL_ID = IDC.ID
         WHERE 1 = 1
@@ -233,7 +233,7 @@
     <select id="selectUVByActivityChannel" resultType="com.iuni.data.persist.model.activity.ActivityChannelChartDto"
             parameterType="com.iuni.data.persist.model.activity.ActivityChannelQueryDto">
         SELECT IDC.NAME "name", SUM(IDW.UV) "value"
-        FROM IUNI_DA_WEBKPI IDW
+        FROM IUNI_DA_WEBKPI_CHANNEL IDW
         LEFT JOIN IUNI_DA_CHANNEL IDC
         ON IDW.CHANNEL_ID = IDC.ID
         WHERE 1 = 1
@@ -257,7 +257,7 @@
     <select id="selectVVByActivityChannel" resultType="com.iuni.data.persist.model.activity.ActivityChannelChartDto"
             parameterType="com.iuni.data.persist.model.activity.ActivityChannelQueryDto">
         SELECT IDC.NAME "name", SUM(IDW.VV) "value"
-        FROM IUNI_DA_WEBKPI IDW
+        FROM IUNI_DA_WEBKPI_CHANNEL IDW
         LEFT JOIN IUNI_DA_CHANNEL IDC
         ON IDW.CHANNEL_ID = IDC.ID
         WHERE 1 = 1

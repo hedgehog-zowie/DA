@@ -98,8 +98,11 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-0">
+                                <div class="col-md-0 pull-right">
                                     <button id="query-button" type="submit" class="btn green">查询</button>
+                                    <button id="activity-channel-table-export" class="btn green">
+                                        导出 <i class="fa fa-file"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -112,11 +115,6 @@
             <div class="nav-tabs-custom portlet box grey">
                 <!-- Tabs within a box -->
                 <ul class="nav nav-tabs pull-right" id="activity-channel-tab">
-                    <li>
-                        <button id="activity-channel-table-export" class="btn green">
-                            导出 <i class="fa fa-file"></i>
-                        </button>
-                    </li>
                     <li><a href="#activity-channel-chart-tab" data-toggle="tab">图</a></li>
                     <li class="active"><a href="#activity-channel-table-tab" data-toggle="tab">表</a></li>
                     <li class="pull-left header"><i class="fa fa-inbox"></i> 活动-渠道分析</li>
@@ -253,6 +251,7 @@
 <script src="/resources/plugins/daterangepicker/moment.js" type="text/javascript"></script>
 <script src="/resources/plugins/daterangepicker/daterangepicker.js" type="text/javascript"></script>
 
+<script src="/resources/scripts/common/common.js" type="text/javascript"></script>
 <script src="/resources/scripts/active/active-channel.js" type="text/javascript"></script>
 <!-- ECharts单文件引入 -->
 <script src="/resources/plugins/echarts/echarts.js" type="text/javascript"></script>

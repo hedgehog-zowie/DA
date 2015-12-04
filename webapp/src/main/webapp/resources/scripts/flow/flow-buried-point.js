@@ -1,5 +1,17 @@
 var FlowOfBuriedPointForTodayTable = function () {
 
+    var initPoint = function () {
+        $("#selectBuriedGroup").select2({
+            placeholder: "请选择埋点组，不选默认为全选",
+            allowClear: true,
+            language: "zh-CN"
+        });
+        if ($("#buriedGroupId").val() != "")
+            $("#selectBuriedGroup").val($("#buriedGroupId").val());
+        else
+            $("#selectBuriedGroup").select2("val", $("#buriedGroupId").val());
+    };
+
     var initTable = function () {
 
         var table = $('#flow-buried-point-table');
@@ -28,18 +40,19 @@ var FlowOfBuriedPointForTodayTable = function () {
                 }
             },
 
-            "bStateSave": true, // save datatable state(pagination, sort, etc) in cookie.
+            "bStateSave": false, // save datatable state(pagination, sort, etc) in cookie.
 
             "lengthMenu": [
-                [5, 15, 20, -1],
-                [5, 15, 20, "全部"] // change per page values here
+                [5, 10, 20, -1],
+                [5, 10, 20, "全部"] // change per page values here
             ],
             // set the initial value
-            "pageLength": 15,
+            "pageLength": 10,
             "pagingType": "bootstrap_full_number",
-            "order": [
-                [3, 'asc']
-            ],
+            "ordering": false,
+            //"order": [
+            //    [3, 'asc']
+            //],
         });
 
         var tableWrapper = jQuery('#flow-buried-point-table_wrapper');
@@ -48,22 +61,21 @@ var FlowOfBuriedPointForTodayTable = function () {
 
         $('#flow-buried-point-table-export').click(function (e) {
             e.preventDefault();
-            location.href = "/flow/buriedPoint/today/exportExcel";
+            var buriedGroupId = $("#selectBuriedGroup").val();
+            var queryParams = {
+                "buriedGroupId": buriedGroupId,
+            }
+            location.href = "/flow/buriedPoint/exportExcel?queryParamStr=" + JSON.stringify(queryParams);
+
         });
-    }
+    };
 
     return {
 
         //main function to initiate the module
         init: function () {
-            activeMenuForToday();
-
-            // set right height
-            $(".content-wrapper, .right-side").css('min-height', 516);
-
-            if (!jQuery().dataTable) {
-                return;
-            }
+            activeMenu('/flow/buriedPoint/today');
+            initPoint();
             initTable();
         }
 
@@ -71,13 +83,19 @@ var FlowOfBuriedPointForTodayTable = function () {
 
 }();
 
-var activeMenuForToday = function () {
-    $(".treeview-menu [href='/flow/buriedPoint/today']").parents("li:eq(0)").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/flow/buriedPoint/today']").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/flow/buriedPoint/today']").parents("li:eq(0)").addClass("active");
-}
-
 var FlowOfBuriedPointTable = function () {
+
+    var initPoint = function () {
+        $("#selectBuriedGroup").select2({
+            placeholder: "请选择埋点组，不选默认为全选",
+            allowClear: true,
+            language: "zh-CN"
+        });
+        if ($("#buriedGroupId").val() != "")
+            $("#selectBuriedGroup").val($("#buriedGroupId").val());
+        else
+            $("#selectBuriedGroup").select2("val", $("#buriedGroupId").val());
+    };
 
     var initTable = function () {
 
@@ -116,9 +134,10 @@ var FlowOfBuriedPointTable = function () {
             // set the initial value
             "pageLength": 10,
             "pagingType": "bootstrap_full_number",
-            "order": [
-                [3, 'asc']
-            ],
+            "ordering": false,
+            //"order": [
+            //    [3, 'asc']
+            //],
         });
 
         var tableWrapper = jQuery('#flow-buried-point-table_wrapper');
@@ -146,25 +165,21 @@ var FlowOfBuriedPointTable = function () {
         $('#flow-buried-point-table-export').click(function (e) {
             e.preventDefault();
             var dateRangeString = $("#daterangepicker").val();
+            var buriedGroupId = $("#selectBuriedGroup").val();
             var queryParams = {
                 "dateRangeString": dateRangeString,
+                "buriedGroupId": buriedGroupId,
             }
             location.href = "/flow/buriedPoint/exportExcel?queryParamStr=" + JSON.stringify(queryParams);
         });
-    }
+    };
 
     return {
 
         //main function to initiate the module
         init: function () {
-            activeMenu();
-
-            // set right height
-            $(".content-wrapper, .right-side").css('min-height', 516);
-
-            if (!jQuery().dataTable) {
-                return;
-            }
+            activeMenu('/flow/buriedPoint');
+            initPoint();
             initTable();
         }
 
@@ -172,8 +187,3 @@ var FlowOfBuriedPointTable = function () {
 
 }();
 
-var activeMenu = function () {
-    $(".treeview-menu [href='/flow/buriedPoint']").parents("li:eq(0)").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/flow/buriedPoint']").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/flow/buriedPoint']").parents("li:eq(0)").addClass("active");
-}

@@ -467,7 +467,6 @@ public class ChainConfigController {
                                   @RequestParam(value = "numPerPage", required = false) Integer pageSize,
                                   @FormModel("rTag") RTag rTag) {
         List<RTag> rTagList;
-        // 0 表示有效
         rTag.setCancelFlag(ConfigConstants.LOGICAL_CANCEL_FLAG_NOT_CANCEL);
         PageVO page = PageVO.createPage(currentPage, pageSize);
         rTagList = pageTagService.listPageTagByPage(page, rTag);

@@ -22,6 +22,7 @@
 
     <link href="/resources/css/components.css" rel="stylesheet" type="text/css"/>
 
+    <link href="/resources/plugins/sweetalert-master/sweetalert.css" rel="stylesheet" type="text/css"/>
 </head>
 <body class="skin-blue sidebar-mini">
 <div class="wrapper">
@@ -66,7 +67,7 @@
                                                 value="${buriedPoint.id}"/>
 
                                     <div class="form-group">
-                                        <name class="control-name col-md-3">埋点编码 <span class="required">
+                                        <name class="control-label col-md-3">埋点编码 <span class="required">
 										* </span>
                                         </name>
 
@@ -78,7 +79,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <name class="control-name col-md-3">站点编码<span class="required">
+                                        <name class="control-label col-md-3">站点编码<span class="required">
 										* </span></name>
 
                                         <div class="col-md-4">
@@ -88,7 +89,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <name class="control-name col-md-3">站点名称<span class="required">
+                                        <name class="control-label col-md-3">站点名称<span class="required">
 										* </span></name>
 
                                         <div class="col-md-4">
@@ -98,7 +99,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <name class="control-name col-md-3">页面名称<span class="required">
+                                        <name class="control-label col-md-3">页面名称<span class="required">
 										* </span></name>
 
                                         <div class="col-md-4">
@@ -108,7 +109,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <name class="control-name col-md-3">页面位置<span class="required">
+                                        <name class="control-label col-md-3">页面位置<span class="required">
 										* </span></name>
 
                                         <div class="col-md-4">
@@ -118,7 +119,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <name class="control-name col-md-3">备注</name>
+                                        <name class="control-label col-md-3">备注</name>
 
                                         <div class="col-md-4">
                                             <form:input name="desc" path="desc" value="${buriedPoint.desc}" type="text"
@@ -167,6 +168,9 @@
 <script src="/resources/plugins/input-mask/jquery.inputmask.js" type="text/javascript"></script>
 <script src="/resources/plugins/input-mask/jquery.inputmask.extensions.js" type="text/javascript"></script>
 
+<script src="/resources/plugins/sweetalert-master/sweetalert.min.js" type="text/javascript"></script>
+
+<script src="/resources/scripts/common/common.js" type="text/javascript"></script>
 <script src="/resources/scripts/config/buried-point.js" type="text/javascript"></script>
 <script>
     jQuery(document).ready(function () {

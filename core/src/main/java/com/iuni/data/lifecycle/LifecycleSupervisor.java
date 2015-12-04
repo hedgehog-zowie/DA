@@ -33,8 +33,8 @@ public class LifecycleSupervisor implements LifecycleAware {
 
     public LifecycleSupervisor() {
         lifecycleState = LifecycleState.IDLE;
-        supervisedProcesses = new HashMap<LifecycleAware, Supervisoree>();
-        monitorFutures = new HashMap<LifecycleAware, ScheduledFuture<?>>();
+        supervisedProcesses = new HashMap<>();
+        monitorFutures = new HashMap<>();
         monitorService = new ScheduledThreadPoolExecutor(10,
                 new ThreadFactoryBuilder().setNameFormat(
                         "lifecycleSupervisor-" + Thread.currentThread().getId() + "-%d")

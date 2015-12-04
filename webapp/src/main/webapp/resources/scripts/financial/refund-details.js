@@ -78,14 +78,7 @@ var RefundDetailsOfFinancial = function () {
 
         //main function to initiate the module
         init: function () {
-            activeMenu();
-
-            // set right height
-            $(".content-wrapper, .right-side").css('min-height', 516);
-
-            if (!jQuery().dataTable) {
-                return;
-            }
+            activeMenu('/financial/refundDetails');
             initTable();
         }
 
@@ -93,8 +86,3 @@ var RefundDetailsOfFinancial = function () {
 
 }();
 
-var activeMenu = function () {
-    $(".treeview-menu [href='/financial/refundDetails']").parents("li:eq(0)").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/financial/refundDetails']").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/financial/refundDetails']").parents("li:eq(0)").addClass("active");
-}

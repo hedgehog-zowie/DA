@@ -57,8 +57,8 @@ public class ReturnGoodsDetailsController {
         ReturnGoodsDetailsQueryDto queryParam = JsonUtils.fromJson(queryParamStr, ReturnGoodsDetailsQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
-            String fileName = new String(("退货明细报表(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
+            String fileName = new String(("退货明细报表(" + queryParam.getDateRangeString() + ")").getBytes(), "ISO8859-1");
+            response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + ".xlsx\"");
 
             queryParam.parseDateRangeString();
             List<ReturnGoodsDetailsTableDto> resultList = receiveService.selectReturnGoodsDetails(queryParam);

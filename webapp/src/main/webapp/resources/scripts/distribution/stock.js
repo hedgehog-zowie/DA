@@ -134,23 +134,10 @@ var StockOfDistribution = function () {
 
         //main function to initiate the module
         init: function () {
-            activeMenu();
-
-            // set right height
-            $(".content-wrapper, .right-side").css('min-height', 516);
-
-            if (!jQuery().dataTable) {
-                return;
-            }
+            activeMenu('/distribution/stock');
             initTable();
         }
 
     };
 
 }();
-
-var activeMenu = function () {
-    $(".treeview-menu [href='/distribution/stock']").parents("li:eq(0)").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/distribution/stock']").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/distribution/stock']").parents("li:eq(0)").addClass("active");
-}

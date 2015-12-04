@@ -16,7 +16,7 @@ public class ProcurementDetailsTableDto extends AbstractTableDto {
     private String procurementSn;
     private String receiveCode;
     private String sku;
-    private String  materialCode;
+    private String materialCode;
     private String skuName;
     private String quantity;
     private String remark;

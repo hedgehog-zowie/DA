@@ -58,8 +58,8 @@ public class StockByChannelController {
         StockByChannelQueryDto queryParam = JsonUtils.fromJson(queryParamStr, StockByChannelQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
-            String fileName = new String(("各渠道进退换数量汇总报表(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
+            String fileName = new String(("各渠道进退换数量汇总报表(" + queryParam.getDateRangeString() + ")").getBytes(), "ISO8859-1");
+            response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + ".xlsx\"");
 
             queryParam.parseDateRangeString();
             List<StockByChannelTableDto> resultList = stockService.selectStockByChannel(queryParam);

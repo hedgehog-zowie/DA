@@ -97,7 +97,11 @@ var ChannelTypeTable = function () {
                     ids += $(this).val() + ",";
                 return ids;
             });
-            location.href = "/config/channelType/delete?ids=" + ids.substring(0, ids.length - 1);
+            if (ids == undefined || ids == null || ids == "")
+                swal("请勾选需要删除的数据！", "", "info");
+            else
+                deleteData("/config/channelType/delete", {ids: ids}, "/config/channelType");
+            //location.href = "/config/channelType/delete?ids=" + ids.substring(0, ids.length - 1);
         });
 
         $('#table_channel_type_export').click(function (e) {
@@ -112,7 +116,8 @@ var ChannelTypeTable = function () {
 
         channelTypeTable.on('click', '.delete', function (e) {
             e.preventDefault();
-            location.href = "/config/channelType/delete?ids=" + $(this).attr("id").substring(7);
+            deleteData("/config/channelType/delete", {ids: $(this).attr("id").substring(7)}, "/config/channelType");
+            //location.href = "/config/channelType/delete?ids=" + $(this).attr("id").substring(7);
         });
 
     }
@@ -121,14 +126,7 @@ var ChannelTypeTable = function () {
 
         //main function to initiate the module
         init: function () {
-            activeMenu();
-
-            // set right height
-            $(".content-wrapper, .right-side").css('min-height', 516);
-
-            if (!jQuery().dataTable) {
-                return;
-            }
+            activeMenu('/config/channelType');
             initTable();
         }
 
@@ -219,7 +217,8 @@ var ChannelTypeFormValidation = function () {
             submitHandler: function (form) {
                 channelTypeSuccess.show();
                 channelTypeError.hide();
-                form.submit(); // submit the form
+                saveData("/config/channelType/save", channelTypeForm.serialize(), "/config/channelType");
+                //form.submit(); // submit the form
             }
         });
 
@@ -237,16 +236,10 @@ var ChannelTypeFormValidation = function () {
     return {
         //main function to initiate the module
         init: function () {
-            activeMenu();
+            activeMenu('/config/channelType');
             handleValidation();
         }
 
     };
 
 }();
-
-var activeMenu = function () {
-    $(".treeview-menu [href='/config/channelType']").parents("li:eq(0)").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/config/channelType']").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/config/channelType']").parents("li:eq(0)").addClass("active");
-}

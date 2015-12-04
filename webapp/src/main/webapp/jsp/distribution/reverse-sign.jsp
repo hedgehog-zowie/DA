@@ -75,6 +75,9 @@
                                 </div>
                                 <div class="col-md-0 pull-right">
                                     <button id="query-button" type="submit" class="btn green">查询</button>
+                                    <button id="distribution-reverse-sign-of-back-table-export" class="btn green">
+                                        导出 <i class="fa fa-file"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -88,11 +91,6 @@
 
                 <!-- Tabs within a box -->
                 <ul class="nav nav-tabs pull-right" id="distribution-reverse-sign-tab">
-                    <li>
-                        <button id="distribution-reverse-sign-of-back-table-export" class="btn green">
-                            导出 <i class="fa fa-file"></i>
-                        </button>
-                    </li>
                     <li><a href="#distribution-reverse-sign-of-repair-tab" data-toggle="tab">维修</a></li>
                     <li><a href="#distribution-reverse-sign-of-exchange-tab" data-toggle="tab">换货</a></li>
                     <li class="active"><a href="#distribution-reverse-sign-of-back-tab" data-toggle="tab">退货</a></li>
@@ -247,6 +245,7 @@
 <script src="/resources/plugins/datatables/media/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/resources/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.js" type="text/javascript"></script>
 
+<script src="/resources/scripts/common/common.js" type="text/javascript"></script>
 <script src="/resources/scripts/distribution/reverse-sign.js" type="text/javascript"></script>
 <script>
     jQuery(document).ready(function () {

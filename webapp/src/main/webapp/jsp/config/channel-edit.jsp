@@ -23,6 +23,8 @@
     <link href="/resources/css/components.css" rel="stylesheet" type="text/css"/>
 
     <link href="/resources/plugins/datepicker/datepicker3.css" rel="stylesheet" type="text/css"/>
+
+    <link href="/resources/plugins/sweetalert-master/sweetalert.css" rel="stylesheet" type="text/css"/>
 </head>
 <body class="skin-blue sidebar-mini">
 <div class="wrapper">
@@ -70,7 +72,7 @@
                                                 path="id"/>
 
                                     <div class="form-group">
-                                        <name class="control-name col-md-3">渠道名称 <span class="required">
+                                        <name class="control-label col-md-3">渠道名称 <span class="required">
 										* </span>
                                         </name>
 
@@ -82,7 +84,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <name class="control-name col-md-3">原始链接 <span class="required">
+                                        <name class="control-label col-md-3">原始链接 <span class="required">
 										* </span>
                                         </name>
 
@@ -93,7 +95,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <name class="control-name col-md-3">渠道AD<span class="required">
+                                        <name class="control-label col-md-3">渠道AD<span class="required">
 										* </span>
                                         </name>
 
@@ -124,7 +126,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <name class="control-name col-md-3">
+                                        <name class="control-label col-md-3">
                                             <button type="button" id="button_generate_promotion_url" class="btn blue">
                                                 生成推广链接
                                             </button>
@@ -138,7 +140,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <name class="control-name col-md-3">
+                                        <name class="control-label col-md-3">
                                             <button type="button" id="button_generate_short_url" class="btn blue">
                                                 生成百度短链接
                                             </button>
@@ -152,7 +154,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <name class="control-name col-md-3">渠道备注</name>
+                                        <name class="control-label col-md-3">渠道备注</name>
 
                                         <div class="col-md-4">
                                             <form:input name="desc" value="${channel.desc}" type="text"
@@ -204,7 +206,11 @@
 <script src="/resources/plugins/jquery-validation/js/jquery.validate.js" type="text/javascript"></script>
 <script src="/resources/plugins/jquery-validation/js/additional-methods.js" type="text/javascript"></script>
 
+<script src="/resources/plugins/sweetalert-master/sweetalert.min.js" type="text/javascript"></script>
+
+<script src="/resources/scripts/common/common.js" type="text/javascript"></script>
 <script src="/resources/scripts/config/channel.js" type="text/javascript"></script>
+
 <script>
     jQuery(document).ready(function () {
         ChannelFormValidation.init();

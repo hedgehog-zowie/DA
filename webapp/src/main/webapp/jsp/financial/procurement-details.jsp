@@ -75,6 +75,9 @@
                                 </div>
                                 <div class="col-md-0 pull-right">
                                     <button id="query-button" type="submit" class="btn green">查询</button>
+                                    <button id="financial-procurement-details-table-export" class="btn green">
+                                        导出 <i class="fa fa-file"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -88,11 +91,6 @@
 
                 <!-- Tabs within a box -->
                 <ul class="nav nav-tabs pull-right" id="financial-procurement-details-tab">
-                    <li>
-                        <button id="financial-procurement-details-table-export" class="btn green">
-                            导出 <i class="fa fa-file"></i>
-                        </button>
-                    </li>
                     <li class="pull-left header"><i class="fa fa-inbox"></i> 入库明细</li>
                 </ul>
                 <div class="tab-content no-padding">
@@ -119,12 +117,12 @@
                                 <tr class="odd gradeX">
                                     <td><fmt:formatDate value="${result.time}" pattern="yyyy/MM/dd"/></td>
                                     <td>${result.supplierName}</td>
-                                    <td>${result.billType}</td>
+                                    <td>${result.receiveType}</td>
                                     <td>${result.procurementSn}</td>
                                     <td>${result.receiveCode}</td>
                                     <td>${result.sku}</td>
                                     <td>${result.materialCode}</td>
-                                    <td>${result.name}</td>
+                                    <td>${result.skuName}</td>
                                     <td>${result.quantity}</td>
                                     <td>${result.remark}</td>
                                 </tr>
@@ -165,6 +163,7 @@
 <script src="/resources/plugins/datatables/media/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/resources/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.js" type="text/javascript"></script>
 
+<script src="/resources/scripts/common/common.js" type="text/javascript"></script>
 <script src="/resources/scripts/financial/procurement-details.js" type="text/javascript"></script>
 <script>
     jQuery(document).ready(function () {

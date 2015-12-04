@@ -10,7 +10,7 @@
         <result property="orderCode" column="orderCode"/>
         <result property="orderUser" column="orderUser"/>
         <result property="sku" column="sku"/>
-        <result property="name" column="name"/>
+        <result property="skuName" column="skuName"/>
         <result property="quantity" column="quantity"/>
         <result property="backReason" column="backReason"/>
         <result property="remark" column="remark"/>
@@ -43,7 +43,7 @@
         IOS.SOURCE_NAME "backChannel",
         IOS.SOURCE_CODE "backOption",
         SWS.SKU_CODE "sku",
-        SWS.SKU_NAME "name",
+        SWS.SKU_NAME "skuName",
         SWS.MATERIAL_CODE "materialCode",
         SWBI.INDIV_CODE "IMEI",
         SWSI2.SHIPPING_NAME "shippingName"
@@ -101,7 +101,7 @@
         IOS.SOURCE_NAME "backChannel",
         IOS.SOURCE_CODE "backOption",
         SWS.SKU_CODE "sku",
-        SWS.SKU_NAME "name",
+        SWS.SKU_NAME "skuName",
         SWS.MATERIAL_CODE "materialCode",
         NULL "IMEI",
         NULL "shippingName"
@@ -150,7 +150,7 @@
         IOS.SOURCE_NAME "backChannel",
         IOS.SOURCE_CODE "receiveOption",
         SWS.SKU_CODE "sku",
-        SWS.SKU_NAME "name",
+        SWS.SKU_NAME "skuName",
         SWS.MATERIAL_CODE "materialCode",
         NULL "IMEI",
         NULL "shippingName"

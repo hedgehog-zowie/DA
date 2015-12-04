@@ -9,8 +9,8 @@
         <result property="orderSource" column="orderSource"/>
         <result property="orderType" column="orderType"/>
         <result property="sku" column="sku"/>
-        <result property="name" column="name"/>
-        <result property="name" column="name"/>
+        <result property="skuName" column="skuName"/>
+        <result property="waresName" column="waresName"/>
         <result property="materialCode" column="materialCode"/>
         <result property="orderCode" column="orderCode"/>
         <result property="outerOrderCode" column="outerOrderCode"/>
@@ -31,9 +31,9 @@
         IWSOG.UNIT_PRICE "price",
         IWSOG.QUANTITY "quantity",
         IWS.SKU_CODE "sku",
-        IWS.SKU_NAME "name",
+        IWS.SKU_NAME "skuName",
         IWS.MATERIAL_CODE "materialCode",
-        IWW.WARES_NAME "name",
+        IWW.WARES_NAME "waresName",
         IOS.SOURCE_CODE "orderList"
         FROM SYN_WMS_SALES_ORDER IWSO
         LEFT JOIN SYN_WMS_SALES_ORDER_GOODS IWSOG
@@ -65,9 +65,9 @@
     <resultMap id="stockByChannelResult" type="com.iuni.data.persist.model.distribution.StockByChannelTableDto">
         <result property="date" column="DATETIME"/>
         <result property="sourceName" column="SOURCE_NAME"/>
-        <result property="code" column="SKU_CODE"/>
-        <result property="name" column="CAT_NAME"/>
-        <result property="name" column="SKU_NAME"/>
+        <result property="skuCode" column="SKU_CODE"/>
+        <result property="catName" column="CAT_NAME"/>
+        <result property="skuName" column="SKU_NAME"/>
         <result property="materialCode" column="MATERIAL_CODE"/>
         <result property="measureUnit" column="MEASURE_UNIT"/>
         <result property="send" column="FH" javaType="int"/>
@@ -226,7 +226,6 @@
         WHEN '107' THEN
         '调拔换货退回'
         END "BIZ_TYPE",
-        '' "BILL_TYPE",
         IWR.HANDLED_TIME "DATETIME",
         IWR.RECEIVE_CODE "CODE",
         IOS.SOURCE_CODE "SOURCE_CODE",
@@ -544,9 +543,9 @@
         <result property="wareHouseName" column="WAREHOUSE_NAME"/>
         <result property="sourceName" column="SOURCE_NAME"/>
         <result property="bizType" column="BIZ_TYPE"/>
-        <result property="code" column="SKU_CODE"/>
-        <result property="name" column="CAT_NAME"/>
-        <result property="name" column="SKU_NAME"/>
+        <result property="skuCode" column="SKU_CODE"/>
+        <result property="catName" column="CAT_NAME"/>
+        <result property="skuName" column="SKU_NAME"/>
         <result property="materialCode" column="MATERIAL_CODE"/>
         <result property="measureUnit" column="MEASURE_UNIT"/>
         <result property="quantity" column="QUANTITY"/>
@@ -737,9 +736,9 @@
     <resultMap id="stockResult" type="com.iuni.data.persist.model.distribution.StockTableDto">
         <result property="time" column="DATETIME"/>
         <result property="wareHouse" column="WAREHOUSE"/>
-        <result property="code" column="SKUCODE"/>
+        <result property="skuCode" column="SKUCODE"/>
         <result property="goodsName" column="GOODSNAME"/>
-        <result property="name" column="SKUNAME"/>
+        <result property="skuName" column="SKUNAME"/>
         <result property="materialCode" column="MATERIALCODE"/>
         <result property="measureUnit" column="MEASUREUNIT"/>
         <result property="inStockQty" column="INSTOCKQTY"/>

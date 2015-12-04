@@ -14,7 +14,7 @@
         <result property="logisticNo" column="logisticNo"/>
         <result property="shippingTime" column="shippingTime"/>
         <result property="status" column="status"/>
-        <result property="name" column="name"/>
+        <result property="skuName" column="skuName"/>
         <result property="quantity" column="quantity"/>
         <result property="measureUnit" column="measureUnit"/>
         <result property="returnNum" column="returnNum"/>
@@ -30,7 +30,7 @@
         T0."logisticNo",
         T0."shippingTime",
         T3.STATUS "status",
-        T0."name",
+        T0."skuName",
         T0."quantity",
         T0."measureUnit",
         case
@@ -46,7 +46,7 @@
         IWT.LOGISTIC_NO "logisticNo",
         IWT.STATUS "status",
         IWT.SHIPPING_TIME "shippingTime",
-        IWTG.SKU_NAME "name",
+        IWTG.SKU_NAME "skuName",
         IWTG.QUANTITY "quantity",
         IWTG.MEASURE_UNIT "measureUnit",
         IWW.WAREHOUSE_NAME "warehouse",
@@ -103,7 +103,7 @@
         order by t0."transferId",
         T0."warehouse",
         T3.STATUS,
-        T0."name",
+        T0."skuName",
         T0."shippingTime"
     </select>
 
@@ -113,9 +113,9 @@
         <result property="transferCode" column="transferCode"/>
         <result property="outWarehouseName" column="outWarehouseName"/>
         <result property="inWarehouseName" column="inWarehouseName"/>
-        <result property="code" column="code"/>
+        <result property="skuCode" column="skuCode"/>
         <result property="materialCode" column="materialCode"/>
-        <result property="name" column="name"/>
+        <result property="skuName" column="skuName"/>
         <result property="quantity" column="quantity"/>
     </resultMap>
     <!-- =========内部调拨明细报表============ -->
@@ -130,9 +130,9 @@
         ELSE
         IWT.TRANSFER_TO
         END "inWarehouseName",
-        IWS.SKU_CODE "code",
+        IWS.SKU_CODE "skuCode",
         IWS.MATERIAL_CODE "materialCode",
-        IWS.SKU_NAME "name",
+        IWS.SKU_NAME "skuName",
         IWTG.QUANTITY "quantity"
         FROM
         SYN_WMS_TRANSFER IWT

@@ -13,7 +13,7 @@
         <result property="transferId" column="transferId"/>
         <result property="quantity" column="quantity"/>
         <result property="sku" column="sku"/>
-        <result property="name" column="name"/>
+        <result property="skuName" column="skuName"/>
         <result property="materialCode" column="materialCode"/>
         <result property="outOrderCode" column="outOrderCode"/>
     </resultMap>
@@ -39,7 +39,7 @@
         IWTG.TRANSFER_ID "transferId",
         IWTG.QUANTITY "quantity",
         IWS.SKU_CODE "sku",
-        IWS.SKU_NAME "name",
+        IWS.SKU_NAME "skuName",
         IWS.MATERIAL_CODE "materialCode",
         IWT.PO "outOrderCode"
         FROM SYN_WMS_TRANSFER IWT
@@ -75,7 +75,7 @@
         <result property="receiveCode" column="receiveCode"/>
         <result property="sku" column="sku"/>
         <result property="materialCode" column="materialCode"/>
-        <result property="name" column="name"/>
+        <result property="skuName" column="skuName"/>
         <result property="quantity" column="quantity"/>
         <result property="wareStatus" column="wareStatus"/>
     </resultMap>
@@ -103,7 +103,7 @@
         SWRG.WARES_STATUS
         END "wareStatus",
         SWS.SKU_CODE "sku",
-        SWS.SKU_NAME "name",
+        SWS.SKU_NAME "skuName",
         SWS.MATERIAL_CODE "materialCode"
         FROM SYN_WMS_RECEIVE SWR
         LEFT JOIN SYN_WMS_RECEIVE_GOODS SWRG

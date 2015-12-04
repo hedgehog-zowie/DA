@@ -60,8 +60,8 @@ public class ReverseSignController {
         ReverseSignQueryDto queryParam = JsonUtils.fromJson(queryParamStr, ReverseSignQueryDto.class);
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         try {
-            String fileName = new String(("逆向签收表(" + queryParam.getDateRangeString().replaceAll("\\s+", "") + ")").getBytes(), "ISO8859-1");
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName + ".xlsx");
+            String fileName = new String(("逆向签收表(" + queryParam.getDateRangeString() + ")").getBytes(), "ISO8859-1");
+            response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + ".xlsx\"");
 
             queryParam.parseDateRangeString();
             List<ReverseSignOfBackTableDto> resultListOfBack = reverseService.selectReverseSignOfBack(queryParam);

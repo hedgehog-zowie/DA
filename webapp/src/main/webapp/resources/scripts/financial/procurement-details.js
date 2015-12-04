@@ -78,23 +78,10 @@ var ProcurementDetailsOfFinancial = function () {
 
         //main function to initiate the module
         init: function () {
-            activeMenu();
-
-            // set right height
-            $(".content-wrapper, .right-side").css('min-height', 516);
-
-            if (!jQuery().dataTable) {
-                return;
-            }
+            activeMenu('/financial/procurementDetails');
             initTable();
         }
 
     };
 
 }();
-
-var activeMenu = function () {
-    $(".treeview-menu [href='/financial/procurementDetails']").parents("li:eq(0)").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/financial/procurementDetails']").parents("li:eq(0)").parents("li:eq(0)").addClass("active");
-    $(".treeview-menu [href='/financial/procurementDetails']").parents("li:eq(0)").addClass("active");
-}

@@ -21,6 +21,8 @@
     <link href="/resources/plugins/select2/select2.css" rel="stylesheet" type="text/css"/>
     <link href="/resources/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.css" rel="stylesheet"
           type="text/css"/>
+
+    <link href="/resources/plugins/sweetalert-master/sweetalert.css" rel="stylesheet" type="text/css"/>
 </head>
 <body class="skin-blue sidebar-mini">
 <div class="wrapper">
@@ -135,6 +137,9 @@
 <script src="/resources/plugins/datatables/media/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/resources/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.js" type="text/javascript"></script>
 
+<script src="/resources/plugins/sweetalert-master/sweetalert.min.js" type="text/javascript"></script>
+
+<script src="/resources/scripts/common/common.js" type="text/javascript"></script>
 <script src="/resources/scripts/config/channel-type.js" type="text/javascript"></script>
 
 <script>
