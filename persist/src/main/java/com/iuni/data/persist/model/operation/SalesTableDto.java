@@ -5,6 +5,8 @@ import com.iuni.data.persist.model.AbstractTableDto;
 import java.util.*;
 
 /**
+ * 商品销售查询结果
+ *
  * @author Nicholas
  *         Email:   nicholas.chen@iuni.com
  */
@@ -107,6 +109,11 @@ public class SalesTableDto extends AbstractTableDto {
         this.salePrice = salePrice;
     }
 
+    /**
+     * 生成表头
+     *
+     * @return
+     */
     public static Map<String, String> generateTableHeader() {
         Map<String, String> tableHeader = new LinkedHashMap<>();
         tableHeader.put("时间区间", "range");
@@ -120,9 +127,15 @@ public class SalesTableDto extends AbstractTableDto {
         return tableHeader;
     }
 
+    /**
+     * 生成表数据
+     *
+     * @param salesTableDtoList
+     * @return
+     */
     public static List<Map<String, Object>> generateTableData(List<SalesTableDto> salesTableDtoList) {
         List<Map<String, Object>> tableData = new ArrayList<>();
-        for(SalesTableDto salesTableDto : salesTableDtoList){
+        for (SalesTableDto salesTableDto : salesTableDtoList) {
             Map<String, Object> rowData = new HashMap<>();
             rowData.put("range", salesTableDto.getRange());
             rowData.put("payTime", salesTableDto.getPayTime());

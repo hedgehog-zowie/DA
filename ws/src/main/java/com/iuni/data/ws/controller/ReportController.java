@@ -15,10 +15,8 @@ import com.iuni.data.ws.common.CookieKey;
 import com.iuni.data.ws.common.ReturnCode;
 import net.sf.json.JSONArray;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +44,13 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ReportController {
 
     private static final Logger logger = LoggerFactory.getLogger(ReportController.class);
-    public static AtomicLong atl = new AtomicLong();
-    private ExecutorService pool = Executors.newFixedThreadPool(1000);
+    private static final AtomicLong atl = new AtomicLong();
+    private ExecutorService printPool = Executors.newSingleThreadExecutor();
+    private ExecutorService savePool = Executors.newFixedThreadPool(10);
+    private static HConnection connection;
+    private static HConnection uvConnection;
+    private static HConnection vvConnection;
+    private static HConnection ipConnection;
 
     @RequestMapping(produces = "application/json; charset=utf-8")
     @ResponseBody
@@ -119,6 +122,7 @@ public class ReportController {
                 }
                 // save report data to hbase
                 Map paramMap = Maps.newHashMap(request.getParameterMap());
+                printData(type, vk, ip, sid, uid, adId, paramMap);
                 saveData(type, vk, ip, sid, uid, adId, paramMap);
             }
         }
@@ -137,71 +141,129 @@ public class ReportController {
         return resultStr;
     }
 
-    private void saveData(final String type, final String vk, final String ip, final String sid,
-                          final String uid, final String adId, final Map<String, String[]> paramMap) throws Exception {
-        // use thread pool
-        pool.execute(new Thread(new Runnable() {
+    /**
+     * 打印上报数据
+     *
+     * @param type
+     * @param vk
+     * @param ip
+     * @param sid
+     * @param uid
+     * @param adId
+     * @param paramMap
+     */
+    private void printData(final String type, final String vk, final String ip, final String sid,
+                           final String uid, final String adId, final Map<String, String[]> paramMap) {
+        printPool.execute(new Runnable() {
             @Override
             public void run() {
+                StringBuffer dataSb = new StringBuffer();
+                if (StringUtils.isNotEmpty(type)) {
+                    dataSb.append("\"" + CommonField.TYPE.getRealFiled() + "\":" + type + ",");
+                }
+                if (StringUtils.isNotEmpty(vk)) {
+                    dataSb.append("\"" + CommonField.VK.getRealFiled() + "\":" + vk + ",");
+                }
+                if (StringUtils.isNotEmpty(ip)) {
+                    dataSb.append("\"" + CommonField.IP.getRealFiled() + "\":" + ip + ",");
+                }
+                if (StringUtils.isNotEmpty(sid)) {
+                    dataSb.append("\"" + CommonField.SID.getRealFiled() + "\":" + sid + ",");
+                }
+                if (StringUtils.isNotEmpty(uid)) {
+                    dataSb.append("\"" + CommonField.UID.getRealFiled() + "\":" + uid + ",");
+                }
+                if (StringUtils.isNotEmpty(adId)) {
+                    dataSb.append("\"" + CommonField.ADID.getRealFiled() + "\":" + adId + ",");
+                }
+                for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
+                    // if param name is start with the column has been set
+                    if (entry.getKey().startsWith(Config.getColumn())) {
+                        dataSb.append("\"" + entry.getKey() + "\":" + (entry.getValue()[0]) + ",");
+                    }
+                }
+                String dataStr = "{" + dataSb.substring(0, dataSb.length() - 1) + "}";
+                logger.info(dataStr);
+            }
+        });
+    }
 
+    /**
+     * 保存上报数据到HBase
+     *
+     * @param type
+     * @param vk
+     * @param ip
+     * @param sid
+     * @param uid
+     * @param adId
+     * @param paramMap
+     * @throws Exception
+     */
+    private void saveData(final String type, final String vk, final String ip, final String sid,
+                          final String uid, final String adId, final Map<String, String[]> paramMap) throws Exception {
+        // use thread savePool
+        savePool.execute(new Runnable() {
+            @Override
+            public void run() {
                 if (Config.getConf() == null) {
-                    logger.error("save data error. please check hbase config.");
+                    logger.error("save data error. please check hBase config.");
                 }
                 HTable table = null;
                 HTable uvTable = null;
                 HTable vvTable = null;
                 HTable ipTable = null;
+                String rowKey = "";
                 try {
                     long i = atl.incrementAndGet();
                     if (i >= 99999)
                         atl.set(0);
-                    String rowKey = new StringBuilder(type).append(System.currentTimeMillis()).append(String.format("%05d", i)).toString();
+                    rowKey = new StringBuilder(type).append(System.currentTimeMillis()).append(String.format("%05d", i)).toString();
                     Put put = new Put(Bytes.toBytes(rowKey));
                     long timestamp = System.currentTimeMillis();
-                    StringBuffer dataSb = new StringBuffer();
                     if (StringUtils.isNotEmpty(type)) {
-                        dataSb.append("\"" + CommonField.TYPE.getRealFiled() + "\":" + type + ",");
                         put.add(Config.getCfName(), Bytes.toBytes(CommonField.TYPE.getRealFiled()), timestamp, Bytes.toBytes(type));
                     }
                     if (StringUtils.isNotEmpty(vk)) {
-                        dataSb.append("\"" + CommonField.VK.getRealFiled() + "\":" + vk + ",");
                         put.add(Config.getCfName(), Bytes.toBytes(CommonField.VK.getRealFiled()), timestamp, Bytes.toBytes(vk));
                     }
                     if (StringUtils.isNotEmpty(ip)) {
-                        dataSb.append("\"" + CommonField.IP.getRealFiled() + "\":" + ip + ",");
                         put.add(Config.getCfName(), Bytes.toBytes(CommonField.IP.getRealFiled()), timestamp, Bytes.toBytes(ip));
                     }
                     if (StringUtils.isNotEmpty(sid)) {
-                        dataSb.append("\"" + CommonField.SID.getRealFiled() + "\":" + sid + ",");
                         put.add(Config.getCfName(), Bytes.toBytes(CommonField.SID.getRealFiled()), timestamp, Bytes.toBytes(sid));
                     }
                     if (StringUtils.isNotEmpty(uid)) {
-                        dataSb.append("\"" + CommonField.UID.getRealFiled() + "\":" + uid + ",");
                         put.add(Config.getCfName(), Bytes.toBytes(CommonField.UID.getRealFiled()), timestamp, Bytes.toBytes(uid));
                     }
                     if (StringUtils.isNotEmpty(adId)) {
-                        dataSb.append("\"" + CommonField.ADID.getRealFiled() + "\":" + adId + ",");
                         put.add(Config.getCfName(), Bytes.toBytes(CommonField.ADID.getRealFiled()), timestamp, Bytes.toBytes(adId));
                     }
                     for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
                         // if param name is start with the column has been set
                         if (entry.getKey().startsWith(Config.getColumn())) {
-                            dataSb.append("\"" + entry.getKey() + "\":" + (entry.getValue()[0]) + ",");
                             put.add(Config.getCfName(), Bytes.toBytes(entry.getKey()), timestamp, Bytes.toBytes((entry.getValue()[0])));
                         }
                     }
-                    String dataStr = "{" + dataSb.substring(0, dataSb.length() - 1) + "}";
-                    logger.info(dataStr);
 
-                    // pv counter
+//                    checkConnection();
+//                    table = connection.getTable(Config.getTableName());
+//                    table.setAutoFlushTo(false);
+//                    uvTable = uvConnection.getTable(Config.getUvTableName());
+//                    vvTable = vvConnection.getTable(Config.getVvTableName());
+//                    ipTable = ipConnection.getTable(Config.getIpTableName());
+
+//                    checkTable();
                     table = new HTable(Config.getConf(), Config.getTableName());
                     uvTable = new HTable(Config.getConf(), Config.getUvTableName());
                     vvTable = new HTable(Config.getConf(), Config.getVvTableName());
                     ipTable = new HTable(Config.getConf(), Config.getIpTableName());
+                    // set table params
+
                     String sdStr = DateUtils.dateToSimpleDateStr(new Date(timestamp), "yyyyMMdd");
                     // 总数
                     // pv counter
-                    countPv(table, type, sdStr);
+                    countPv(table, type, sdStr, Constants.hbaseTable_qualifierTotal);
                     // uv counter
                     countUv(table, uvTable, type, vk, sdStr, Constants.hbaseTable_qualifierTotal);
                     // vv counter
@@ -226,7 +288,8 @@ public class ReportController {
                     // 写入数据
                     table.put(put);
                 } catch (Exception e) {
-                    logger.error(e.getLocalizedMessage());
+                    logger.error("error msg: {}, rowKey={}", e.getLocalizedMessage(), rowKey);
+                    e.printStackTrace();
                 } finally {
                     if (table != null)
                         try {
@@ -254,46 +317,80 @@ public class ReportController {
                         }
                 }
             }
-        }));
+        });
     }
 
-    private synchronized void countPv(HTable table, String type, String dateStr) throws IOException {
-        countPv(table, type, dateStr, null);
-    }
+    /**
+     * 检查表
+     * @throws IOException
+     */
+//    private synchronized void checkTable() throws IOException {
+//        if (table == null)
+//            table = new HTable(Config.getConf(), Config.getTableName());
+//        if (uvTable == null)
+//            uvTable = new HTable(Config.getConf(), Config.getUvTableName());
+//        if (vvTable == null)
+//            vvTable = new HTable(Config.getConf(), Config.getVvTableName());
+//        if (ipTable == null)
+//            ipTable = new HTable(Config.getConf(), Config.getIpTableName());
+//    }
 
-    private synchronized void countPv(HTable table, String type, String dateStr, String qualifier) throws IOException {
-        Get get = new Get(Bytes.toBytes(dateStr));
-        Result result = table.get(get);
-        byte[] value = result.getValue(Bytes.toBytes(type), Bytes.toBytes(dateStr));
-        // 总数
-        if (value == null) {
-            if (qualifier == null)
-                table.incrementColumnValue(Bytes.toBytes(dateStr), Bytes.toBytes(type), Bytes.toBytes("pv-" + Constants.hbaseTable_qualifierTotal), 1);
-            else
-                table.incrementColumnValue(Bytes.toBytes(dateStr), Bytes.toBytes(type), Bytes.toBytes("pv-" + qualifier), 1);
+    /**
+     * 检查连接
+     *
+     * @throws IOException
+     */
+    @Deprecated
+    private synchronized void checkConnection() throws IOException {
+        Configuration conf = Config.getConf();
+        if (connection == null || connection.isClosed()) {
+            connection = HConnectionManager.createConnection(conf);
+        }
+        if (uvConnection == null || uvConnection.isClosed()) {
+            uvConnection = HConnectionManager.createConnection(conf);
+        }
+        if (vvConnection == null || vvConnection.isClosed()) {
+            vvConnection = HConnectionManager.createConnection(conf);
+        }
+        if (ipConnection == null || ipConnection.isClosed()) {
+            ipConnection = HConnectionManager.createConnection(conf);
         }
     }
 
-    private synchronized void countUv(HTable table, HTable uvTable, String type, String vk, String dateStr, String qualifier) throws IOException {
+    private void countPv(HTableInterface table, String type, String dateStr, String qualifier) throws IOException {
+        // 总数
+        table.incrementColumnValue(Bytes.toBytes(dateStr), Bytes.toBytes(type), Bytes.toBytes("pv-" + qualifier), 1);
+    }
+
+    private void countUv(HTableInterface table, HTableInterface uvTable, String type, String vk, String dateStr, String qualifier) throws IOException {
+        byte[] f = Bytes.toBytes(type);
+        byte[] c = Bytes.toBytes(qualifier);
         Get get = new Get(Bytes.toBytes(vk + "-" + dateStr));
+        get.addColumn(f, c);
         Result result = uvTable.get(get);
-        byte[] value = result.getValue(Bytes.toBytes(type), Bytes.toBytes(qualifier));
+        byte[] value = result.getValue(f, c);
         if (value == null)
             table.incrementColumnValue(Bytes.toBytes(dateStr), Bytes.toBytes(type), Bytes.toBytes("uv-" + qualifier), 1);
     }
 
-    private synchronized void countVv(HTable table, HTable vvTable, String type, String sid, String dateStr, String qualifier) throws IOException {
+    private void countVv(HTableInterface table, HTableInterface vvTable, String type, String sid, String dateStr, String qualifier) throws IOException {
+        byte[] f = Bytes.toBytes(type);
+        byte[] c = Bytes.toBytes(qualifier);
         Get get = new Get(Bytes.toBytes(sid + "-" + dateStr));
+        get.addColumn(f, c);
         Result result = vvTable.get(get);
-        byte[] value = result.getValue(Bytes.toBytes(type), Bytes.toBytes(qualifier));
+        byte[] value = result.getValue(f, c);
         if (value == null)
             table.incrementColumnValue(Bytes.toBytes(dateStr), Bytes.toBytes(type), Bytes.toBytes("vv-" + qualifier), 1);
     }
 
-    private synchronized void countIp(HTable table, HTable vvTable, String type, String ip, String dateStr, String qualifier) throws IOException {
+    private void countIp(HTableInterface table, HTableInterface vvTable, String type, String ip, String dateStr, String qualifier) throws IOException {
+        byte[] f = Bytes.toBytes(type);
+        byte[] c = Bytes.toBytes(qualifier);
         Get get = new Get(Bytes.toBytes(ip + "-" + dateStr));
+        get.addColumn(f, c);
         Result result = vvTable.get(get);
-        byte[] value = result.getValue(Bytes.toBytes(type), Bytes.toBytes(qualifier));
+        byte[] value = result.getValue(f, c);
         if (value == null)
             table.incrementColumnValue(Bytes.toBytes(dateStr), Bytes.toBytes(type), Bytes.toBytes("ip-" + qualifier), 1);
     }

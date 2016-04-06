@@ -45,7 +45,7 @@ public class FlowOfBuriedPointServiceImpl implements FlowOfBuriedPointService {
         Set<String> rowKeySet = new HashSet<>();
         for (Map.Entry<Date, Date> entry : timeRange.entrySet())
             rowKeySet.add(DateUtils.dateToSimpleDateStr(entry.getKey(), "yyyyMMdd"));
-        Map<String, Result> resultMap = hBaseOperator.getRow(rowKeySet);
+        Map<String, Result> resultMap = hBaseOperator.getRows(rowKeySet);
 
         List<BuriedPoint> buriedPointList;
         if (buriedPointForQueryDto.getBuriedGroupId() == null || buriedPointForQueryDto.getBuriedGroupId() == 0)

@@ -10,8 +10,17 @@ public abstract class AbstractQueryDto {
 
     protected static final String dateRangeToStr = "-";
 
+    /**
+     * 时间段
+     */
     private String dateRangeString;
+    /**
+     * 开始时间
+     */
     private String startDateStr;
+    /**
+     * 结束时间
+     */
     private String endDateStr;
 
     public String getDateRangeString() {

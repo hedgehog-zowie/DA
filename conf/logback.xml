@@ -24,6 +24,8 @@
 
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>INFO</level>
+	    <onMatch>ACCEPT</onMatch>  
+	    <onMismatch>DENY</onMismatch>
         </filter>
         <!-- Safely log to the same file from multiple JVMs. Degrades performance! -->
         <prudent>true</prudent>
@@ -34,7 +36,7 @@
         <!-- encoder defaults to ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
         <encoder>
             <pattern>
-                [ %-5level] [%date{yyyy-MM-dd HH:mm:ss}] %logger{96} [%line] - %msg%n
+                [%-5level] [%date{yyyy-MM-dd HH:mm:ss}] %logger{96} [%line] - %msg%n
             </pattern>
             <charset>GBK</charset>
             <!-- 此处设置字符集 -->

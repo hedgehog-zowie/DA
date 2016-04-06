@@ -52,6 +52,11 @@ public enum PageName {
     distribution_freight("distribution/freight"),
 
     operation_sales("operation/sales"),
+    operation_mall_sales("operation/mall-sales"),
+    operation_convert_rate_of_order("operation/convert-rate-of-order"),
+    operation_register("operation/register"),
+    operation_user_behavior("operation/user-behavior"),
+    operation_user("operation/user"),
     ;
 
 

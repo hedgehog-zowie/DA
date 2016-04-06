@@ -3,6 +3,7 @@
 
 <mapper namespace="com.iuni.data.persist.mapper.operation.SalesMapper">
 
+    <!-- 商品销售结果映射 -->
     <resultMap id="salesResult" type="com.iuni.data.persist.model.operation.SalesTableDto">
         <result property="range" column="range"></result>
         <result property="payTime" column="paytime"></result>
@@ -10,8 +11,8 @@
         <result property="goodsName" column="goodsName"></result>
         <result property="wareName" column="wareName"></result>
         <result property="sku" column="sku"></result>
-        <result property="num" column="num" javaType="long"></result>
-        <result property="salePrice" column="salePrice" javaType="double"></result>
+        <result property="num" column="num"></result>
+        <result property="salePrice" column="salePrice"></result>
     </resultMap>
     <!-- 商品销售报表 -->
     <select id="selectSales" resultMap="salesResult"
@@ -134,9 +135,11 @@
             <if test="model != null and model != ''">
                 AND (SWW.ID = ${model} OR SWS.ID = ${model})
             </if>
-            AND ((IOI.SHIPPING_STATUS <![CDATA[ <> ]]> 'unshipped' AND IOI.SHIPPING_STATUS <![CDATA[ <> ]]> 'preparing') OR
+            AND ((IOI.SHIPPING_STATUS <![CDATA[ <> ]]> 'unshipped' AND IOI.SHIPPING_STATUS <![CDATA[ <> ]]> 'preparing')
+            OR
             (IOI.SHIPPING_STATUS = 'unshipped' AND IOI.PAY_STATUS = 'paid' AND IOI.ORDER_STATUS = 'processed') OR
-            (IOI.SHIPPING_STATUS = 'preparing' AND IOI.PAY_STATUS <![CDATA[ <> ]]> 'refunded' AND IOI.PAY_STATUS <![CDATA[ <> ]]> 'refund'))
+            (IOI.SHIPPING_STATUS = 'preparing' AND IOI.PAY_STATUS <![CDATA[ <> ]]> 'refunded' AND IOI.PAY_STATUS
+            <![CDATA[ <> ]]> 'refund'))
             AND IOG.GOODSTYPE IN ('0', '5', '101')
             AND (SUBSTR(IOI.TAG, 2, 1) <![CDATA[ <> ]]> 1 OR IOI.TAG = 0 OR IOI.TAG IS NULL)
             AND IOI.REFERER <![CDATA[ <> ]]> 'IUNI_INSIDE'
@@ -155,6 +158,616 @@
             </when>
         </choose>
         TMP."range", TMP."orderSource",TMP."goodsName",TMP."wareName",TMP."sku"
+    </select>
+
+    <!-- 商城销售结果映射 -->
+    <resultMap id="mallSalesResult" type="com.iuni.data.persist.model.operation.MallSalesTableDto">
+        <result property="date" column="BIZ_DATE"></result>
+        <result property="referer" column="ORDER_REFER"></result>
+        <result property="totalOrderNum" column="TOTAL_ORDER_NUM"></result>
+        <result property="totalOrderAmount" column="TOTAL_ORDER_AMOUNT"></result>
+        <result property="totalGoodsNum" column="TOTAL_GOODS_NUM"></result>
+        <result property="onlinePayOrderNum" column="ONLINE_PAY_ORDER_NUM"></result>
+        <result property="offlinePayOrderNum" column="OFFLINE_PAY_ORDER_NUM"></result>
+        <result property="returnedOrderNum" column="RETURNED_ORDER_NUM"></result>
+        <result property="exchangeOrderNum" column="EXCHANGE_ORDER_NUM"></result>
+        <result property="repairOrderNum" column="REPAIR_ORDER_NUM"></result>
+        <result property="refusedOrderNum" column="REFUSED_ORDER_NUM"></result>
+        <result property="validOrderNum" column="VALID_ORDER_NUM"></result>
+        <result property="validOrderAmount" column="VALID_ORDER_AMOUNT"></result>
+        <result property="validGoodsNum" column="VALID_GOODS_NUM"></result>
+        <result property="validOrderRate" column="VALID_ORDER_RATE"></result>
+        <result property="unitPrice" column="UNIT_PRICE"></result>
+        <result property="unitNum" column="UNIT_NUM"></result>
+        <result property="paidOrderNum" column="PAYED_ORDER_NUM"></result>
+        <result property="offlineValidOrderNum" column="OFFLINE_VALID_ORDER_NUM"></result>
+    </resultMap>
+    <!-- 商城销售报表 -->
+    <select id="selectMallSales" resultMap="mallSalesResult"
+            parameterType="com.iuni.data.persist.model.operation.MallSalesQueryDto">
+        SELECT
+        T1.BIZ_DATE,
+        T1.ORDER_REFER ORDER_REFER,
+        CASE
+        WHEN T1.TOTAL_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T1.TOTAL_ORDER_NUM
+        END TOTAL_ORDER_NUM,
+        CASE
+        WHEN T1.TOTAL_ORDER_AMOUNT IS NULL THEN
+        0
+        ELSE
+        T1.TOTAL_ORDER_AMOUNT
+        END TOTAL_ORDER_AMOUNT,
+        CASE
+        WHEN T2.TOTAL_GOODS_NUM IS NULL THEN
+        0
+        ELSE
+        T2.TOTAL_GOODS_NUM
+        END TOTAL_GOODS_NUM,
+        CASE
+        WHEN T3.ONLINE_PAY_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T3.ONLINE_PAY_ORDER_NUM
+        END ONLINE_PAY_ORDER_NUM,
+        CASE
+        WHEN T4.OFFLINE_PAY_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T4.OFFLINE_PAY_ORDER_NUM
+        END OFFLINE_PAY_ORDER_NUM,
+        CASE
+        WHEN T5.RETURNED_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T5.RETURNED_ORDER_NUM
+        END RETURNED_ORDER_NUM,
+        CASE
+        WHEN T10.EXCHANGE_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T10.EXCHANGE_ORDER_NUM
+        END EXCHANGE_ORDER_NUM,
+        CASE
+        WHEN T11.REPAIR_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T11.REPAIR_ORDER_NUM
+        END REPAIR_ORDER_NUM,
+        CASE
+        WHEN T6.REFUSED_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T6.REFUSED_ORDER_NUM
+        END REFUSED_ORDER_NUM,
+        CASE
+        WHEN T7.VALID_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T7.VALID_ORDER_NUM
+        END VALID_ORDER_NUM,
+        CASE
+        WHEN T7.VALID_ORDER_AMOUNT IS NULL THEN
+        0
+        ELSE
+        T7.VALID_ORDER_AMOUNT
+        END VALID_ORDER_AMOUNT,
+        CASE
+        WHEN T8.VALID_GOODS_NUM IS NULL THEN
+        0
+        ELSE
+        T8.VALID_GOODS_NUM
+        END VALID_GOODS_NUM,
+        CASE
+        WHEN T7.VALID_ORDER_NUM IS NULL THEN
+        0
+        WHEN T1.TOTAL_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T7.VALID_ORDER_NUM / T1.TOTAL_ORDER_NUM
+        END VALID_ORDER_RATE,
+        CASE
+        WHEN T7.VALID_ORDER_NUM IS NULL THEN
+        0
+        WHEN T7.VALID_ORDER_AMOUNT IS NULL THEN
+        0
+        ELSE
+        T7.VALID_ORDER_AMOUNT / T7.VALID_ORDER_NUM
+        END UNIT_PRICE,
+        CASE
+        WHEN T7.VALID_ORDER_NUM IS NULL THEN
+        0
+        WHEN T8.VALID_GOODS_NUM IS NULL THEN
+        0
+        ELSE
+        T8.VALID_GOODS_NUM / T7.VALID_ORDER_NUM
+        END UNIT_NUM,
+        CASE
+        WHEN T9.PAYED_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T9.PAYED_ORDER_NUM
+        END PAYED_ORDER_NUM,
+        CASE
+        WHEN T7.VALID_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        CASE
+        WHEN T9.PAYED_ORDER_NUM IS NULL THEN
+        T7.VALID_ORDER_NUM
+        ELSE
+        T7.VALID_ORDER_NUM - T9.PAYED_ORDER_NUM
+        END
+        END OFFLINE_VALID_ORDER_NUM
+        FROM
+        (
+        SELECT
+        T.REFERER,
+        OMS."EXPLAIN" ORDER_REFER,
+        COUNT (1) TOTAL_ORDER_NUM,
+        SUM (T.ORDER_AMOUNT) TOTAL_ORDER_AMOUNT,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T .ADD_TIME),
+        'YYYY/MM/DD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T
+        LEFT JOIN (SELECT IDSCV."VALUE", IDSCV."EXPLAIN"
+        FROM IUNI_DA_SYSTEM_CONSTANTS_VALUE IDSCV
+        LEFT JOIN IUNI_DA_SYSTEM_CONSTANTS IDSC
+        ON IDSCV.CONSTANT_ID = IDSC.ID
+        <where>
+            IDSC.SYSTEM_CODE = 'OM' AND IDSC.CODE = 'OM.ORDER_SOURCE') OMS ON T.REFERER = OMS."VALUE"
+        </where>
+        <where>
+            (T.OLEVEL = 'normal' OR T.OLEVEL = 'parent')
+            <if test="orderSourceStr !=null">
+                AND T.REFERER = #{orderSourceStr}
+            </if>
+            <if test="startDateStr != null">
+                AND T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE(#{startDateStr}, 'YYYY/MM/DD'))
+            </if>
+            <if test="endDateStr != null">
+                AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE(#{endDateStr}, 'YYYY/MM/DD'))
+            </if>
+        </where>
+        GROUP BY
+        T.REFERER,
+        OMS."EXPLAIN",
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        )
+        ) T1
+        LEFT JOIN (
+        SELECT
+        T.REFERER,
+        SUM (OG.GOODS_NUMBER) TOTAL_GOODS_NUM,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T,
+        IUNI_ORDER_GOODS OG
+        <where>
+            (T.ORDER_TYPE = 'normal' OR T.ORDER_TYPE = 'ys')
+            AND T.ORDER_SN = OG.ORDER_ID
+            <if test="startDateStr != null">
+                AND T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE(#{startDateStr}, 'YYYY/MM/DD'))
+            </if>
+            <if test="endDateStr != null">
+                AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE(#{endDateStr}, 'YYYY/MM/DD'))
+            </if>
+        </where>
+        GROUP BY
+        T.REFERER,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        )
+        ) T2 ON T1.BIZ_DATE = T2.BIZ_DATE
+        AND T1.REFERER = T2.REFERER
+        LEFT JOIN (
+        SELECT
+        T.REFERER,
+        COUNT (1) ONLINE_PAY_ORDER_NUM,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T
+        <where>
+            <if test="startDateStr != null">
+                T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE(#{startDateStr}, 'YYYY/MM/DD'))
+            </if>
+            <if test="endDateStr != null">
+                AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE(#{endDateStr}, 'YYYY/MM/DD'))
+            </if>
+            AND (
+            T.OLEVEL = 'normal'
+            OR T.OLEVEL = 'parent'
+            )
+            AND T.PAY_TYPE = 1
+        </where>
+        GROUP BY
+        T.REFERER,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        )
+        ) T3 ON T1.BIZ_DATE = T3.BIZ_DATE
+        AND T1.REFERER = T3.REFERER
+        LEFT JOIN (
+        SELECT
+        T.REFERER,
+        COUNT (1) OFFLINE_PAY_ORDER_NUM,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T
+        <where>
+            <if test="startDateStr != null">
+                T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE(#{startDateStr}, 'YYYY/MM/DD'))
+            </if>
+            <if test="endDateStr != null">
+                AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE(#{endDateStr}, 'YYYY/MM/DD'))
+            </if>
+            AND T.PAY_TYPE = 0
+        </where>
+        GROUP BY
+        T.REFERER,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        )
+        ) T4 ON T1.BIZ_DATE = T4.BIZ_DATE
+        AND T1.REFERER = T4.REFERER
+        LEFT JOIN (
+        SELECT
+        T.REFERER,
+        COUNT (1) RETURNED_ORDER_NUM,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T
+        <where>
+            <if test="startDateStr != null">
+                T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE(#{startDateStr}, 'YYYY/MM/DD'))
+            </if>
+            <if test="endDateStr != null">
+                AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE(#{endDateStr}, 'YYYY/MM/DD'))
+            </if>
+            AND (
+            T.ORDER_STATUS = 'recede'
+            OR T.PAY_STATUS = 'refund'
+            OR T.PAY_STATUS = 'refunded'
+            )
+            AND (
+            T.OLEVEL = 'normal'
+            OR T.OLEVEL = 'parent'
+            )
+        </where>
+        GROUP BY
+        T.REFERER,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        )
+        ) T5 ON T1.BIZ_DATE = T5.BIZ_DATE
+        AND T1.REFERER = T5.REFERER
+        LEFT JOIN (
+        SELECT
+        T.REFERER,
+        COUNT (1) REFUSED_ORDER_NUM,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T
+        <where>
+            <if test="startDateStr != null">
+                T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE(#{startDateStr}, 'YYYY/MM/DD'))
+            </if>
+            <if test="endDateStr != null">
+                AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE(#{endDateStr}, 'YYYY/MM/DD'))
+            </if>
+            AND T.SHIPPING_STATUS = 'declined'
+            AND (
+            T.OLEVEL = 'normal'
+            OR T.OLEVEL = 'parent'
+            )
+        </where>
+        GROUP BY
+        T.REFERER,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        )
+        ) T6 ON T1.BIZ_DATE = T6.BIZ_DATE
+        AND T1.REFERER = T6.REFERER
+        LEFT JOIN (
+        SELECT
+        T.REFERER,
+        COUNT (1) VALID_ORDER_NUM,
+        SUM (ORDER_AMOUNT) VALID_ORDER_AMOUNT,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T
+        <where>
+            <if test="startDateStr != null">
+                T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE(#{startDateStr}, 'YYYY/MM/DD'))
+            </if>
+            <if test="endDateStr != null">
+                AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE(#{endDateStr}, 'YYYY/MM/DD'))
+            </if>
+            AND (
+            T.PAY_STATUS = 'paid'
+            OR (
+            T.ORDER_STATUS = 'processed'
+            AND T.PAY_TYPE = 0
+            )
+            )
+            AND T.SHIPPING_STATUS != 'declined'
+            AND (
+            T.ORDER_TYPE = 'normal'
+            OR T.ORDER_TYPE = 'ysdj'
+            )
+        </where>
+        GROUP BY
+        T.REFERER,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        )
+        ) T7 ON T1.BIZ_DATE = T7.BIZ_DATE
+        AND T1.REFERER = T7.REFERER
+        LEFT JOIN (
+        SELECT
+        T.REFERER,
+        SUM (OG.GOODS_NUMBER) VALID_GOODS_NUM,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T,
+        IUNI_ORDER_GOODS OG
+        <where>
+            T.ORDER_SN = OG.ORDER_ID
+            <if test="startDateStr != null">
+                AND T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE(#{startDateStr}, 'YYYY/MM/DD'))
+            </if>
+            <if test="endDateStr != null">
+                AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE(#{endDateStr}, 'YYYY/MM/DD'))
+            </if>
+            AND (
+            T.PAY_STATUS = 'paid'
+            OR (
+            T.ORDER_STATUS = 'processed'
+            AND T.PAY_TYPE = 0
+            )
+            )
+            AND T.SHIPPING_STATUS != 'declined'
+            AND (
+            T.ORDER_TYPE = 'normal'
+            OR T.ORDER_TYPE = 'ysdj'
+            )
+        </where>
+        GROUP BY
+        T.REFERER,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        )
+        ) T8 ON T1.BIZ_DATE = T8.BIZ_DATE
+        AND T1.REFERER = T8.REFERER
+        LEFT JOIN (
+        SELECT
+        T.REFERER,
+        COUNT (1) PAYED_ORDER_NUM,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T
+        <where>
+            <if test="startDateStr != null">
+                T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE(#{startDateStr}, 'YYYY/MM/DD'))
+            </if>
+            <if test="endDateStr != null">
+                AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE(#{endDateStr}, 'YYYY/MM/DD'))
+            </if>
+            AND T.PAY_STATUS = 'paid'
+            AND (
+            T.ORDER_TYPE = 'normal'
+            OR T.ORDER_TYPE = 'ysdj'
+            )
+        </where>
+        GROUP BY
+        T.REFERER,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        )
+        ) T9 ON T1.BIZ_DATE = T9.BIZ_DATE
+        AND T1.REFERER = T9.REFERER
+        LEFT JOIN (
+        SELECT
+        T.REFERER,
+        COUNT (1) EXCHANGE_ORDER_NUM,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T,
+        IUNI_EXCHANGEGOODS_INFO IEI
+        <where>
+            T.ORDER_SN = IEI.ORDER_SN
+            <if test="startDateStr != null">
+                AND T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE(#{startDateStr}, 'YYYY/MM/DD'))
+            </if>
+            <if test="endDateStr != null">
+                AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE(#{endDateStr}, 'YYYY/MM/DD'))
+            </if>
+        </where>
+        GROUP BY
+        T.REFERER,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        )
+        ) T10 ON T1.BIZ_DATE = T10.BIZ_DATE
+        AND T1.REFERER = T10.REFERER
+        LEFT JOIN (
+        SELECT
+        T.REFERER,
+        COUNT (1) REPAIR_ORDER_NUM,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T,
+        IUNI_REPAIRSGOODS_INFO IRI
+        <where>
+            T.ORDER_SN = IRI.ORDER_SN
+            <if test="startDateStr != null">
+                AND T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE(#{startDateStr}, 'YYYY/MM/DD'))
+            </if>
+            <if test="endDateStr != null">
+                AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE(#{endDateStr}, 'YYYY/MM/DD'))
+            </if>
+        </where>
+        GROUP BY
+        T.REFERER,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T.ADD_TIME),
+        'YYYY/MM/DD'
+        )
+        ) T11 ON T1.BIZ_DATE = T11.BIZ_DATE
+        AND T1.REFERER = T11.REFERER
+        ORDER BY T1.BIZ_DATE, T1.REFERER
+    </select>
+
+    <!-- 订单转化率结果映射 -->
+    <resultMap id="convertRateOfOrderResult" type="com.iuni.data.persist.model.operation.ConvertRateOfOrderTableDto">
+        <result property="date" column="BIZ_DATE"></result>
+        <result property="orderNum" column="TOTAL_ORDER_NUM"></result>
+        <result property="paidOrderNum" column="PAYED_ORDER_NUM"></result>
+        <result property="onlinePaidOrderNum" column="ONLINE_PAY_ORDER_NUM"></result>
+    </resultMap>
+    <!-- 订单转化率报表 -->
+    <select id="selectConvertRateOfOrder" resultMap="convertRateOfOrderResult"
+            parameterType="com.iuni.data.persist.model.operation.ConvertRateOfOrderQueryDto">
+        SELECT
+        T1.BIZ_DATE,
+        CASE
+        WHEN T1.TOTAL_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T1.TOTAL_ORDER_NUM
+        END TOTAL_ORDER_NUM,
+        CASE
+        WHEN T2.ONLINE_PAY_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T2.ONLINE_PAY_ORDER_NUM
+        END ONLINE_PAY_ORDER_NUM,
+        CASE
+        WHEN T3.PAYED_ORDER_NUM IS NULL THEN
+        0
+        ELSE
+        T3.PAYED_ORDER_NUM
+        END PAYED_ORDER_NUM
+        FROM
+        (
+        SELECT
+        COUNT (1) TOTAL_ORDER_NUM,
+        SUM (T .ORDER_AMOUNT) TOTAL_ORDER_AMOUNT,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T .ADD_TIME),
+        'YYYYMMDD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T
+        <where>
+            (T .OLEVEL = 'normal' OR T .OLEVEL = 'parent')
+            <!--<if test="orderSourceStr != null">-->
+            <!--AND T.REFERER = #{orderSourceStr}-->
+            <!--</if>-->
+            AND T.REFERER = 'IUNI'
+            AND T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE (#{startDateStr}, 'YYYY/MM/DD'))
+            AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE (#{endDateStr}, 'YYYY/MM/DD'))
+        </where>
+        GROUP BY
+        TO_CHAR (
+        UNIX_TO_ORACLE (T .ADD_TIME),
+        'YYYYMMDD'
+        )
+        ) T1
+        LEFT JOIN (
+        SELECT
+        COUNT (1) ONLINE_PAY_ORDER_NUM,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T .ADD_TIME),
+        'YYYYMMDD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T
+        <where>
+            <!--<if test="orderSourceStr != null">-->
+                <!--AND T.REFERER = #{orderSourceStr}-->
+            <!--</if>-->
+            AND T.REFERER = 'IUNI'
+            AND T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE (#{startDateStr}, 'YYYY/MM/DD'))
+            AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE (#{endDateStr}, 'YYYY/MM/DD'))
+            AND (T .OLEVEL = 'normal' OR T .OLEVEL = 'parent')
+            AND T.PAY_TYPE = 1
+        </where>
+        GROUP BY
+        TO_CHAR (
+        UNIX_TO_ORACLE (T .ADD_TIME),
+        'YYYYMMDD'
+        )
+        ) T2 ON T1.BIZ_DATE = T2.BIZ_DATE
+        LEFT JOIN (
+        SELECT
+        COUNT (1) PAYED_ORDER_NUM,
+        TO_CHAR (
+        UNIX_TO_ORACLE (T .ADD_TIME),
+        'YYYYMMDD'
+        ) BIZ_DATE
+        FROM
+        IUNI_ORDER_INFO T
+        <where>
+            <!--<if test="orderSourceStr != null">-->
+                <!--AND T.REFERER = #{orderSourceStr}-->
+            <!--</if>-->
+            AND T.REFERER = 'IUNI'
+            AND T.ADD_TIME <![CDATA[ >= ]]> ORACLE_TO_UNIX (TO_DATE (#{startDateStr}, 'YYYY/MM/DD'))
+            AND T.ADD_TIME <![CDATA[ < ]]> ORACLE_TO_UNIX (TO_DATE (#{endDateStr}, 'YYYY/MM/DD'))
+            AND T.PAY_STATUS = 'paid'
+            AND (T .ORDER_TYPE = 'normal' OR T .ORDER_TYPE = 'ysdj')
+        </where>
+        GROUP BY
+        TO_CHAR (UNIX_TO_ORACLE (T .ADD_TIME), 'YYYYMMDD')
+        ) T3 ON T1.BIZ_DATE = T3.BIZ_DATE
+        ORDER BY
+        T1.BIZ_DATE
     </select>
 
     <cache eviction="LRU" flushInterval="60000" size="512" readOnly="true"/>

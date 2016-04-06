@@ -1,0 +1,649 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iuni.data.persist.mapper.operation.UserMapper">
+
+    <!-- 用户注册结果映射 -->
+    <resultMap id="registerResult" type="com.iuni.data.persist.model.operation.RegisterTableDto">
+        <result property="date" column="biz_date"></result>
+        <result property="pv" column="pv"></result>
+        <result property="uv" column="uv"></result>
+        <result property="registerNum" column="gionee_reg_num"></result>
+        <result property="registerRate" column="registerRate"></result>
+        <result property="sinaLoginNum" column="sina_reg_num"></result>
+        <result property="qqLoginNum" column="qq_reg_num"></result>
+        <result property="aliLoginNum" column="zfb_reg_num"></result>
+        <result property="doubanLoginNum" column="douban_reg_num"></result>
+        <result property="boughtUserNum" column="buy_user_num"></result>
+    </resultMap>
+    <!-- 用户注册报表 -->
+    <select id="selectRegister" resultMap="registerResult"
+            parameterType="com.iuni.data.persist.model.operation.RegisterQueryDto">
+        select t0.biz_date,
+        t0.pv,
+        t0.uv,
+        DECODE(t1.gionee_reg_num, null, 0, t1.gionee_reg_num) gionee_reg_num,
+        DECODE(t1.gionee_reg_num, null, 0, t1.gionee_reg_num) / t0.uv registerRate,
+        DECODE(t2.sina_reg_num, null, 0, t2.sina_reg_num) sina_reg_num,
+        DECODE(t3.qq_reg_num, null, 0, t3.qq_reg_num) qq_reg_num,
+        DECODE(t4.zfb_reg_num, null, 0, t4.zfb_reg_num) zfb_reg_num,
+        DECODE(t5.douban_reg_num, null, 0, t5.douban_reg_num) douban_reg_num,
+        DECODE(t6.buy_user_num, null, 0, t6.buy_user_num) buy_user_num
+        from (select to_char(time, 'yyyy/mm/dd') biz_date, sum(pv) pv, sum(uv) uv
+        from iuni_da_webkpi_page
+        <where>
+            time <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+            and time <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and (page = 'http://m.iuni.com/register.html' or page = 'http://passport.iuni.com/register.shtml')
+            and ttype = 'dd'
+        </where>
+        group by time) t0
+        left join (select to_char(register_time, 'yyyy/mm/dd') biz_date,
+        count(1) gionee_reg_num
+        from iuni_user t
+        <where>
+            not exists
+            (select * from iuni_user_bind t2 where t.id = t2.user_id)
+            and t.register_time <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and t.register_time <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        group by to_char(register_time, 'yyyy/mm/dd')) t1
+        on t0.biz_date = t1.biz_date
+        left join (select to_char(register_time, 'yyyy/mm/dd') biz_date,
+        count(1) sina_reg_num
+        from iuni_user t
+        join iuni_user_bind t2
+        on t.id = t2.user_id
+        <where>
+            t.register_time <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and t.register_time <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+            and t2.o_type = 2
+        </where>
+        group by to_char(register_time, 'yyyy/mm/dd')) t2
+        on t0.biz_date = t2.biz_date
+        left join (select to_char(register_time, 'yyyy/mm/dd') biz_date,
+        count(1) qq_reg_num
+        from iuni_user t
+        join iuni_user_bind t2
+        on t.id = t2.user_id
+        <where>
+            t.register_time <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and t.register_time <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+            and t2.o_type = 3
+        </where>
+        group by to_char(register_time, 'yyyy/mm/dd')) t3
+        on t0.biz_date = t3.biz_date
+        left join (select to_char(register_time, 'yyyy/mm/dd') biz_date,
+        count(1) zfb_reg_num
+        from iuni_user t
+        join iuni_user_bind t2
+        on t.id = t2.user_id
+        <where>
+            t.register_time <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and t.register_time <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+            and t2.o_type = 5
+        </where>
+        group by to_char(register_time, 'yyyy/mm/dd')) t4
+        on t0.biz_date = t4.biz_date
+        left join (select to_char(register_time, 'yyyy/mm/dd') biz_date,
+        count(1) douban_reg_num
+        from iuni_user t
+        join iuni_user_bind t2
+        on t.id = t2.user_id
+        <where>
+            t.register_time <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and t.register_time <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+            and t2.o_type = 6
+        </where>
+        group by to_char(register_time, 'yyyy/mm/dd')) t5
+        on t0.biz_date = t5.biz_date
+        left join (select to_char(unix_to_oracle(add_time), 'yyyy/mm/dd') biz_date,
+        count(distinct t.user_id) buy_user_num
+        from iuni_order_info t
+        <where>
+            t.add_time <![CDATA[ >= ]]> oracle_to_unix(to_date(#{startDateStr}, 'yyyy/mm/dd'))
+            and t.add_time <![CDATA[ < ]]> oracle_to_unix(to_date(#{endDateStr}, 'yyyy/mm/dd') + 1)
+        </where>
+        group by to_char(unix_to_oracle(add_time), 'yyyy/mm/dd')) t6
+        on t0.biz_date = t6.biz_date
+        order by t0.biz_date
+    </select>
+
+    <!-- 用户留存结果映射 -->
+    <resultMap id="userResult" type="com.iuni.data.persist.model.operation.UserTableDto">
+        <result property="registerDate" column="regTime"></result>
+        <result property="registerNum" column="regNum"></result>
+        <result property="one_day_stay" column="retainUserOn1day"></result>
+        <result property="two_three_days_stay" column="retainUserOn2To3day"></result>
+        <result property="four_seven_days_stay" column="retainUserOn4To7day"></result>
+        <result property="eight_thirty_days_stay" column="retainUserOn8To30day"></result>
+        <result property="thirtyOne_ninety_days_stay" column="retainUserOn31To90day"></result>
+    </resultMap>
+    <!-- 用户留存报表 -->
+    <select id="selectUser" resultMap="userResult"
+            parameterType="com.iuni.data.persist.model.operation.UserQueryDto">
+        select T0."regTime",
+        count(T0."userId") "regNum",
+        count(T1."userId") "retainUserOn1day",
+        count(T2."userId") "retainUserOn2To3day",
+        count(T3."userId") "retainUserOn4To7day",
+        count(T4."userId") "retainUserOn8To30day",
+        count(T5."userId") "retainUserOn31To90day"
+        from (select IU.ID "userId",
+        to_char(IU.REGISTER_TIME, 'yyyy/mm/dd') "regTime"
+        from IUNI_USER IU
+        <where>
+            IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        ) T0
+        left join
+        (select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.USER_NAME = IUL.USER_NAME)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 1
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 2
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.PHONENUM = IUL.MOBILE)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 1
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 2
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.MAIL = IUL.EMAIL)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 1
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 2
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_OLOGINLOG IUOL
+        left join IUNI_USER IU
+        on IU.ID = IUOL.USER_ID
+        <where>
+            IUOL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 1
+            and IUOL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 2
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        ) T1
+        on (T1."userId" = T0."userId")
+        left join
+        (select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.USER_NAME = IUL.USER_NAME)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 2
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 4
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.PHONENUM = IUL.MOBILE)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 2
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 4
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.MAIL = IUL.EMAIL)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 2
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 4
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_OLOGINLOG IUOL
+        left join IUNI_USER IU
+        on IU.ID = IUOL.USER_ID
+        <where>
+            IUOL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 2
+            and IUOL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 4
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        ) T2
+        on (T2."userId" = T0."userId")
+        left join
+        (select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.USER_NAME = IUL.USER_NAME)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 4
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 8
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.PHONENUM = IUL.MOBILE)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 4
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 8
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.MAIL = IUL.EMAIL)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 4
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 8
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_OLOGINLOG IUOL
+        left join IUNI_USER IU
+        on IU.ID = IUOL.USER_ID
+        <where>
+            IUOL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 4
+            and IUOL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 8
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        ) T3
+        on (T3."userId" = T0."userId")
+        left join
+        (select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.USER_NAME = IUL.USER_NAME)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 8
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 31
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.PHONENUM = IUL.MOBILE)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 8
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 31
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.MAIL = IUL.EMAIL)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 8
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 31
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_OLOGINLOG IUOL
+        left join IUNI_USER IU
+        on IU.ID = IUOL.USER_ID
+        <where>
+            IUOL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 8
+            and IUOL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 31
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        ) T4
+        on (T4."userId" = T0."userId")
+        left join
+        (select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.USER_NAME = IUL.USER_NAME)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 31
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 91
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.PHONENUM = IUL.MOBILE)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 31
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 91
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on (IU.MAIL = IUL.EMAIL)
+        <where>
+            IUL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 31
+            and IUL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 91
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        union
+        select distinct IU.ID "userId"
+        from IUNI_UC_OLOGINLOG IUOL
+        left join IUNI_USER IU
+        on IU.ID = IUOL.USER_ID
+        <where>
+            IUOL.LOGIN_TIME <![CDATA[ >= ]]> trunc(IU.REGISTER_TIME, 'dd') + 31
+            and IUOL.LOGIN_TIME <![CDATA[ < ]]> trunc(IU.REGISTER_TIME, 'dd') + 91
+            and IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            and IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        ) T5
+        on (T5."userId" = T0."userId")
+        group by T0."regTime"
+        order by T0."regTime"
+    </select>
+
+    <!-- 用户登录行为结果映射 -->
+    <resultMap id="userBehaviorResult" type="com.iuni.data.persist.model.operation.UserBehaviorTableDto">
+        <result property="registerDateRange" column="registerDateRange"></result>
+        <result property="userId" column="userId"></result>
+        <result property="userName" column="userName"></result>
+        <result property="email" column="email"></result>
+        <result property="phone" column="phone"></result>
+        <result property="loginNum" column="loginNum"></result>
+        <result property="loginIn1DayAgo" column="loginIn1DayAgo"></result>
+        <result property="loginIn2To3DaysAgo" column="loginIn2To3DaysAgo"></result>
+        <result property="loginIn4To7DaysAgo" column="loginIn4To7DaysAgo"></result>
+        <result property="loginIn8To30DaysAgo" column="loginIn8To30DaysAgo"></result>
+        <result property="loginIn31To90DaysAgo" column="loginIn31To90DaysAgo"></result>
+        <result property="loginIn91DaysAgo" column="loginIn91DaysAgo"></result>
+    </resultMap>
+    <!-- 用户登录行为报表 -->
+    <select id="selectUserBehavior" resultMap="userBehaviorResult"
+            parameterType="com.iuni.data.persist.model.operation.UserBehaviorQueryDto">
+        select #{dateRangeString} "registerDateRange",
+        IU.USER_NAME "userName",
+        IU.MAIL "email",
+        IU.PHONENUM "mobile",
+        T."loginIn1DayAgo" + T."loginIn2To3DaysAgo"
+        + T."loginIn4To7DaysAgo" + T."loginIn8To30DaysAgo"
+        + T."loginIn31To90DaysAgo" + T."loginIn91DaysAgo" "loginNum",
+        T.*
+        from (SELECT T0."userId",
+        sum("loginIn1DayAgo") "loginIn1DayAgo",
+        sum("loginIn2To3DaysAgo") "loginIn2To3DaysAgo",
+        sum("loginIn4To7DaysAgo") "loginIn4To7DaysAgo",
+        sum("loginIn8To30DaysAgo") "loginIn8To30DaysAgo",
+        sum("loginIn31To90DaysAgo") "loginIn31To90DaysAgo",
+        sum("loginIn91DaysAgo") "loginIn91DaysAgo"
+        from
+        (select IU.ID "userId",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 1 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') then
+        1
+        else
+        0
+        end "loginIn1DayAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 3 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 1 then
+        1
+        else
+        0
+        end "loginIn2To3DaysAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 7 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 3 then
+        1
+        else
+        0
+        end "loginIn4To7DaysAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 30 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 7 then
+        1
+        else
+        0
+        end "loginIn8To30DaysAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 90 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 30 then
+        1
+        else
+        0
+        end "loginIn31To90DaysAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ < ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 90 then
+        1
+        else
+        0
+        end "loginIn91DaysAgo"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on upper(IU.USER_NAME) = upper(IUL.USER_NAME)
+        <where>
+            IUL.USER_NAME is not null
+            AND IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            AND IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        UNION ALL
+        select IU.ID "userId",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 1 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]> to_date(#{endLoginDateStr}, 'yyyy/mm/dd') then
+        1
+        else
+        0
+        end "loginIn1DayAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 3 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 1 then
+        1
+        else
+        0
+        end "loginIn2To3DaysAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 7 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 3 then
+        1
+        else
+        0
+        end "loginIn4To7DaysAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 30 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 7 then
+        1
+        else
+        0
+        end "loginIn8To30DaysAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 90 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 30 then
+        1
+        else
+        0
+        end "loginIn31To90DaysAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 90 then
+        1
+        else
+        0
+        end "loginIn91DaysAgo"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on IU.PHONENUM = IUL.MOBILE
+        <where>IUL.MOBILE is not null
+            AND IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            AND IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        UNION ALL
+        select IU.ID "userId",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 1 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') then
+        1
+        else
+        0
+        end "loginIn1DayAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 3 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 1 then
+        1
+        else
+        0
+        end "loginIn2To3DaysAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 7 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 3 then
+        1
+        else
+        0
+        end "loginIn4To7DaysAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 30 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 7 then
+        1
+        else
+        0
+        end "loginIn8To30DaysAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 90 and
+        IUL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 30 then
+        1
+        else
+        0
+        end "loginIn31To90DaysAgo",
+        case
+        when IUL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 90 then
+        1
+        else
+        0
+        end "loginIn91DaysAgo"
+        from IUNI_UC_LOGINLOG IUL
+        left join IUNI_USER IU
+        on upper(IU.MAIL) = upper(IUL.EMAIL)
+        <where>
+            IUL.EMAIL is not null
+            AND IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            AND IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        UNION ALL
+        select IU.ID "userId",
+        case
+        when IUOL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 1 and
+        IUOL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') then
+        1
+        else
+        0
+        end "loginIn1DayAgo",
+        case
+        when IUOL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 3 and
+        IUOL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 1 then
+        1
+        else
+        0
+        end "loginIn2To3DaysAgo",
+        case
+        when IUOL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 7 and
+        IUOL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 3 then
+        1
+        else
+        0
+        end "loginIn4To7DaysAgo",
+        case
+        when IUOL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 30 and
+        IUOL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 7 then
+        1
+        else
+        0
+        end "loginIn8To30DaysAgo",
+        case
+        when IUOL.LOGIN_TIME <![CDATA[ >= ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 90 and
+        IUOL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 30 then
+        1
+        else
+        0
+        end "loginIn31To90DaysAgo",
+        case
+        when IUOL.LOGIN_TIME <![CDATA[ < ]]>
+        to_date(#{endLoginDateStr}, 'yyyy/mm/dd') - 90 then
+        1
+        else
+        0
+        end "loginIn91DaysAgo"
+        from IUNI_UC_OLOGINLOG IUOL
+        left join IUNI_USER IU
+        on IU.ID = IUOL.USER_ID
+        <where>
+            IU.ID is not null
+            AND IU.REGISTER_TIME <![CDATA[ >= ]]> to_date(#{startDateStr}, 'yyyy/mm/dd')
+            AND IU.REGISTER_TIME <![CDATA[ < ]]> to_date(#{endDateStr}, 'yyyy/mm/dd') + 1
+        </where>
+        ) T0
+        GROUP BY T0."userId") T
+        left join IUNI_USER IU
+        on IU.ID = T."userId"
+    </select>
+
+    <cache eviction="LRU" flushInterval="60000" size="512" readOnly="true"/>
+
+</mapper>

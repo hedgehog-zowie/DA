@@ -21,22 +21,28 @@ public class HBaseOperator {
 
     private static final Logger logger = LoggerFactory.getLogger(HBaseOperator.class);
 
-    private String hbaseQuorum;
+    private String hBaseQuorum;
     private String tableName;
 
-    private final Configuration hbaseConf;
+    private final Configuration hBaseConf;
+    private HConnection hConnection;
 
     public HBaseOperator() {
-        hbaseConf = HBaseConfiguration.create();
+        hBaseConf = HBaseConfiguration.create();
     }
 
     public HBaseOperator(Configuration hbaseConf) {
-        this.hbaseConf = hbaseConf;
+        this.hBaseConf = hbaseConf;
     }
 
     public HBaseOperator(String hbaseQuorum) {
-        hbaseConf = HBaseConfiguration.create();
-        this.hbaseQuorum = hbaseQuorum;
+        hBaseConf = HBaseConfiguration.create();
+        this.hBaseQuorum = hbaseQuorum;
+    }
+
+    private void checkConnection() throws IOException {
+        if (hConnection == null || hConnection.isClosed())
+            hConnection = HConnectionManager.createConnection(hBaseConf);
     }
 
     public List<Result> query(String tableName, Scan scan) {
@@ -44,7 +50,7 @@ public class HBaseOperator {
         HTable table = null;
         ResultScanner resultScanner = null;
         try {
-            table = new HTable(hbaseConf, tableName);
+            table = new HTable(hBaseConf, tableName);
             resultScanner = table.getScanner(scan);
             for (Result result : resultScanner)
                 resultList.add(result);
@@ -66,7 +72,37 @@ public class HBaseOperator {
     }
 
     /**
-     * get whole row
+     * 获取单独一个单元格数据
+     *
+     * @param rowKey
+     * @param familyName
+     * @param columnName
+     * @return
+     */
+    public Result getCell(String rowKey, String familyName, String columnName) {
+        Result result = null;
+        HTable table = null;
+        try {
+            Get get = new Get(Bytes.toBytes(rowKey));
+            get.addColumn(Bytes.toBytes(familyName), Bytes.toBytes(columnName));
+            table = new HTable(hBaseConf, tableName);
+            result = table.get(get);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (table != null)
+                try {
+                    table.close();
+                } catch (IOException e) {
+                    logger.error("close hbase table {} error, ", tableName, e);
+                }
+        }
+        return result;
+    }
+
+    /**
+     * 获取一整行的数据
+     *
      * @param rowKey
      * @return
      */
@@ -74,7 +110,7 @@ public class HBaseOperator {
         Result result = null;
         HTable table = null;
         try {
-            table = new HTable(hbaseConf, tableName);
+            table = new HTable(hBaseConf, tableName);
             result = table.get(new Get(Bytes.toBytes(rowKey)));
         } catch (IOException e) {
             logger.error("get HTable error, HTable is: {}, rowKey is {}, error msg is: {}", tableName, rowKey, e.getLocalizedMessage());
@@ -92,15 +128,18 @@ public class HBaseOperator {
 
     /**
      * get whole row
+     *
      * @param rowKeyList
      * @return
      */
-    public Map<String, Result> getRow(Collection<String> rowKeyList){
+    public Map<String, Result> getRows(Collection<String> rowKeyList) {
         Map<String, Result> resultMap = new HashMap<>();
-        HTable table = null;
+        HTableInterface table = null;
         try {
-            table = new HTable(hbaseConf, tableName);
-            for(String rowKey: rowKeyList) {
+            checkConnection();
+            table = hConnection.getTable(tableName);
+//            table = new HTable(hBaseConf, tableName);
+            for (String rowKey : rowKeyList) {
                 Result result = table.get(new Get(Bytes.toBytes(rowKey)));
                 resultMap.put(rowKey, result);
             }
@@ -119,19 +158,73 @@ public class HBaseOperator {
     }
 
     /**
+     * 获取数据
+     *
+     * @param getMap
+     * @return
+     */
+    public Map<String, Result> get(Map<String, Get> getMap) {
+        Map<String, Result> resultMap = new HashMap<>();
+        HTableInterface table = null;
+        try {
+            checkConnection();
+            table = hConnection.getTable(tableName);
+            for (Map.Entry<String, Get> get : getMap.entrySet())
+                resultMap.put(get.getKey(), table.get(get.getValue()));
+        } catch (IOException e) {
+            logger.error("get HTable error, HTable is: {}, error msg is: {}", tableName, e.getLocalizedMessage());
+        } finally {
+            if (table != null) {
+                try {
+                    table.close();
+                } catch (IOException e) {
+                    logger.error("close hbase table {} error, ", tableName, e);
+                }
+            }
+        }
+        return resultMap;
+    }
+
+    /**
+     * 获取数据
+     *
+     * @param get
+     * @return
+     */
+    public Result get(Get get) {
+        Result result = null;
+        HTableInterface table = null;
+        try {
+            checkConnection();
+            table = hConnection.getTable(tableName);
+            result = table.get(get);
+        } catch (IOException e) {
+            logger.error("get HTable error, HTable is: {}, error msg is: {}", tableName, e.getLocalizedMessage());
+        } finally {
+            if (table != null) {
+                try {
+                    table.close();
+                } catch (IOException e) {
+                    logger.error("close hbase table {} error, ", tableName, e);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * 计数器增加
-     * @param tableName
+     *
      * @param rowKey
      * @param cf
      * @param qualifier
      * @return
      */
-    public long addCounter(String tableName, String rowKey, String cf, String qualifier) {
-        hbaseConf.set(Constants.hbaseQuorum, hbaseQuorum);
+    public long addCounter(String rowKey, String cf, String qualifier) {
         long result = 0l;
         HTable table = null;
         try {
-            table = new HTable(hbaseConf, tableName);
+            table = new HTable(hBaseConf, tableName);
             result = table.incrementColumnValue(Bytes.toBytes(rowKey), Bytes.toBytes(cf), Bytes.toBytes(qualifier), 1);
         } catch (IOException e) {
             logger.error("get counter error, HTable is: {}, error msg is: {}", tableName, e.getLocalizedMessage());
@@ -146,13 +239,13 @@ public class HBaseOperator {
         return result;
     }
 
-    public String getHbaseQuorum() {
-        return hbaseQuorum;
+    public String gethBaseQuorum() {
+        return hBaseQuorum;
     }
 
-    public void setHbaseQuorum(String hbaseQuorum) {
-        this.hbaseQuorum = hbaseQuorum;
-        hbaseConf.set(Constants.hbaseQuorum, this.hbaseQuorum);
+    public void setHBaseQuorum(String hbaseQuorum) {
+        this.hBaseQuorum = hbaseQuorum;
+        hBaseConf.set(Constants.hbaseQuorum, this.hBaseQuorum);
     }
 
     public String getTableName() {
@@ -162,4 +255,6 @@ public class HBaseOperator {
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
+
+
 }

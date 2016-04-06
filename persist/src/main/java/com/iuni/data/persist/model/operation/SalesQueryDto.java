@@ -3,11 +3,12 @@ package com.iuni.data.persist.model.operation;
 import com.iuni.data.persist.model.AbstractQueryDto;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
+ * 商品销售查询条件
+ *
  * @author Nicholas
  *         Email:   nicholas.chen@iuni.com
  */

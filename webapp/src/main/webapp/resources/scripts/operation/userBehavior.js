@@ -1,73 +1,8 @@
-var SalesOfOperation = function () {
-
-    var initSku = function() {
-        var skuStr = $("#skuStr").val();
-        if (skuStr != null && skuStr != undefined && skuStr.trim() != "") {
-            $("#typeSelect").attr("disabled", "disabled");
-            $("#modelSelect").attr("disabled", "disabled");
-        }
-        $("#skuStr").on('input', function () {
-            if ($(this).val() != null && $(this).val() != undefined && $(this).val().trim() != "") {
-                $("#typeSelect").attr("disabled", "disabled");
-                $("#modelSelect").attr("disabled", "disabled");
-            } else {
-                $("#typeSelect").removeAttr("disabled");
-                $("#modelSelect").removeAttr("disabled");
-            }
-        });
-    }
-
-    var initSelect = function () {
-        $("#select2OfOrderSource").select2({
-            closeOnSelect: false,
-            language: "zh-CN"
-        });
-        var orderSourceStr = $("#orderSourceStr").val();
-        var orderSources = orderSourceStr.split(",");
-        $("#select2OfOrderSource").select2("val", orderSources);
-
-        function BindSelect(selectId, url1, url2, t) {
-            var select = $('#' + selectId);
-
-            select.empty();//清空下拉框
-            // select.append("<option value=''>全选</option>");
-            // 绑定Ajax的内容
-            $.ajaxSettings.async = false;
-            $.getJSON(url1, function (data) {
-                $.each(data, function (i, item) {
-                    select.append("<option value='" + item.id + "'>" + item.name + "</option>");
-                });
-            });
-            $.getJSON(url2, function (data) {
-                $.each(data, function (i, item) {
-                    select.append("<option value='" + item.id + "'>" + item.name + "</option>");
-                });
-            });
-
-            //设置Select2的处理
-            select.select2({
-                allowClear: true,
-                language: "zh-CN"
-            });
-            // 赋值
-            select.select2("val", t);
-        }
-
-        var type = $("#type").val();
-        BindSelect("typeSelect", "/operation/sales/selectWareOfPhone", "/operation/sales/selectCategory", type);
-        var model = $("#model").val();
-        BindSelect("modelSelect", "/operation/sales/selectWare?catId=" + type, "/operation/sales/selectSku?wareId=" + type, model);
-        $("#typeSelect").on("change", function (e) {
-            var type = $(this).val();
-            var model = $("#model").val();
-            BindSelect("modelSelect", "/operation/sales/selectWare?catId=" + type, "/operation/sales/selectSku?wareId=" + type, model);
-        });
-
-    }
+var UserBehaviorOfOperation = function () {
 
     var initTable = function () {
 
-        var table = $('#operation-sales-table');
+        var table = $('#operation-user-behavior-table');
 
         // begin table
         table.dataTable({
@@ -107,7 +42,7 @@ var SalesOfOperation = function () {
             ]
         });
 
-        var tableWrapper = jQuery('#operation-sales-table_wrapper');
+        var tableWrapper = jQuery('#operation-user-behavior-table_wrapper');
 
         tableWrapper.find('.dataTables_length select').addClass("form-control input-xsmall input-inline");
 
@@ -129,7 +64,16 @@ var SalesOfOperation = function () {
             $('#daterangepicker span').html(start.format('YYYY/MM/DD') + ' - ' + end.format('YYYY/MM/DD'));
         });
 
-        $('#operation-sales-table-export').click(function (e) {
+        $('#endLoginDateStr').datepicker({
+            language: 'zh-CN',
+            format: 'yyyy/mm/dd',
+            autoclose: true,
+            todayHighlight: true,
+            weekStart: 0,
+            endDate: '+0',
+        });
+
+        $('#operation-user-behavior-table-export').click(function (e) {
             e.preventDefault();
             var dateRangeString = $("#daterangepicker").val();
             var dateStyle = $("#dateStyle").val();
@@ -145,7 +89,7 @@ var SalesOfOperation = function () {
                 "model": model,
                 "skuStr": skuStr,
             }
-            location.href = "/operation/sales/exportExcel?queryParamStr=" + JSON.stringify(queryParams);
+            location.href = "/operation/userBehavior/exportExcel?queryParamStr=" + JSON.stringify(queryParams);
         });
     }
 
@@ -153,9 +97,7 @@ var SalesOfOperation = function () {
 
         //main function to initiate the module
         init: function () {
-            activeMenu('/operation/sales');
-            initSku();
-            initSelect();
+            activeMenu('/operation/userBehavior');
             initTable();
         }
 
